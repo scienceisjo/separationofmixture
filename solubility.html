@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>용해도 차를 이용한 분리 | 혼합물의 분리</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Jua&family=Gowun+Dodum&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0a1410; --bg2:#0c2119; --bg3:#0e2a20;
+  --accent:#7df0c0; --accent2:#5ad6a8; --gold:#ffd34d; --water:#7ee0ff; --crys:#a7f3d0;
+  --panel:rgba(18,46,38,.74); --panel-line:rgba(120,240,200,.22);
+  --text:#eafff6; --muted:#a6cebf; --good:#34d399; --bad:#fb7185;
+  --shadow:0 18px 50px rgba(0,0,0,.45);
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%;overflow:hidden}
+body{font-family:'Gowun Dodum',sans-serif;color:var(--text);
+  background:radial-gradient(1200px 800px at 18% -10%,#16463a 0%,transparent 55%),
+             radial-gradient(1000px 700px at 95% 110%,#103226 0%,transparent 50%),
+             linear-gradient(160deg,var(--bg),var(--bg2) 60%,var(--bg3));
+  user-select:none;touch-action:manipulation}
+.bubbles{position:fixed;inset:0;overflow:hidden;pointer-events:none;z-index:0}
+.bubbles i{position:absolute;bottom:-40px;border-radius:50%;
+  background:radial-gradient(circle at 35% 30%,rgba(255,255,255,.5),rgba(125,240,192,.08) 60%,transparent);animation:rise linear infinite}
+@keyframes rise{to{transform:translateY(-110vh) translateX(30px);opacity:0}}
+#app{position:relative;z-index:1;height:100%;display:flex;flex-direction:column}
+.topbar{display:flex;align-items:center;gap:12px;padding:12px 18px;background:linear-gradient(180deg,rgba(8,20,16,.85),rgba(8,20,16,.2));border-bottom:1px solid var(--panel-line);backdrop-filter:blur(6px)}
+.topbar .badge{font-family:'Jua';font-size:13px;color:#05231a;background:linear-gradient(135deg,var(--accent2),var(--accent));padding:5px 12px;border-radius:20px}
+.topbar h1{font-family:'Black Han Sans';font-size:20px;margin:0;background:linear-gradient(90deg,#fff,var(--accent));-webkit-background-clip:text;background-clip:text;color:transparent}
+.topbar .spacer{flex:1}
+.btn-ghost{font-family:'Jua';font-size:14px;color:var(--text);background:rgba(125,240,192,.1);border:1px solid var(--panel-line);padding:8px 14px;border-radius:12px;cursor:pointer;transition:.15s}
+.btn-ghost:hover{background:rgba(125,240,192,.22)}
+.screen{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;display:none;padding:22px;animation:fade .35s ease}
+.screen.active{display:block}
+@keyframes fade{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+.wrap{max-width:980px;margin:0 auto}
+.hero{text-align:center;padding:24px 0 6px}
+.hero .eyebrow{font-family:'Jua';color:var(--accent);font-size:15px;letter-spacing:2px}
+.hero h2{font-family:'Black Han Sans';font-size:clamp(30px,6.4vw,54px);margin:6px 0 4px;line-height:1.08;background:linear-gradient(100deg,#fff 10%,var(--accent) 55%,var(--gold));-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 6px 24px rgba(125,240,192,.22))}
+.hero p{color:var(--muted);font-size:15.5px;max-width:600px;margin:8px auto 0;line-height:1.6}
+.menu{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px;margin-top:26px}
+.card{position:relative;background:var(--panel);border:1px solid var(--panel-line);border-radius:22px;padding:22px 20px;cursor:pointer;overflow:hidden;transition:.2s;backdrop-filter:blur(8px);box-shadow:var(--shadow)}
+.card:hover{transform:translateY(-6px);border-color:var(--accent)}
+.card .ic{font-size:40px;display:block;margin-bottom:10px}
+.card h3{font-family:'Jua';font-size:21px;margin:0 0 6px}
+.card p{color:var(--muted);font-size:13.5px;margin:0;line-height:1.5}
+.card .tag{position:absolute;top:14px;right:14px;font-family:'Jua';font-size:11px;padding:3px 9px;border-radius:10px}
+.tag.learn{background:rgba(125,240,192,.18);color:#bff3df}
+.tag.quiz{background:rgba(255,211,77,.18);color:#ffe08a}
+.tag.lab{background:rgba(126,224,255,.18);color:#aeeaff}
+.card .glow{position:absolute;inset:-40%;background:radial-gradient(circle,rgba(125,240,192,.18),transparent 60%);opacity:0;transition:.3s}
+.card:hover .glow{opacity:1}
+.shead{font-family:'Black Han Sans';font-size:24px;margin:4px 0 16px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.shead .dot{width:12px;height:12px;border-radius:50%;background:var(--accent);box-shadow:0 0 14px var(--accent)}
+.lblock{background:var(--panel);border:1px solid var(--panel-line);border-radius:18px;padding:18px 20px;margin-bottom:16px;backdrop-filter:blur(6px)}
+.lblock h4{font-family:'Jua';font-size:19px;margin:0 0 8px;color:var(--accent)}
+.lblock p{line-height:1.75;font-size:15px;margin:7px 0;color:#dcf6ec}
+.lblock .key{color:var(--gold);font-weight:bold}
+.lblock .key2{color:var(--accent);font-weight:bold}
+.lblock .key3{color:var(--water);font-weight:bold}
+.hl{background:linear-gradient(transparent 60%,rgba(255,211,77,.25) 0);padding:0 2px}
+.note{background:rgba(125,240,192,.08);border-left:3px solid var(--accent);border-radius:0 10px 10px 0;padding:10px 14px;margin:10px 0 2px;font-size:14px;line-height:1.65;color:#cdf3e4}
+.note b{color:var(--accent)}
+.warn{background:rgba(255,180,120,.08);border-left:3px solid #ffb86b}
+.warn b{color:#ffc58a}
+.blank{display:inline-block;min-width:54px;text-align:center;font-family:'Jua';color:transparent;border-bottom:2px dashed var(--accent);cursor:pointer;padding:0 6px;margin:0 2px;border-radius:4px;transition:.18s;background:rgba(125,240,192,.07)}
+.blank::before{content:'❓';color:var(--accent);font-size:13px}
+.blank.shown{color:#05231a;background:linear-gradient(135deg,var(--gold),#ffe488);border-bottom:2px solid #d99a17}
+.blank.shown::before{content:''}
+.examplebox{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:6px}
+.examplebox .e{background:rgba(8,24,18,.5);border:1px solid var(--panel-line);border-radius:14px;padding:13px}
+.examplebox .e b{font-family:'Jua';font-size:15px}
+.ctable{width:100%;border-collapse:collapse;margin-top:6px;font-size:13.5px;border-radius:12px;overflow:hidden}
+.ctable th,.ctable td{border:1px solid var(--panel-line);padding:9px 10px;text-align:left;vertical-align:top;line-height:1.5}
+.ctable th{background:rgba(125,240,192,.14);font-family:'Jua';color:var(--accent);font-weight:normal}
+.ctable td:first-child{font-family:'Jua';color:var(--gold);white-space:nowrap;background:rgba(255,211,77,.06)}
+.ctable td b{color:var(--accent)}
+.gamewrap{background:var(--panel);border:1px solid var(--panel-line);border-radius:22px;padding:18px;backdrop-filter:blur(8px);box-shadow:var(--shadow)}
+canvas{display:block;width:100%;border-radius:14px;touch-action:none}
+.hud{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:12px}
+.chip{font-family:'Jua';font-size:15px;background:rgba(8,24,18,.6);border:1px solid var(--panel-line);padding:8px 14px;border-radius:12px}
+.chip b{color:var(--accent)}
+.bigbtn{font-family:'Jua';font-size:clamp(17px,3vw,22px);color:#05231a;border:none;border-radius:16px;padding:15px 12px;cursor:pointer;transition:.12s;box-shadow:0 8px 22px rgba(0,0,0,.35)}
+.bigbtn:active{transform:scale(.97)}
+.bigbtn.start{background:linear-gradient(135deg,var(--accent2),var(--accent))}
+.bigbtn.next{background:linear-gradient(135deg,var(--good),var(--accent))}
+.bigbtn.heat{background:linear-gradient(135deg,#ff8a5b,#ffb347)}
+.bigbtn.cool{background:linear-gradient(135deg,#6fd6ff,#9fe7ff)}
+.bigbtn.quizbtn{background:linear-gradient(135deg,var(--gold),#ffe488)}
+.bigbtn.ghost3{background:rgba(125,240,192,.12);color:var(--text);border:1px solid var(--panel-line);box-shadow:none}
+.bigbtn:disabled{opacity:.4;cursor:default}
+.tip{color:var(--muted);font-size:13.5px;text-align:center;margin:12px 0 0;line-height:1.6}
+.live{margin-top:12px;padding:12px 16px;border-radius:14px;font-size:15px;line-height:1.55;background:rgba(8,24,18,.55);border:1px solid var(--panel-line);color:#dcf6ec}
+.live.ok{background:rgba(52,211,153,.16);border-color:var(--good);color:#d6ffe9}
+.live b{color:#fff}
+.actionrow{display:flex;flex-wrap:wrap;gap:10px;margin-top:14px}
+.actionrow .bigbtn{flex:1;min-width:120px}
+.qintro{color:var(--muted);font-size:14.5px;line-height:1.6;margin:0 0 16px}
+.qline{background:var(--panel);border:1px solid var(--panel-line);border-radius:14px;padding:14px 16px;margin-bottom:11px;font-size:15.5px;line-height:2.1;color:#dcf6ec}
+.qline .num{font-family:'Jua';color:var(--accent);margin-right:6px}
+.qblank{font-family:'Jua';font-size:14.5px;min-width:64px;color:var(--muted);background:rgba(8,24,18,.6);border:2px dashed var(--panel-line);border-radius:10px;padding:4px 12px;cursor:pointer;transition:.15s;vertical-align:middle}
+.qblank.filled{color:#05231a;background:linear-gradient(135deg,var(--accent),#bff3df);border-style:solid;border-color:var(--accent)}
+.qblank.ok{background:linear-gradient(135deg,var(--good),#7defb8);border-color:var(--good);color:#05231a}
+.qblank.no{background:linear-gradient(135deg,#fb7185,#ffa6b2);border-color:var(--bad);color:#3a0d12}
+.bank{display:flex;flex-wrap:wrap;gap:9px;margin:6px 0 16px;padding:14px;border-radius:14px;background:rgba(8,24,18,.45);border:1px dashed var(--panel-line);min-height:54px}
+.word{font-family:'Jua';font-size:15px;color:var(--text);background:rgba(125,240,192,.14);border:1px solid var(--panel-line);border-radius:11px;padding:8px 15px;cursor:pointer;transition:.15s}
+.word:hover{background:rgba(125,240,192,.28);transform:translateY(-2px)}
+.qbtns{display:flex;gap:10px}.qbtns .bigbtn{flex:1}
+.result{text-align:center;padding:14px;border-radius:16px;margin-top:14px;font-size:17px;animation:popa .3s}
+@keyframes popa{from{transform:scale(.85);opacity:0}to{transform:scale(1);opacity:1}}
+.result.perfect{background:rgba(52,211,153,.16);border:1px solid var(--good)}
+.result.miss{background:rgba(251,113,133,.14);border:1px solid var(--bad)}
+.result .big{font-family:'Black Han Sans';font-size:28px;display:block;margin-bottom:4px}
+.result.perfect .big{color:var(--good)}.result.miss .big{color:var(--bad)}
+@media(max-width:680px){.examplebox{grid-template-columns:1fr}.ctable{font-size:12.5px}}
+.live.no{background:rgba(255,138,90,.15);border-color:#ff8a5a;color:#ffe1cf}
+.qbox{margin-top:14px;padding:16px;border-radius:16px;background:rgba(255,211,77,.10);border:1px solid rgba(255,211,77,.5)}
+.qbox .qq{font-family:'Jua';font-size:16.5px;margin-bottom:12px;color:#fff}
+.qbox .qopts{display:flex;flex-wrap:wrap;gap:10px}
+.qbox .qopt{flex:1;min-width:150px;font-family:'Jua';font-size:15.5px;color:var(--text);background:rgba(8,24,18,.55);border:1px solid var(--panel-line);border-radius:13px;padding:13px 12px;cursor:pointer;transition:.12s}
+.qbox .qopt:hover{background:rgba(126,224,255,.16)}
+.qbox .qopt.ok{background:rgba(52,211,153,.25);border-color:var(--good);color:#fff}
+.qbox .qopt.no{background:rgba(255,138,90,.22);border-color:#ff8a5a;color:#fff}
+.qbox .qopt:disabled{cursor:default}
+.qbox .qmsg{margin-top:10px;font-size:14px;line-height:1.55;color:#dcf6ec;min-height:0}
+.qbox .qmsg.show{margin-top:12px}
+#curvecanvas{margin-top:14px;width:100%;display:block}
+</style>
+</head>
+<body>
+<div class="bubbles" id="bubbles"></div>
+<div id="app">
+  <div class="topbar">
+    <span class="badge">용해도 차 분리</span>
+    <h1>혼합물의 분리</h1>
+    <span class="spacer"></span>
+    <button class="btn-ghost" onclick="show('home')">⌂ 메뉴</button>
+    <button class="btn-ghost" onclick="goHub()">↩ 허브</button>
+  </div>
+
+  <!-- HOME -->
+  <section class="screen active" id="screen-home">
+    <div class="wrap">
+      <div class="hero">
+        <div class="eyebrow">02 · SOLUBILITY</div>
+        <h2>용해도 차를 이용한<br>혼합물의 분리</h2>
+        <p>물질마다 <b>녹는 정도(용해도)</b>가 달라요. 거르고, 추출하고, 녹였다 식혀 <b>결정</b>으로 빼내면 섞인 물질을 갈라낼 수 있어요!</p>
+      </div>
+      <div class="menu">
+        <div class="card" onclick="show('learn')"><div class="glow"></div><span class="tag learn">학습</span><span class="ic">📖</span><h3>학습하기</h3><p>거름 · 추출 · 재결정 · 분별 결정! 용해도 차 분리법을 한 번에. 빈칸도 숨어 있어요.</p></div>
+        <div class="card" onclick="show('quiz')"><div class="glow"></div><span class="tag quiz">퀴즈</span><span class="ic">📝</span><h3>핵심 빈칸 채우기</h3><p>단어를 끌어다 빈칸에 쏙! 핵심 개념을 스스로 정리해요.</p></div>
+        <div class="card" onclick="show('lab')"><div class="glow"></div><span class="tag lab">실험</span><span class="ic">💎</span><h3>재결정 실험실</h3><p>가열해 모두 녹이고 <b>냉각</b>하면? 용해도 차가 큰 물질이 먼저 결정으로!</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- LEARN -->
+  <section class="screen" id="screen-learn">
+    <div class="wrap">
+      <div class="shead"><span class="dot"></span>학습하기 · 용해도 차를 이용한 분리</div>
+
+      <div class="lblock">
+        <h4>💧 용해도란?</h4>
+        <p>어떤 온도에서 일정한 양의 용매(보통 물 100 g)에 <span class="hl">녹을 수 있는 최대량</span>을 <span class="key2">용해도</span>라고 해요. 물질마다 용해도가 다르고, 보통 <span class="key">온도가 높을수록</span> 더 많이 녹습니다. 이 <b>차이</b>를 이용하면 섞인 물질을 분리할 수 있어요.</p>
+      </div>
+
+      <div class="lblock">
+        <h4>⚗️ 거름 (거르기)</h4>
+        <p>용매에 <span class="key2">녹는 물질</span>과 <span class="key">녹지 않는 물질</span>이 섞였을 때, 용매에 넣고 저은 뒤 <span class="key3">거름종이</span>로 거릅니다. 녹지 않은 알갱이는 거름종이에 남고, 녹은 물질은 용액이 되어 통과해요.</p>
+        <p>예) <span class="hl">소금과 모래</span> 혼합물 → 물에 넣으면 소금만 녹음 → 거르면 <span class="blank" data-a="모래" onclick="rb(this)">모래</span>는 걸러지고, 소금물이 빠져나가요. (소금물을 증발시키면 소금도 얻을 수 있죠!)</p>
+      </div>
+
+      <div class="lblock">
+        <h4>☕ 추출</h4>
+        <p>원하는 성분만 잘 녹이는 <span class="key2">용매를 골라</span> 그 성분만 녹여 뽑아내는 방법이에요. 녹지 않는 나머지는 그대로 남죠.</p>
+        <p>예) <span class="hl">커피</span> — 물로 원두의 맛 성분만 우려냄. <span class="hl">한약</span> — 약재의 약효 성분을 물에 달여 뽑아냄.</p>
+      </div>
+
+      <div class="lblock">
+        <h4>💎 재결정</h4>
+        <p>적은 양의 불순물이 섞인 고체를 <span class="key">높은 온도</span>의 용매에 모두 녹인 뒤, 천천히 <span class="key2">냉각</span>(또는 용매 증발)하면 순수한 결정이 다시 생겨요. 이 과정을 거쳐 <span class="hl">순도를 높이는</span> 방법이 <span class="key2">재결정</span>입니다.</p>
+        <p>온도에 따른 용해도 차가 <span class="blank" data-a="큰" onclick="rb(this)">큰</span> 물질일수록, 식혔을 때 더 많이 결정으로 빠져나와요. 예) <span class="key3">붕산</span>의 결정 얻기.</p>
+      </div>
+
+      <div class="lblock">
+        <h4>🧊 분별 결정</h4>
+        <p>온도에 따른 용해도 차가 <span class="key">큰 물질</span>과 <span class="key2">작은 물질</span>이 함께 녹아 있을 때, 모두 녹였다가 <span class="key2">냉각</span>하면 용해도 차가 <span class="blank" data-a="큰" onclick="rb(this)">큰</span> 물질이 먼저 <span class="key3">석출</span>(결정으로 빠져나옴)됩니다. 이렇게 결정을 걸러내며 분리하는 방법이에요.</p>
+        <div class="note"><b>예시</b> — 붕산 + 소금 혼합 용액을 식히면, 온도에 따른 용해도 차가 큰 <b>붕산</b>이 먼저 결정으로 빠져나오고, 용해도 차가 작은 소금은 녹은 채 남아요. 교과서에서는 <b>질산 칼륨 + 황산 구리(Ⅱ)</b>를 식혀 질산 칼륨을 먼저 석출시켜요.</div>
+      </div>
+
+      <div class="lblock">
+        <h4>🍬 실생활 · 정리</h4>
+        <p><span class="key2">사탕수수에서 설탕 분리</span> — 즙을 내어 가열·냉각을 여러 번 반복(재결정)하며 설탕 결정을 얻어요. 합성한 약품에서 불순물을 없애고 순수한 약을 얻을 때도 재결정을 써요.</p>
+        <table class="ctable">
+          <tr><th>방법</th><th>원리</th><th>예</th></tr>
+          <tr><td>거름</td><td>용매에 <b>녹는 것</b>과 <b>안 녹는 것</b>을 거름종이로 분리</td><td>소금+모래</td></tr>
+          <tr><td>추출</td><td>원하는 성분만 녹이는 <b>용매</b>로 뽑아냄</td><td>커피, 한약</td></tr>
+          <tr><td>재결정</td><td>녹였다 식혀 <b>순수한 결정</b>을 얻어 순도↑</td><td>붕산, 약품 정제</td></tr>
+          <tr><td>분별 결정</td><td>용해도 차가 <b>큰</b> 물질이 먼저 석출 → 거름</td><td>붕산+소금, 질산칼륨</td></tr>
+        </table>
+      </div>
+
+      <button class="bigbtn quizbtn" style="width:100%" onclick="show('quiz')">📝 핵심 빈칸 풀러 가기 →</button>
+    </div>
+  </section>
+
+  <!-- QUIZ -->
+  <section class="screen" id="screen-quiz">
+    <div class="wrap">
+      <div class="shead"><span class="dot"></span>핵심 빈칸 채우기</div>
+      <p class="qintro">아래 <b>단어 칸</b>에서 알맞은 단어를 탭하면 빈칸에 차례로 들어가요. 빈칸을 다시 탭하면 빠집니다. 다 채운 뒤 <b>정답 확인</b>!</p>
+      <div id="quizQ"></div>
+      <div style="font-family:'Jua';color:var(--accent);margin:14px 0 4px">🧩 단어 칸</div>
+      <div class="bank" id="quizBank"></div>
+      <div id="quizResult"></div>
+      <div class="qbtns">
+        <button class="bigbtn next" onclick="QUIZ.check()">✅ 정답 확인</button>
+        <button class="bigbtn ghost3" onclick="QUIZ.reset()">🔁 다시</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- LAB : 용해도 차 분리 가상실험실 (질산 칼륨 + 황산 구리) -->
+  <section class="screen" id="screen-lab">
+    <div class="wrap">
+      <div class="shead"><span class="dot"></span>용해도 차 분리 가상실험실 · 재결정</div>
+      <div class="gamewrap">
+        <div class="hud">
+          <span class="chip">🌡️ 온도 <b id="labTemp">20°C</b></span>
+          <span class="chip">📍 <b id="labStep">① 준비</b></span>
+          <span class="chip">질산 칼륨 <b>15g</b> · 황산 구리(II) <b>1g</b> · 물 <b>50g</b></span>
+        </div>
+        <canvas id="recanvas" width="760" height="400"></canvas>
+        <div id="labFeedback" class="live">질산 칼륨 15g과 황산 구리(II) 1g을 물 50g에 넣었어요. 🔥 <b>가열</b>해서 모두 녹여 봅시다.</div>
+        <div class="actionrow" id="labControls"></div>
+
+        <div id="labQuiz" class="qbox" style="display:none">
+          <div class="qq">❓ 냉각했을 때 결정으로 <b>석출되는 물질</b>은 무엇일까요?</div>
+          <div class="qopts">
+            <button class="qopt" onclick="LAB.answer(this,true)">질산 칼륨 (KNO₃)</button>
+            <button class="qopt" onclick="LAB.answer(this,false)">황산 구리(II) (CuSO₄)</button>
+            <button class="qopt" onclick="LAB.answer(this,false)">두 물질 모두</button>
+          </div>
+          <div id="labQuizMsg" class="qmsg"></div>
+        </div>
+
+        <canvas id="curvecanvas" width="760" height="250"></canvas>
+        <p class="tip"><b>질산 칼륨</b>은 온도에 따른 용해도 차가 <b>매우 커서</b> 식히면 많은 양이 결정으로 빠져나와요. <b>황산 구리(II)</b>는 양이 적어 낮은 온도에서도 계속 녹아 있죠. 그래서 <b>냉각 → 거름</b>으로 질산 칼륨만 분리 — 이것이 <b>분별 결정(재결정)</b>!</p>
+      </div>
+    </div>
+  </section>
+</div>
+
+<script>
+function show(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById('screen-'+id).classList.add('active');
+  stopAll();
+  if(id==='quiz') QUIZ.init();
+  if(id==='lab') LAB.init();
+  document.querySelector('.screen.active').scrollTop=0;
+}
+function goHub(){ location.href='index.html'; }
+function stopAll(){ if(LAB.raf)cancelAnimationFrame(LAB.raf); }
+function rb(el){ el.classList.toggle('shown'); beep(el.classList.contains('shown')?880:440,.06,'triangle',.12); }
+
+const AC=window.AudioContext||window.webkitAudioContext;let actx=null;
+function ac(){if(!actx)actx=new AC();if(actx.state==='suspended')actx.resume();return actx;}
+function beep(f,d,t='sine',v=.2){try{const c=ac();const o=c.createOscillator(),g=c.createGain();o.type=t;o.frequency.value=f;o.connect(g);g.connect(c.destination);g.gain.setValueAtTime(0,c.currentTime);g.gain.linearRampToValueAtTime(v,c.currentTime+.01);g.gain.exponentialRampToValueAtTime(.0001,c.currentTime+d);o.start();o.stop(c.currentTime+d);}catch(e){}}
+function chime(){beep(660,.12,'triangle',.25);setTimeout(()=>beep(880,.14,'triangle',.25),90);setTimeout(()=>beep(1175,.22,'triangle',.22),190);}
+function buzz(){beep(160,.18,'sawtooth',.18);setTimeout(()=>beep(110,.22,'sawtooth',.16),120);}
+function pop(){beep(560,.06,'sine',.14);}
+
+/* QUIZ engine */
+const QUIZ={
+  data:[
+    {t:'일정한 온도에서 일정한 양의 용매에 녹을 수 있는 최대량을 [용해도] (이)라고 한다.'},
+    {t:'용매에 녹는 물질과 녹지 않는 물질은 [거름] (으)로 분리한다. (예: 소금과 모래)'},
+    {t:'원하는 성분만 녹이는 용매로 뽑아내는 방법을 [추출] (이)라고 한다. (예: 커피)'},
+    {t:'녹였다가 식혀 순수한 결정을 얻어 순도를 높이는 방법을 [재결정] (이)라고 한다.'},
+    {t:'분별 결정 — 모두 녹였다 냉각하면 온도에 따른 용해도 차가 [큰] 물질이 먼저 석출된다.'},
+    {t:'사탕수수에서 [설탕] 을 얻을 때 재결정을 여러 번 반복한다.'}
+  ],
+  distractors:['밀도','거품','작은'],
+  blanks:[],bank:[],
+  init(){
+    this.blanks=[];
+    this.data.forEach(q=>{(q.t.match(/\[(.+?)\]/g)||[]).forEach(x=>this.blanks.push({answer:x.slice(1,-1),filled:null,state:null}));});
+    const words=this.blanks.map(b=>b.answer).concat(this.distractors);
+    this.bank=this.shuffle(words).map(w=>({word:w,used:false}));
+    document.getElementById('quizResult').innerHTML='';this.render();
+  },
+  shuffle(a){a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;},
+  render(){
+    let bi=0,qhtml='';
+    this.data.forEach((q,qi)=>{
+      const line=q.t.replace(/\[(.+?)\]/g,()=>{const idx=bi++;const b=this.blanks[idx];
+        const cls='qblank'+(b.state==='ok'?' ok':b.state==='no'?' no':'')+(b.filled&&!b.state?' filled':'');
+        return `<button class="${cls}" onclick="QUIZ.clear(${idx})">${b.filled?b.filled.word:'____'}</button>`;});
+      qhtml+=`<div class="qline"><span class="num">${qi+1}.</span>${line}</div>`;
+    });
+    document.getElementById('quizQ').innerHTML=qhtml;
+    let bh='';this.bank.forEach((w,i)=>{if(!w.used)bh+=`<button class="word" onclick="QUIZ.fill(${i})">${w.word}</button>`;});
+    document.getElementById('quizBank').innerHTML=bh||'<span style="color:var(--muted)">모든 단어를 넣었어요!</span>';
+  },
+  fill(i){const w=this.bank[i];if(w.used)return;const b=this.blanks.find(b=>!b.filled);if(!b)return;b.filled=w;b.state=null;w.used=true;pop();this.render();},
+  clear(idx){const b=this.blanks[idx];if(!b.filled)return;b.filled.used=false;b.filled=null;b.state=null;beep(330,.05,'sine',.1);this.render();},
+  check(){let ok=0;this.blanks.forEach(b=>{const g=b.filled&&b.filled.word===b.answer;b.state=g?'ok':'no';if(g)ok++;});this.render();
+    const total=this.blanks.length,perfect=ok===total;
+    document.getElementById('quizResult').innerHTML=`<div class="result ${perfect?'perfect':'miss'}"><span class="big">${perfect?'🏆 완벽해요!':ok+' / '+total+' 맞았어요'}</span>${perfect?'용해도 차 분리 개념을 모두 정리했어요!':'빨간 칸을 다시 채워볼까요?'}</div>`;
+    perfect?chime():buzz();},
+  reset(){this.init();}
+};
+
+/* LAB : 용해도 차 분리 가상실험실 (질산 칼륨 KNO3 + 황산 구리(II) CuSO4) */
+function lerpTab(xs,ys,t){t=Math.max(xs[0],Math.min(xs[xs.length-1],t));for(let i=0;i<xs.length-1;i++){if(t<=xs[i+1]){const f=(t-xs[i])/(xs[i+1]-xs[i]);return ys[i]+(ys[i+1]-ys[i])*f;}}return ys[ys.length-1];}
+const KT=[0,10,20,30,40,50,60,70,80],KV=[13,21,32,46,64,85,110,138,169];
+const CT=[0,20,40,60,80],CV=[14,20,29,40,56];
+function solK(t){return lerpTab(KT,KV,t);}
+function solC(t){return lerpTab(CT,CV,t);}
+const CONC_K=30,CONC_C=2; /* 물 100g 기준: 질산칼륨 15g/50g=30, 황산구리 1g/50g=2 */
+
+const LAB={
+  cv:null,ctx:null,cc:null,cctx:null,raf:null,
+  step:'mix',temp:20,target:20,anim:null,fprog:0,filtrate:0,answered:false,
+  Nk:26,Nc:5,parts:[],bk:null,lb:null,fn:null,tableY:0,standX:0,
+  init(){
+    this.cv=document.getElementById('recanvas');this.ctx=this.cv.getContext('2d');fitCanvas(this.cv);
+    this.cc=document.getElementById('curvecanvas');this.cctx=this.cc.getContext('2d');fitCanvas(this.cc);
+    this.step='mix';this.temp=20;this.target=20;this.anim=null;this.fprog=0;this.filtrate=0;this.answered=false;
+    const q=document.getElementById('labQuiz');if(q)q.style.display='none';
+    document.querySelectorAll('#labQuiz .qopt').forEach(b=>{b.disabled=false;b.classList.remove('ok','no');});
+    const m=document.getElementById('labQuizMsg');if(m){m.className='qmsg';m.innerHTML='';}
+    this.buildParts();this.layout();
+    this.parts.forEach(p=>{p.x=p.hx+(Math.random()*8-4);p.y=p.hy+(Math.random()*6-3);});
+    this.setTemp();this.setStep('① 준비 — 가열 전');this.controls();this.feedback();this.loop();
+  },
+  buildParts(){
+    this.parts=[];const N=this.Nk+this.Nc;
+    for(let i=0;i<this.Nk;i++)this.parts.push({type:'k',ki:i,state:'solid',x:0,y:0,vx:0,vy:0,hx:0,hy:0,th:(i+1)/N});
+    for(let i=0;i<this.Nc;i++)this.parts.push({type:'c',ki:i,state:'solid',x:0,y:0,vx:0,vy:0,hx:0,hy:0,th:(this.Nk+i+1)/N});
+  },
+  layout(){
+    const bx=70,by=120,bw=180,bh=216;
+    this.bk={x:bx,y:by,w:bw,h:bh,lt:by+40,lb:by+bh-10};
+    this.tableY=by+bh+34;
+    const lbW=120,lbH=120,lcx=600,lbTop=this.tableY-lbH;
+    this.lb={x:lcx-lbW/2,y:lbTop,w:lbW,h:lbH,cx:lcx,top:lbTop};
+    this.fn={cx:lcx,rimY:lbTop-118,rimW:140,apexY:lbTop-30};
+    this.standX=lcx+lbW/2+30;
+    this.layoutHomes();
+  },
+  layoutHomes(){
+    let pile=0,paper=0;
+    this.parts.forEach(p=>{
+      if(p.state==='solid'||p.state==='cryst'){const col=pile%9,row=Math.floor(pile/9);pile++;p.hx=this.bk.x+16+col*((this.bk.w-32)/9);p.hy=this.bk.lb-8-row*12;}
+      else if(p.state==='paper'){const col=paper%7,row=Math.floor(paper/7);paper++;p.hx=this.fn.cx-30+col*9;p.hy=this.fn.rimY+18+row*7;}
+    });
+  },
+  setTemp(){const e=document.getElementById('labTemp');if(e)e.textContent=Math.round(this.temp)+'°C';},
+  setStep(t){const e=document.getElementById('labStep');if(e)e.textContent=t;},
+  /* ---- actions ---- */
+  heat(){if(this.step!=='mix')return;ac();this.step='heating';this.target=80;this.anim='heat';this.setStep('② 가열하여 녹이기');this.controls();this.feedback();beep(300,.15,'sine',.1);},
+  cool(){if(this.step!=='hot')return;ac();this.step='cooling';this.target=2;this.anim='cool';this.setStep('④ 얼음물에 냉각');this.controls();this.feedback();beep(520,.2,'sine',.1);},
+  reheat(){if(this.step!=='cooled')return;ac();this.step='heating';this.target=80;this.anim='heat';
+    const q=document.getElementById('labQuiz');if(q)q.style.display='none';
+    this.parts.forEach(p=>{if(p.state==='cryst')p.state='sol';});this.layoutHomes();
+    this.setStep('② 다시 가열');this.controls();this.feedback();beep(300,.15,'sine',.1);},
+  answer(btn,ok){
+    const m=document.getElementById('labQuizMsg');
+    if(ok){if(this.answered)return;btn.classList.add('ok');this.answered=true;
+      document.querySelectorAll('#labQuiz .qopt').forEach(b=>b.disabled=true);
+      m.className='qmsg show';m.innerHTML='정답! 🎉 <b>질산 칼륨</b>은 온도에 따른 용해도 차가 매우 커서, 식히면 많은 양이 결정으로 석출돼요. <b>황산 구리(II)</b>는 양이 적어(1g) 차가운 물에도 모두 녹아 있어 결정이 되지 않아요.';
+      chime();this.controls();
+    }else{btn.classList.add('no');btn.disabled=true;
+      m.className='qmsg show';m.innerHTML='다시 생각해 봐요. 아래 <b>용해도 곡선</b>에서, 식힐 때 점이 곡선 <b>위로</b> 올라가 \"넘치는\" 물질이 결정으로 빠져나와요.';
+      buzz();}
+  },
+  filterStart(){if(this.step!=='cooled'||!this.answered)return;ac();this.step='filtering';this.fprog=0;this.filtrate=0;
+    this.parts.forEach(p=>{if(p.state==='cryst')p.state='paper';});
+    this.layoutHomes();
+    this.parts.forEach(p=>{if(p.state==='sol'){p.x=this.lb.x+12+Math.random()*(this.lb.w-24);p.y=this.lb.top+this.lb.h-12-Math.random()*(this.lb.h*0.45);p.vx=(Math.random()-.5)*.6;p.vy=(Math.random()-.5)*.6;}});
+    this.setStep('⑥ 거름으로 분리');this.controls();this.feedback();beep(440,.12,'sine',.1);},
+  restart(){this.init();},
+  /* ---- per-frame physics ---- */
+  dissolveByFrac(){const frac=Math.max(0,Math.min(1,(this.temp-20)/60));this.parts.forEach(p=>{if(p.state==='solid'&&frac>=p.th)p.state='sol';});},
+  crystByTemp(){const ex=Math.max(0,Math.min(1,(CONC_K-solK(this.temp))/CONC_K));const want=Math.round(this.Nk*ex);
+    this.parts.forEach(p=>{if(p.type==='k')p.state=(p.ki<want?'cryst':'sol');});this.layoutHomes();},
+  moveParts(){
+    const filt=(this.step==='filtering'||this.step==='done');
+    this.parts.forEach(p=>{
+      if(p.state==='sol'){
+        if(filt){const lb=this.lb,bottom=lb.top+lb.h-6,surf=bottom-(bottom-(lb.top+14))*this.filtrate;
+          p.x+=p.vx;p.y+=p.vy;
+          if(p.x<lb.x+8){p.x=lb.x+8;p.vx*=-1;}if(p.x>lb.x+lb.w-8){p.x=lb.x+lb.w-8;p.vx*=-1;}
+          if(p.y<surf+3){p.y=surf+3;p.vy*=-1;}if(p.y>bottom-3){p.y=bottom-3;p.vy*=-1;}
+        }else{const b=this.bk;p.x+=p.vx;p.y+=p.vy;
+          if(p.x<b.x+10){p.x=b.x+10;p.vx*=-1;}if(p.x>b.x+b.w-10){p.x=b.x+b.w-10;p.vx*=-1;}
+          if(p.y<b.lt+6){p.y=b.lt+6;p.vy*=-1;}if(p.y>b.lb-6){p.y=b.lb-6;p.vy*=-1;}
+        }
+        if(Math.random()<.05){p.vx+=(Math.random()-.5)*.4;p.vy+=(Math.random()-.5)*.4;}
+        p.vx=Math.max(-1,Math.min(1,p.vx));p.vy=Math.max(-1,Math.min(1,p.vy));
+        if(Math.abs(p.vx)<.05&&Math.abs(p.vy)<.05){p.vx=(Math.random()-.5)*.8;p.vy=(Math.random()-.5)*.8;}
+      }else{p.x+=(p.hx-p.x)*0.14;p.y+=(p.hy-p.y)*0.14;}
+    });
+  },
+  loop(){
+    if(this.anim)this.temp+=(this.target-this.temp)*0.045;
+    if(this.anim==='heat'){this.dissolveByFrac();
+      if(Math.abs(this.temp-this.target)<0.6){this.temp=80;this.anim=null;this.step='hot';this.parts.forEach(p=>{if(p.state==='solid')p.state='sol';});this.setStep('③ 다 녹음 (80°C)');this.controls();this.feedback();chime();}
+    }else if(this.anim==='cool'){this.crystByTemp();
+      if(Math.abs(this.temp-this.target)<0.6){this.temp=2;this.anim=null;this.step='cooled';this.crystByTemp();this.setStep('⑤ 냉각 완료 — 석출!');if(!this.answered){const q=document.getElementById('labQuiz');if(q)q.style.display='block';}this.feedback();this.controls();chime();}
+    }
+    if(this.step==='filtering'){this.fprog+=(1-this.fprog)*0.03+0.004;this.filtrate=Math.min(1,this.fprog*1.05);
+      if(this.fprog>0.985){this.fprog=1;this.filtrate=1;this.step='done';this.setStep('⑦ 분리 완료!');this.feedback();this.controls();chime();}
+    }
+    this.setTemp();this.moveParts();this.draw();this.drawCurve();
+    this.raf=requestAnimationFrame(()=>this.loop());
+  },
+  /* ---- UI ---- */
+  controls(){const c=document.getElementById('labControls');const s=this.step;
+    if(s==='mix')c.innerHTML='<button class="bigbtn heat" onclick="LAB.heat()">🔥 가열하여 녹이기</button>';
+    else if(s==='heating')c.innerHTML='<button class="bigbtn heat" disabled>🔥 가열 중… 모두 녹는 중</button>';
+    else if(s==='hot')c.innerHTML='<button class="bigbtn cool" onclick="LAB.cool()">❄️ 얼음물에 냉각하기</button>';
+    else if(s==='cooling')c.innerHTML='<button class="bigbtn cool" disabled>❄️ 냉각 중…</button>';
+    else if(s==='cooled')c.innerHTML=this.answered?'<button class="bigbtn start" onclick="LAB.filterStart()">⚗️ 거름으로 분리하기</button><button class="bigbtn heat" onclick="LAB.reheat()">🔥 다시 가열</button>':'<button class="bigbtn ghost3" disabled>⬆️ 먼저 위 질문에 답해 보세요</button>';
+    else if(s==='filtering')c.innerHTML='<button class="bigbtn start" disabled>⚗️ 거름 중…</button>';
+    else c.innerHTML='<button class="bigbtn ghost3" onclick="LAB.restart()">🔁 처음부터 다시</button>';
+  },
+  feedback(){const fb=document.getElementById('labFeedback');const s=this.step;
+    if(s==='mix'){fb.className='live';fb.innerHTML='질산 칼륨 15g과 황산 구리(II) 1g을 물 50g에 넣었어요. 🔥 <b>가열</b>해서 모두 녹여 봅시다.';}
+    else if(s==='heating'){fb.className='live';fb.innerHTML='🔥 온도가 오르며 고체가 모두 녹고 있어요. (황산 구리 때문에 용액이 옅은 <b>파란색</b>)';}
+    else if(s==='hot'){fb.className='live ok';fb.innerHTML='✅ 80°C에서 두 물질이 <b>모두</b> 녹았어요. 이제 <b>얼음물</b>에 넣어 냉각해 봅시다.';}
+    else if(s==='cooling'){fb.className='live';fb.innerHTML='❄️ 온도가 내려가요. 용해도 곡선에서 <b>질산 칼륨</b>의 점이 곡선 위로 올라가 결정으로 빠져나오기 시작해요!';}
+    else if(s==='cooled'){fb.className='live ok';fb.innerHTML='❄️ 차갑게 식혔더니 <b>흰색 결정(질산 칼륨)</b>이 바닥에 가라앉았어요. 파란 <b>황산 구리</b>는 그대로 녹아 있죠.';}
+    else if(s==='filtering'){fb.className='live';fb.innerHTML='⚗️ 거름종이로 거르는 중 — 결정은 종이에 남고, 용액은 아래로 통과해요.';}
+    else{fb.className='live ok';fb.innerHTML='🎉 분리 완료! 거름종이 위 <b>흰 결정 = 질산 칼륨</b>, 아래 <b>파란 거름액 = 황산 구리(II) 용액</b>. 이것이 <b>분별 결정(재결정)</b>이에요.';}
+  },
+  /* ---- drawing ---- */
+  drawBeaker(b,level,blue,hot,small){
+    const ctx=this.ctx,X=b.x,Y=b.y,W=b.w,H=b.h;
+    ctx.fillStyle='rgba(200,235,255,.05)';roundRect(ctx,X,Y,W,H,10);ctx.fill();
+    const ltop=small?Y+14:(b.lt||Y+40),bottom=Y+H-6;
+    const surfaceY=bottom-(bottom-ltop)*Math.max(0,Math.min(1,level));
+    if(level>0.004){
+      ctx.save();roundRect(ctx,X+3,surfaceY,W-6,bottom-surfaceY,8);ctx.clip();
+      const lg=ctx.createLinearGradient(0,surfaceY,0,bottom);
+      if(blue){lg.addColorStop(0,'rgba(120,200,255,.34)');lg.addColorStop(1,'rgba(40,140,210,.52)');}
+      else{lg.addColorStop(0,'rgba(200,230,255,.18)');lg.addColorStop(1,'rgba(150,200,235,.28)');}
+      ctx.fillStyle=lg;ctx.fillRect(X,surfaceY,W,H);
+      if(hot){ctx.fillStyle='rgba(255,150,80,.16)';ctx.fillRect(X,bottom-30,W,30);}
+      ctx.restore();
+      ctx.strokeStyle='rgba(180,225,255,.5)';ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(X+4,surfaceY);ctx.lineTo(X+W-4,surfaceY);ctx.stroke();
+    }
+    ctx.strokeStyle='rgba(200,235,255,.55)';ctx.lineWidth=3;roundRect(ctx,X,Y,W,H,10);ctx.stroke();
+  },
+  drawParticle(ctx,p){
+    if(p.type==='k'){
+      if(p.state==='cryst'||p.state==='paper'){ctx.fillStyle='#ffffff';ctx.shadowColor='#bfe0ff';ctx.shadowBlur=5;ctx.save();ctx.translate(p.x,p.y);ctx.rotate(.5);ctx.fillRect(-3,-3,6,6);ctx.restore();ctx.shadowBlur=0;}
+      else{ctx.fillStyle=(p.state==='solid')?'rgba(245,250,255,.9)':'rgba(235,245,255,.5)';ctx.beginPath();ctx.arc(p.x,p.y,p.state==='solid'?3.2:2.6,0,7);ctx.fill();}
+    }else{ctx.fillStyle=(p.state==='solid')?'#5db4ff':'rgba(93,180,255,.75)';ctx.beginPath();ctx.arc(p.x,p.y,p.state==='solid'?3:2.6,0,7);ctx.fill();}
+  },
+  drawFilter(ctx){const f=this.fn;
+    ctx.fillStyle='#5a6470';ctx.fillRect(this.standX-4,this.tableY-2,44,8);
+    ctx.fillStyle='#727c88';ctx.fillRect(this.standX,f.rimY-8,7,this.tableY-(f.rimY-8));
+    ctx.strokeStyle='#9aa4b0';ctx.lineWidth=4;ctx.beginPath();ctx.moveTo(this.standX,f.rimY+8);ctx.lineTo(f.cx+f.rimW/2-8,f.rimY+8);ctx.stroke();
+    ctx.fillStyle='rgba(200,235,255,.10)';ctx.beginPath();ctx.moveTo(f.cx-f.rimW/2,f.rimY);ctx.lineTo(f.cx+f.rimW/2,f.rimY);ctx.lineTo(f.cx+8,f.apexY);ctx.lineTo(f.cx-8,f.apexY);ctx.closePath();ctx.fill();
+    ctx.strokeStyle='rgba(200,235,255,.55)';ctx.lineWidth=2.5;ctx.stroke();
+    ctx.fillStyle='rgba(200,235,255,.10)';ctx.fillRect(f.cx-5,f.apexY,10,20);ctx.strokeRect(f.cx-5,f.apexY,10,20);
+    ctx.fillStyle='rgba(255,255,255,.85)';ctx.beginPath();ctx.moveTo(f.cx-f.rimW/2+10,f.rimY+6);ctx.lineTo(f.cx+f.rimW/2-10,f.rimY+6);ctx.lineTo(f.cx,f.apexY-2);ctx.closePath();ctx.fill();
+    ctx.strokeStyle='rgba(190,210,230,.85)';ctx.lineWidth=1;ctx.stroke();
+  },
+  draw(){
+    const ctx=this.ctx,w=LW(this.cv),h=LH(this.cv),b=this.bk,st=this.step;
+    ctx.clearRect(0,0,w,h);
+    ctx.fillStyle='rgba(180,210,235,.10)';ctx.fillRect(0,this.tableY,w,3);
+    const heating=(st==='heating'||st==='hot'),icing=(st==='cooling'||st==='cooled'),filtering=(st==='filtering'||st==='done');
+    if(heating){const baseY=b.y+b.h;
+      ctx.fillStyle='#3a3f47';roundRect(ctx,b.x-18,baseY+6,b.w+36,26,5);ctx.fill();
+      ctx.fillStyle='#22262c';roundRect(ctx,b.x-18,baseY+6,b.w+36,8,4);ctx.fill();
+      ctx.fillStyle='#e85d4a';ctx.beginPath();ctx.arc(b.x-2,baseY+19,5,0,7);ctx.fill();
+      ctx.fillStyle='rgba(255,140,60,.55)';
+      for(let i=0;i<6;i++){const fx=b.x+22+i*((b.w-44)/5);ctx.beginPath();ctx.moveTo(fx,baseY+6);ctx.quadraticCurveTo(fx+7,baseY-6,fx,baseY-16);ctx.quadraticCurveTo(fx-7,baseY-6,fx,baseY+6);ctx.fill();}
+      ctx.font="12px 'Jua'";ctx.fillStyle='#ffb98a';ctx.textAlign='center';ctx.fillText('가열장치',b.x+b.w/2,baseY+48);
+    }
+    if(icing){const ibx=b.x-26,ibw=b.w+52,ibTop=b.y+b.h-150,ibBot=b.y+b.h+24;
+      ctx.fillStyle='rgba(120,200,255,.16)';roundRect(ctx,ibx,ibTop,ibw,ibBot-ibTop,10);ctx.fill();
+      ctx.strokeStyle='rgba(160,220,255,.5)';ctx.lineWidth=2;roundRect(ctx,ibx,ibTop,ibw,ibBot-ibTop,10);ctx.stroke();
+      ctx.fillStyle='rgba(225,245,255,.85)';
+      [[ibx+10,ibTop+8],[ibx+ibw-28,ibTop+10],[ibx+ibw/2-8,ibTop+4],[ibx+24,ibTop+26],[ibx+ibw-44,ibTop+26]].forEach(c=>{ctx.save();ctx.translate(c[0]+7,c[1]+7);ctx.rotate(.2);ctx.fillRect(-8,-8,15,15);ctx.restore();});
+      ctx.font="12px 'Jua'";ctx.fillStyle='#bfe6ff';ctx.textAlign='center';ctx.fillText('얼음물',ibx+ibw/2,ibBot+16);
+    }
+    const srcLevel=filtering?Math.max(0,1-this.fprog):1;
+    this.drawBeaker(b,srcLevel,(st!=='mix'),heating,false);
+    if(!filtering){ctx.strokeStyle='rgba(220,240,255,.8)';ctx.lineWidth=5;ctx.lineCap='round';ctx.beginPath();ctx.moveTo(b.x+b.w-34,b.y-16);ctx.lineTo(b.x+b.w-58,b.lb-22);ctx.stroke();ctx.lineCap='butt';ctx.font="11px 'Jua'";ctx.fillStyle='#cfe6ff';ctx.textAlign='left';ctx.fillText('유리 막대',b.x+b.w-44,b.y-20);}
+    this.parts.forEach(p=>{if(filtering&&(p.state==='paper'||p.state==='sol'))return;this.drawParticle(ctx,p);});
+    if(filtering){
+      this.drawFilter(ctx);
+      this.drawBeaker(this.lb,this.filtrate,true,false,true);
+      this.parts.forEach(p=>{if(p.state==='sol')this.drawParticle(ctx,p);});
+      this.parts.forEach(p=>{if(p.state==='paper')this.drawParticle(ctx,p);});
+      if(this.step==='filtering'){ctx.strokeStyle='rgba(120,200,255,.7)';ctx.lineWidth=4;ctx.beginPath();ctx.moveTo(b.x+b.w-6,b.lt+8);ctx.quadraticCurveTo(b.x+b.w+70,b.y+4,this.fn.cx-6,this.fn.rimY+10);ctx.stroke();}
+      ctx.font="12px 'Jua'";ctx.textAlign='center';
+      ctx.fillStyle='#fff';ctx.fillText('거름종이 위 질산 칼륨 결정',this.fn.cx,this.fn.rimY-22);
+      ctx.fillStyle='#dfeaff';ctx.fillText('깔때기',this.fn.cx-2,this.fn.rimY-6);
+      ctx.fillStyle='#8fd0ff';ctx.fillText('거름액(황산 구리 용액)',this.lb.cx,this.lb.top+this.lb.h+16);
+      ctx.fillStyle='#aeb8c4';ctx.fillText('깔때기대',this.standX+18,this.tableY+16);
+    }
+    ctx.font="12px 'Jua'";ctx.textAlign='left';
+    ctx.fillStyle='#fff';ctx.beginPath();ctx.arc(16,18,5,0,7);ctx.fill();ctx.fillStyle='#eaf2ff';ctx.fillText('질산 칼륨(용해도 차 큼)',26,22);
+    ctx.fillStyle='#5db4ff';ctx.beginPath();ctx.arc(222,18,5,0,7);ctx.fill();ctx.fillStyle='#bfe0ff';ctx.fillText('황산 구리(II)(녹아 있음)',232,22);
+  },
+  drawCurve(){
+    const ctx=this.cctx,w=LW(this.cc),h=LH(this.cc);ctx.clearRect(0,0,w,h);
+    const mL=48,mR=172,mT=14,mB=30,x0=mL,x1=w-mR,y0=h-mB,y1=mT,Tmax=85,Smax=180;
+    const X=t=>x0+(t/Tmax)*(x1-x0),Y=s=>y0+(s/Smax)*(y1-y0);
+    ctx.strokeStyle='rgba(180,210,235,.45)';ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(x0,y1);ctx.lineTo(x0,y0);ctx.lineTo(x1,y0);ctx.stroke();
+    ctx.fillStyle='#9fc0d4';ctx.font="11px 'Jua'";ctx.textAlign='center';
+    for(let t=0;t<=80;t+=20){ctx.fillText(t+'',X(t),y0+15);ctx.strokeStyle='rgba(180,210,235,.10)';ctx.beginPath();ctx.moveTo(X(t),y0);ctx.lineTo(X(t),y1);ctx.stroke();}
+    ctx.textAlign='right';for(let s=0;s<=160;s+=40){ctx.fillText(s+'',x0-6,Y(s)+4);ctx.strokeStyle='rgba(180,210,235,.10)';ctx.beginPath();ctx.moveTo(x0,Y(s));ctx.lineTo(x1,Y(s));ctx.stroke();}
+    ctx.textAlign='center';ctx.fillStyle='#9fc0d4';ctx.fillText('온도(°C)',(x0+x1)/2,h-6);
+    ctx.save();ctx.translate(13,(y0+y1)/2);ctx.rotate(-Math.PI/2);ctx.fillText('용해도 (물 100g당 g)',0,0);ctx.restore();
+    ctx.strokeStyle='#ffd34d';ctx.lineWidth=3;ctx.beginPath();for(let t=0;t<=80;t+=2){const yy=Y(solK(t));t===0?ctx.moveTo(X(t),yy):ctx.lineTo(X(t),yy);}ctx.stroke();
+    ctx.strokeStyle='#5db4ff';ctx.beginPath();for(let t=0;t<=80;t+=2){const yy=Y(solC(t));t===0?ctx.moveTo(X(t),yy):ctx.lineTo(X(t),yy);}ctx.stroke();
+    ctx.setLineDash([5,4]);
+    ctx.strokeStyle='rgba(255,211,77,.5)';ctx.beginPath();ctx.moveTo(x0,Y(CONC_K));ctx.lineTo(x1,Y(CONC_K));ctx.stroke();
+    ctx.strokeStyle='rgba(93,180,255,.5)';ctx.beginPath();ctx.moveTo(x0,Y(CONC_C));ctx.lineTo(x1,Y(CONC_C));ctx.stroke();
+    ctx.setLineDash([]);
+    const t=this.temp;
+    ctx.strokeStyle='rgba(255,255,255,.55)';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(X(t),y0);ctx.lineTo(X(t),y1);ctx.stroke();
+    if(solK(t)<CONC_K){ctx.fillStyle='rgba(255,170,80,.22)';ctx.fillRect(X(t)-7,Y(CONC_K),14,Y(solK(t))-Y(CONC_K));ctx.fillStyle='#ffb15c';ctx.font="11px 'Jua'";ctx.textAlign='left';ctx.fillText('석출',X(t)+10,(Y(CONC_K)+Y(solK(t)))/2+4);}
+    const dissK=Math.min(CONC_K,solK(t));
+    ctx.fillStyle='#fff';ctx.beginPath();ctx.arc(X(t),Y(dissK),4.5,0,7);ctx.fill();ctx.strokeStyle='#ffd34d';ctx.lineWidth=2;ctx.stroke();
+    ctx.fillStyle='#5db4ff';ctx.beginPath();ctx.arc(X(t),Y(CONC_C),4,0,7);ctx.fill();
+    ctx.textAlign='left';ctx.font="11px 'Jua'";
+    ctx.fillStyle='#ffd34d';ctx.fillText('질산칼륨 용해도',x1+12,y1+14);
+    ctx.fillStyle='#5db4ff';ctx.fillText('황산구리 용해도',x1+12,y1+34);
+    ctx.fillStyle='rgba(255,211,77,.9)';ctx.fillText('--- 넣은 질산칼륨',x1+12,y1+58);
+    ctx.fillStyle='rgba(93,180,255,.9)';ctx.fillText('--- 넣은 황산구리',x1+12,y1+78);
+    ctx.fillStyle='#fff';ctx.fillText('● 현재 '+Math.round(t)+'°C',x1+12,y1+102);
+  }
+};
+
+/* canvas helpers */
+let dpr=Math.min(window.devicePixelRatio||1,2);
+function fitCanvas(cv){
+  if(!cv.dataset.lw){cv.dataset.lw=cv.getAttribute('width');cv.dataset.lh=cv.getAttribute('height');}
+  const LWd=+cv.dataset.lw,LHd=+cv.dataset.lh;
+  const cssW=cv.clientWidth||cv.parentElement.clientWidth||LWd;const cssH=cssW*(LHd/LWd);
+  cv.style.height=cssH+'px';cv.width=Math.round(cssW*dpr);cv.height=Math.round(cssH*dpr);
+  const scale=cv.width/LWd;cv.getContext('2d').setTransform(scale,0,0,scale,0,0);
+  cv._lw=LWd;cv._lh=LHd;cv._cssScale=cssW/LWd;
+}
+function LW(cv){return cv._lw;}function LH(cv){return cv._lh;}
+function roundRect(ctx,x,y,w,h,r){if(w<2*r)r=w/2;if(h<2*r)r=h/2;ctx.beginPath();ctx.moveTo(x+r,y);ctx.arcTo(x+w,y,x+w,y+h,r);ctx.arcTo(x+w,y+h,x,y+h,r);ctx.arcTo(x,y+h,x,y,r);ctx.arcTo(x,y,x+w,y,r);ctx.closePath();}
+(function(){const b=document.getElementById('bubbles');for(let i=0;i<14;i++){const e=document.createElement('i');const s=6+Math.random()*22;e.style.width=e.style.height=s+'px';e.style.left=Math.random()*100+'%';e.style.animationDuration=(8+Math.random()*10)+'s';e.style.animationDelay=(-Math.random()*12)+'s';b.appendChild(e);}})();
+let rt;window.addEventListener('resize',()=>{clearTimeout(rt);rt=setTimeout(()=>{const a=document.querySelector('.screen.active');if(a&&a.id==='screen-lab'&&LAB.cv){fitCanvas(LAB.cv);fitCanvas(LAB.cc);LAB.layout();}},200);});
+</script>
+</body>
+</html>

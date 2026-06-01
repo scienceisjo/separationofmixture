@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>분별 증류 가상실험실 | 물 + 에탄올</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Jua&family=Gowun+Dodum&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#eef4fb;--bg2:#e7eff8;--bg3:#e0eaf4;
+  --text:#1f2d3d;--muted:#5b6b7a;--accent:#ef7a2f;--accent2:#f59331;
+  --good:#1aa06a;--gold:#d99a1f;--bad:#e0556a;--eth:#1f8fc8;--wat:#3f86c8;
+  --panel:rgba(255,255,255,.92);--panel-line:rgba(120,160,200,.45);--shadow:0 12px 36px rgba(40,80,130,.14);
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%;overflow:hidden}
+body{font-family:'Gowun Dodum',sans-serif;color:var(--text);user-select:none;touch-action:manipulation;
+  background:radial-gradient(1100px 700px at 80% -10%,#ffe7d2 0,transparent 55%),radial-gradient(900px 700px at 5% 110%,#d8e8fb 0,transparent 50%),linear-gradient(160deg,#f4f9fe,#eaf1fb 60%,#e6eef8);}
+#app{height:100%;display:flex;flex-direction:column}
+.topbar{display:flex;align-items:center;gap:12px;padding:12px 18px;background:linear-gradient(180deg,rgba(255,255,255,.92),rgba(255,255,255,.45));border-bottom:1px solid var(--panel-line);backdrop-filter:blur(6px)}
+.topbar .badge{font-family:'Jua';font-size:13px;color:#fff;background:linear-gradient(135deg,var(--accent2),var(--accent));padding:5px 12px;border-radius:20px}
+.topbar h1{font-family:'Black Han Sans';font-size:19px;margin:0;background:linear-gradient(90deg,#22405a,var(--accent));-webkit-background-clip:text;background-clip:text;color:transparent}
+.topbar .spacer{flex:1}
+.btn-ghost{font-family:'Jua';font-size:14px;color:var(--text);background:rgba(239,122,47,.12);border:1px solid var(--panel-line);padding:8px 14px;border-radius:12px;cursor:pointer}
+.btn-ghost:hover{background:rgba(239,122,47,.24)}
+.screen{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;display:none;padding:22px;animation:fade .35s}
+.screen.active{display:block}
+@keyframes fade{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+.wrap{max-width:1000px;margin:0 auto}
+.hero{text-align:center;padding:18px 0 6px}
+.hero .eyebrow{font-family:'Jua';color:var(--accent);letter-spacing:2px;font-size:15px}
+.hero h2{font-family:'Black Han Sans';font-size:clamp(28px,6vw,50px);margin:6px 0;line-height:1.08;background:linear-gradient(100deg,#22405a 10%,var(--accent) 55%,var(--eth));-webkit-background-clip:text;background-clip:text;color:transparent}
+.hero p{color:var(--muted);font-size:15.5px;max-width:620px;margin:8px auto 0;line-height:1.6}
+.intro{background:var(--panel);border:1px solid var(--panel-line);border-radius:20px;padding:22px;margin-top:22px;box-shadow:var(--shadow)}
+.intro h3{font-family:'Jua';font-size:20px;margin:0 0 10px;color:#1f2d3d}
+.intro p{color:#33485c;line-height:1.7;font-size:15px;margin:6px 0}
+.intro .key{color:var(--eth);font-weight:bold}.intro .key2{color:var(--accent);font-weight:bold}
+.startrow{display:flex;justify-content:center;margin-top:20px}
+.shead{font-family:'Black Han Sans';font-size:23px;margin:4px 0 16px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;color:#22364a}
+.shead .dot{width:12px;height:12px;border-radius:50%;background:var(--accent);box-shadow:0 0 14px var(--accent)}
+.gamewrap{background:var(--panel);border:1px solid var(--panel-line);border-radius:22px;padding:18px;backdrop-filter:blur(8px);box-shadow:var(--shadow)}
+.hud{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:14px}
+.chip{font-family:'Jua';font-size:15px;background:rgba(255,255,255,.82);border:1px solid var(--panel-line);padding:8px 14px;border-radius:12px}
+.chip b{color:var(--accent)}
+canvas{width:100%;display:block;background:#f6fbff;border:1px solid rgba(120,160,200,.3);border-radius:14px}
+#gcanvas{margin-top:14px}
+.live{margin-top:12px;padding:12px 16px;border-radius:14px;font-size:15px;line-height:1.55;background:rgba(120,170,225,.12);border:1px solid var(--panel-line);color:#28384a}
+.live.ok{background:rgba(26,160,106,.14);border-color:var(--good);color:#185b3e}
+.live b{color:#10202e}
+.inforow{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.ibtn{font-family:'Jua';font-size:13px;color:var(--text);background:rgba(239,122,47,.1);border:1px solid var(--panel-line);border-radius:11px;padding:9px 12px;cursor:pointer}
+.ibtn:hover{background:rgba(239,122,47,.22)}
+.ibtn.on{background:rgba(239,122,47,.28);border-color:var(--accent);color:#7a3410}
+#beadCanvas{width:100%;display:block;border-radius:12px;background:#f6fbff;margin-top:6px}
+.actionrow{display:flex;flex-wrap:wrap;gap:10px;margin-top:14px}
+.actionrow .bigbtn{flex:1;min-width:150px}
+.bigbtn{font-family:'Jua';font-size:clamp(16px,3vw,21px);color:#2a1300;border:none;border-radius:16px;padding:15px 12px;cursor:pointer;transition:.12s;box-shadow:0 8px 20px rgba(40,80,130,.18)}
+.bigbtn:active{transform:scale(.97)}
+.bigbtn.start{background:linear-gradient(135deg,var(--accent2),var(--accent))}
+.bigbtn.next{background:linear-gradient(135deg,var(--good),var(--eth));color:#fff}
+.bigbtn.ghost3{background:rgba(239,122,47,.12);color:var(--text);border:1px solid var(--panel-line);box-shadow:none}
+.bigbtn:disabled{opacity:.45;cursor:default}
+.tip{color:var(--muted);font-size:13.5px;text-align:center;margin:12px 0 0;line-height:1.6}
+.popwrap{position:fixed;inset:0;background:rgba(20,40,65,.45);backdrop-filter:blur(4px);display:none;align-items:center;justify-content:center;z-index:50;padding:20px}
+.popwrap.on{display:flex;animation:fade .2s}
+.popcard{background:linear-gradient(160deg,#ffffff,#f3f8fd);border:1px solid var(--panel-line);border-radius:20px;max-width:520px;width:100%;padding:24px;box-shadow:0 24px 60px rgba(30,60,100,.28);max-height:92vh;overflow:auto}
+.popcard h3{font-family:'Black Han Sans';font-size:22px;margin:0 0 12px;color:#1f2d3d;display:flex;align-items:center;gap:8px}
+.popcard p{color:#33485c;line-height:1.7;font-size:15px;margin:8px 0}
+.popcard .data{display:flex;gap:10px;flex-wrap:wrap;margin:12px 0}
+.popcard .d{flex:1;min-width:110px;background:rgba(239,122,47,.08);border:1px solid var(--panel-line);border-radius:12px;padding:10px 12px;text-align:center}
+.popcard .d .lab{font-size:12px;color:var(--muted)}
+.popcard .d .val{font-family:'Jua';font-size:20px;color:var(--accent);margin-top:2px}
+.popcard .hi{color:var(--eth);font-weight:bold}.popcard .hi2{color:var(--accent);font-weight:bold}
+.popbtns{display:flex;gap:10px;margin-top:16px;flex-wrap:wrap}.popbtns .bigbtn{flex:1}
+.qopt{flex:1;min-width:140px;font-family:'Jua';font-size:15px;color:var(--text);background:rgba(120,170,225,.1);border:1px solid var(--panel-line);border-radius:13px;padding:13px 12px;cursor:pointer}
+.qopt:hover{background:rgba(239,122,47,.16)}
+.qopt.ok{background:rgba(26,160,106,.22);border-color:var(--good);color:#10202e}
+.qopt.no{background:rgba(224,85,106,.2);border-color:var(--bad);color:#10202e}
+.qopt:disabled{cursor:default}
+.qopts{display:flex;gap:10px;flex-wrap:wrap;margin-top:8px}
+.card{background:var(--panel);border:1px solid var(--panel-line);border-radius:18px;padding:20px;margin-top:18px;box-shadow:var(--shadow)}
+.card h3{font-family:'Jua';font-size:19px;margin:0 0 10px;color:#1f2d3d}
+.card p{color:#33485c;line-height:1.7;font-size:15px;margin:8px 0}
+.card .qq2{font-family:'Jua';color:#22364a;margin-top:16px;font-size:15px}
+.qmsg{margin-top:10px;font-size:14px;line-height:1.6;color:#2c4760;min-height:0}
+.qmsg.ok{color:#177a4f}.qmsg.no{color:#c0445a}
+.hint{display:none;margin-top:8px;padding:10px 12px;border-radius:10px;background:rgba(120,170,225,.12);border:1px solid var(--panel-line);font-size:14px;color:#2c4760;line-height:1.6}
+.hint.show{display:block}
+.summary{background:linear-gradient(135deg,rgba(239,122,47,.16),rgba(31,143,200,.12));border:1px solid var(--accent);border-radius:18px;padding:20px;margin:18px 0 6px;box-shadow:var(--shadow)}
+.summary h3{font-family:'Jua';font-size:18px;margin:0 0 8px;color:#9a4a10}
+.summary p{font-size:16.5px;line-height:1.7;color:#1f2d3d;margin:0;font-weight:bold}
+.navrow{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+</style>
+</head>
+<body>
+<div id="app">
+  <div class="topbar">
+    <span class="badge">분별 증류</span>
+    <h1>물 + 에탄올 분리 실험실</h1>
+    <span class="spacer"></span>
+    <button class="btn-ghost" onclick="goHub()">↩ 허브</button>
+  </div>
+
+  <section class="screen active" id="screen-home">
+    <div class="wrap">
+      <div class="hero">
+        <div class="eyebrow">끓는점 차를 이용한 분리</div>
+        <h2>분별 증류 가상실험실</h2>
+        <p>물과 에탄올이 섞인 혼합물을 가열하면, <b>끓는점이 낮은 에탄올(78°C)</b>이 먼저 끓어 나오고, 그다음 <b>물(100°C)</b>이 나와요. 증류를 여러 번 반복한 효과로 둘을 깨끗이 나누는 것이 <b>분별 증류</b>!</p>
+      </div>
+      <div class="intro">
+        <h3>⚗️ 실험 원리</h3>
+        <p><span class="key">에탄올</span>은 끓는점이 78°C로 낮아 <span class="key">먼저</span> 기체가 되어 증류돼요. 물은 100°C가 되어야 끓으므로 <span class="key2">나중에</span> 나옵니다.</p>
+        <p><b>유리 도막</b>(증류 여러 번 효과)·<b>끓임쪽</b>(갑자기 끓어 넘침 방지)·<b>리비히 냉각기</b>(증기를 식혀 액체로)를 이용해 더 잘 분리해요.</p>
+        <p>순수 물질은 끓는점이 일정하지만, <b>혼합물</b>은 한 성분이 빠져나가는 동안 끓는점이 <span class="key2">점점 올라가요</span>. 78°C 부근에서 에탄올이, 100°C 부근에서 물이 주로 분리되는 것을 그래프로 확인해 봅시다.</p>
+        <div class="startrow"><button class="bigbtn start" onclick="show('lab')">🔬 실험 시작하기</button><button class="bigbtn ghost3" onclick="show('concept')">📚 개념 확인·정리</button></div>
+      </div>
+      <div class="intro">
+        <h3>🧭 분별 증류 장치 — 각 부분의 역할</h3>
+        <p><b>온도계의 위치</b> · 온도계의 밑부분(액체통)이 분별 증류관의 <b>가지 옆</b>에 오도록 설치해, 기화되어 빠져나오는 물질의 온도를 잰다.</p>
+        <p><b>유리 도막</b> · 끓는점이 높은 성분은 유리 도막에 닿으면 액화해 다시 플라스크로 내려간다 → <b>여러 번 증류되는 효과</b>가 생긴다.</p>
+        <p><b>연결 부위</b> · 기화된 물질이 새지 않도록 바셀린 등으로 잘 막는다.</p>
+        <p><b>냉각기 (물의 순환 방향)</b> · 바깥 유리관과 안쪽 유리관 사이로 <b>찬물</b>이 흐르며 증류되어 나온 기체를 식힌다. 냉각기는 약간 <b>비스듬히</b> 설치하고, 물은 <b>아래로 들어와 위로 나간다</b>(역류).</p>
+        <p><b>끓임쪽</b> · 액체가 갑자기 끓어 넘치는 것(돌비)을 막아 고르게 끓게 한다.</p>
+        <p><b>연결관</b> · 냉각기 끝과 받는 그릇을 이어, 식어서 액체가 된 물질을 받는 그릇으로 흘려보낸다.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="screen" id="screen-lab">
+    <div class="wrap">
+      <div class="shead"><span class="dot"></span>분별 증류 실험 · 물 + 에탄올</div>
+      <div class="gamewrap">
+        <div class="hud">
+          <span class="chip">🌡️ 온도 <b id="labTemp">20°C</b></span>
+          <span class="chip">📍 <b id="labStep">① 준비</b></span>
+          <span class="chip">에탄올 모음 <b id="ethPct">0%</b></span>
+          <span class="chip">물 모음 <b id="watPct">0%</b></span>
+        </div>
+        <canvas id="dcanvas" width="760" height="440"></canvas>
+        <div class="inforow">
+          <button class="ibtn" onclick="DLAB.partInfo('chip')">ⓘ 끓임쪽</button>
+          <button class="ibtn" onclick="openBeadsZoom()">🔍 유리 도막 확대</button>
+          <button class="ibtn" onclick="DLAB.partInfo('cond')">ⓘ 리비히 냉각기</button>
+          <button class="ibtn" onclick="DLAB.partInfo('thermo')">ⓘ 온도계</button>
+        </div>
+        <div id="labFeedback" class="live">물과 에탄올 혼합물이 둥근바닥 플라스크에 들어 있어요. 🔥 <b>가열</b>해서 분별 증류를 시작해 봅시다.</div>
+        <div class="actionrow" id="labControls"></div>
+        <div class="inforow" id="ivRow" style="margin-top:14px">
+          <span style="font-family:'Jua';font-size:13px;color:var(--muted);align-self:center">📍 점 찍기 간격</span>
+          <button class="ibtn" data-iv="2" onclick="DLAB.setDotInterval(2)">2분</button>
+          <button class="ibtn" data-iv="5" onclick="DLAB.setDotInterval(5)">5분</button>
+          <button class="ibtn" data-iv="10" onclick="DLAB.setDotInterval(10)">10분</button>
+        </div>
+        <canvas id="gcanvas" width="760" height="240"></canvas>
+        <p class="tip">순수 물질은 끓는 동안 온도가 일정하지만, 이건 <b>혼합물</b>이라 끓는점이 <b>점점 올라가요</b>. 78°C 부근에서 에탄올이, 100°C 부근에서 물이 주로 증류됩니다(점선은 각 순수 성분의 끓는점).</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="screen" id="screen-concept">
+    <div class="wrap">
+      <div class="navrow"><button class="btn-ghost" onclick="show('home')">← 홈</button><button class="btn-ghost" onclick="show('lab')">🔬 실험 해보기</button></div>
+      <div class="shead"><span class="dot"></span>개념 정리 — 분별 증류</div>
+
+      <div class="card">
+        <h3>🔮 먼저 예측해 볼까요?</h3>
+        <p>끓는점이 <b>50°C</b>인 액체 <b>A</b>와 끓는점이 <b>87°C</b>인 액체 <b>B</b>의 혼합물을 가열했어요. 둘 중 <b>먼저 기화(끓어 나옴)</b>하는 액체는 무엇일까요?</p>
+        <div class="qopts" id="predOpts">
+          <button class="qopt" onclick="predictAns(this,true)">액체 A (끓는점 50°C)</button>
+          <button class="qopt" onclick="predictAns(this,false)">액체 B (끓는점 87°C)</button>
+          <button class="qopt" onclick="predictAns(this,false)">둘이 동시에</button>
+        </div>
+        <div id="predMsg" class="qmsg"></div>
+      </div>
+
+      <div class="card">
+        <h3>📈 개념 확인 — 분리 그래프</h3>
+        <p>아래는 액체 A·B 혼합물을 가열할 때의 <b>온도-시간 그래프</b>예요. ①②③ 구간을 보고 골라 보세요.</p>
+        <canvas id="cqCanvas" width="700" height="240"></canvas>
+        <p class="qq2">① 끓는점이 <b>낮은</b> 물질(A·50°C)이 주로 분리되는 구간은?</p>
+        <div class="qopts" id="cqLowOpts">
+          <button class="qopt" onclick="cqLow(this,1)">① 구간</button>
+          <button class="qopt" onclick="cqLow(this,2)">② 구간</button>
+          <button class="qopt" onclick="cqLow(this,3)">③ 구간</button>
+        </div>
+        <div id="cqLowMsg" class="qmsg"></div>
+        <p class="qq2">② 끓는점이 <b>높은</b> 물질(B·87°C)이 주로 분리되는 구간은?</p>
+        <div class="qopts" id="cqHighOpts">
+          <button class="qopt" onclick="cqHigh(this,1)">① 구간</button>
+          <button class="qopt" onclick="cqHigh(this,2)">② 구간</button>
+          <button class="qopt" onclick="cqHigh(this,3)">③ 구간</button>
+        </div>
+        <div id="cqHighMsg" class="qmsg"></div>
+      </div>
+
+      <div class="card">
+        <h3>🤔 왜 '주로' 분리된다고 할까?</h3>
+        <p>물은 100°C에서 끓지만, 그 전에도 조금씩 <b>기화</b>해요. 그래서 에탄올이 끓는 동안 액체 상태인 물도 일부 수증기가 되어 <b>함께 나올 수 있어요</b>. 그래서 '완전히'가 아니라 <b>'주로'</b> 분리된다고 합니다.</p>
+        <p>이때 <b>유리 도막</b>이 그 물 수증기를 막아줘요. 올라가던 물 수증기가 유리 도막에 닿으면 식어 <b>액화</b>돼 다시 플라스크로 내려가거든요 — 올라가다 유리 도막한테 걸려서 <b>컷! ✂️</b> 덕분에 끓는점이 낮은 물질이 더 깨끗하게 분리됩니다.</p>
+      </div>
+
+      <div class="card">
+        <h3>🌡️ 온도계는 왜 달아놨을까?</h3>
+        <p>정답을 바로 보지 말고, 힌트를 하나씩 열어 스스로 생각해 보세요!</p>
+        <div class="qopts">
+          <button class="ibtn" onclick="thermoHint(1)">💡 힌트 1</button>
+          <button class="ibtn" onclick="thermoHint(2)">💡 힌트 2</button>
+          <button class="ibtn" onclick="thermoHint(3)">💡 힌트 3</button>
+        </div>
+        <div id="th1" class="hint"><b>힌트 1</b> · 순수한 물질은 끓는 동안 온도가 <b>일정</b>하게 유지돼요(그 온도가 끓는점).</div>
+        <div id="th2" class="hint"><b>힌트 2</b> · 온도계의 끝(액체통)은 <b>가지 옆</b>, 즉 증기가 빠져나가는 곳에 있어요. 그럼 무엇의 온도를 재는 걸까요?</div>
+        <div id="th3" class="hint"><b>힌트 3</b> · 78°C에서 한동안 일정하다가, 다시 올라 100°C에서 일정해졌어요. 이 두 온도가 뜻하는 건 무엇일까요?</div>
+        <button class="bigbtn ghost3" onclick="thermoReveal()" style="margin-top:12px">스스로 생각해봤다면 → 정답 확인</button>
+        <div id="thAns" class="qmsg"></div>
+      </div>
+
+      <div class="summary">
+        <h3>📌 한 줄 요약</h3>
+        <p>먼저 기화한 물질은 냉각기를 따라 이동해 찬물 속에 담긴 시험관에서 액화하므로 분리가 가능하다.</p>
+      </div>
+    </div>
+  </section>
+</div>
+
+<div class="popwrap" id="popWrap"><div class="popcard" id="popCard"></div></div>
+
+<script>
+function show(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById('screen-'+id).classList.add('active');stopAll();if(id==='lab')DLAB.init();if(id==='concept')drawConceptGraph();document.querySelector('.screen.active').scrollTop=0;}
+function goHub(){location.href='index.html';}
+function stopAll(){if(DLAB.raf)cancelAnimationFrame(DLAB.raf);}
+const AC=window.AudioContext||window.webkitAudioContext;let actx=null;
+function ac(){if(!actx)actx=new AC();if(actx.state==='suspended')actx.resume();return actx;}
+function beep(f,d,t='sine',v=.2){try{const c=ac();const o=c.createOscillator(),g=c.createGain();o.type=t;o.frequency.value=f;o.connect(g);g.connect(c.destination);g.gain.setValueAtTime(0,c.currentTime);g.gain.linearRampToValueAtTime(v,c.currentTime+.01);g.gain.exponentialRampToValueAtTime(.0001,c.currentTime+d);o.start();o.stop(c.currentTime+d);}catch(e){}}
+function chime(){beep(660,.12,'triangle',.25);setTimeout(()=>beep(880,.14,'triangle',.25),90);setTimeout(()=>beep(1175,.22,'triangle',.22),190);}
+function buzz(){beep(160,.18,'sawtooth',.18);setTimeout(()=>beep(110,.22,'sawtooth',.16),120);}
+function pop(){beep(560,.06,'sine',.14);}
+let _cont=null;
+function popShow(html){document.getElementById('popCard').innerHTML=html;document.getElementById('popWrap').classList.add('on');}
+function popInfo(html,cont){_cont=cont||null;popShow(html+'<div class="popbtns"><button class="bigbtn next" onclick="popClose()">확인</button></div>');}
+function popClose(){document.getElementById('popWrap').classList.remove('on');const f=_cont;_cont=null;if(f)f();}
+
+const DLAB={
+  cv:null,ctx:null,gc:null,gtx:null,raf:null,
+  step:'idle',temp:20,tsec:0,ethVol:0,watVol:0,midProg:0,paused:false,answered:false,
+  interval:5,dots:[],tHeatEnd:0,tEthEnd:0,tWatStart:0,
+  vap:[],drops:[],graph:[],
+  flask:null,colTop:120,branch:null,condTop:null,outlet:null,table:410,recv:null,conn:null,path:[],seg:[],tot:0,dripT:0,
+  init(){
+    this.cv=document.getElementById('dcanvas');this.ctx=this.cv.getContext('2d');fitCanvas(this.cv);
+    this.gc=document.getElementById('gcanvas');this.gtx=this.gc.getContext('2d');fitCanvas(this.gc);
+    const iv=this.interval||5;
+    Object.assign(this,{step:'idle',temp:20,tsec:0,ethVol:0,watVol:0,midProg:0,paused:false,answered:false,vap:[],drops:[],graph:[],dots:[],tHeatEnd:0,tEthEnd:0,tWatStart:0});
+    this.interval=iv;this.updateIntervalUI();
+    this.layout();this.setTemp();this.setStep('① 준비');this.setPct();this.controls();this.feedback();this.loop();
+    popInfo('<h3>⚗️ 분별 증류 장치</h3><p>둥근바닥 플라스크의 <span class="hi2">물+에탄올</span>을 가열하면 끓는점이 낮은 <span class="hi">에탄올(78°C)</span>이 먼저 기체가 되어 올라가요.</p><p>증기는 <b>유리 도막</b>을 지나(증류 여러 번 효과) <b>리비히 냉각기</b>에서 식어 액체가 되고, 받는 그릇에 모입니다. <b>온도계</b>는 지금 나오는 물질의 끓는점을 알려줘요.</p><p>아래 <b>ⓘ 버튼</b>으로 각 장치를 자세히 볼 수 있어요. 준비됐으면 <b>가열 시작</b>!</p>');
+  },
+  layout(){const w=LW(this.cv),fx=185,fy=298,R=72;
+    this.flask={x:fx,y:fy,r:R,surfY:fy+22};this.colTop=118;
+    this.branch={x:fx,y:124};this.condTop={x:fx+66,y:140};this.outlet={x:560,y:300};this.table=412;
+    this.recv={cx:600,topY:336,baseY:this.table,wTop:50,wBot:98};
+    this.conn={x:600,y:this.recv.topY-4};
+    this.path=[{x:fx,y:this.flask.surfY},{x:fx,y:this.colTop+4},{x:this.branch.x,y:this.branch.y},{x:this.condTop.x,y:this.condTop.y},{x:this.outlet.x,y:this.outlet.y}];
+    this.seg=[];this.tot=0;for(let i=0;i<this.path.length-1;i++){const dx=this.path[i+1].x-this.path[i].x,dy=this.path[i+1].y-this.path[i].y,L=Math.hypot(dx,dy);this.seg.push(L);this.tot+=L;}},
+  ptAt(u){let d=u*this.tot;for(let i=0;i<this.seg.length;i++){if(d<=this.seg[i]||i===this.seg.length-1){const f=this.seg[i]?d/this.seg[i]:0,a=this.path[i],b=this.path[i+1];return{x:a.x+(b.x-a.x)*f,y:a.y+(b.y-a.y)*f,seg:i};}d-=this.seg[i];}const p=this.path[this.path.length-1];return{x:p.x,y:p.y,seg:this.seg.length-1};},
+  setTemp(){const e=document.getElementById('labTemp');if(e)e.textContent=Math.round(this.temp)+'°C';},
+  setStep(t){const e=document.getElementById('labStep');if(e)e.textContent=t;},
+  setPct(){const a=document.getElementById('ethPct'),b=document.getElementById('watPct');if(a)a.textContent=Math.round(this.ethVol*100)+'%';if(b)b.textContent=Math.round(this.watVol*100)+'%';},
+  activeCx(){return this.recv.cx;},
+  recvFill(){return Math.max(0,Math.min(1,(this.ethVol+this.watVol)/2));},
+  comp(){const remE=1-this.ethVol,remW=1-this.watVol,tot=remE+remW;return{ef:tot>0?remE/tot:0,wf:tot>0?remW/tot:0,total:(remE+remW)/2};},
+  tempAt(t){const g=this.graph;if(!g.length)return this.temp;if(t<=g[0].t)return g[0].T;for(let i=0;i<g.length-1;i++){if(t<=g[i+1].t){const f=(t-g[i].t)/((g[i+1].t-g[i].t)||1);return g[i].T+(g[i+1].T-g[i].T)*f;}}return g[g.length-1].T;},
+  syncDots(){const iv=this.interval;const need=Math.floor(this.tsec/iv)+1;while(this.dots.length<need){const tt=this.dots.length*iv;this.dots.push({t:tt,T:this.tempAt(tt)});}},
+  setDotInterval(v){this.interval=v;this.dots=[];this.syncDots();this.updateIntervalUI();pop();},
+  updateIntervalUI(){document.querySelectorAll('#ivRow .ibtn').forEach(b=>b.classList.toggle('on',+b.dataset.iv===this.interval));},
+  /* actions */
+  heatStart(){if(this.step!=='idle')return;ac();this.step='heating';this.setStep('② 가열 — 온도 상승');this.controls();this.feedback();beep(300,.15,'sine',.1);},
+  restart(){this.init();},
+  partInfo(which){this.paused=true;const cont=()=>{this.paused=false;};
+    if(which==='chip')popInfo('<h3>🪨 끓임쪽</h3><p>액체가 갑자기 격렬하게 끓어 <b>넘치는 것(돌비)</b>을 막아 줘요. 작은 기포가 고르게 생기도록 도와 안전하고 일정하게 끓게 합니다.</p>',cont);
+    else if(which==='beads')popInfo('<h3>🔬 유리 도막</h3><p>관 속의 유리 조각들 사이를 지나며 증기가 <b>응축·재증발을 반복</b>해요. 이는 <b>증류를 여러 번 한 효과</b>를 내어, 끓는점이 비슷한 물질도 더 깨끗하게 분리되게 합니다. 분별 증류의 핵심!</p>',cont);
+    else if(which==='cond')popInfo('<h3>❄️ 리비히 냉각기</h3><p>바깥쪽으로 <b>찬물</b>이 흐르며(아래로 들어와 위로 나감) 안쪽을 지나는 <b>증기를 식혀 다시 액체</b>로 만들어요(응축). 식은 액체가 받는 그릇에 모입니다.</p>',cont);
+    else popInfo('<h3>🌡️ 온도계</h3><p>가지(증기가 빠져나가는 곳) 위치에 두어, <b>지금 나오는 기체의 온도</b>를 재요. 이 온도가 곧 분리되고 있는 물질의 <b>끓는점</b>입니다(에탄올 78°C, 물 100°C).</p>',cont);},
+  /* loop */
+  loop(){
+    if(!this.paused){
+      const heatOn=(this.step!=='idle'&&this.step!=='done');
+      if(heatOn)this.tsec+=0.06;
+      if(this.step==='heating'){this.temp+=(78-this.temp)*0.015;if(this.temp>=77.4){this.temp=78;this.tHeatEnd=this.tsec;this.step='eth';this.onEth();}}
+      else if(this.step==='eth'){this.ethVol=Math.min(1,this.ethVol+0.00095);this.temp=78+6*this.ethVol;if(this.ethVol>=1){this.tEthEnd=this.tsec;this.midProg=0;this.step='mid';this.onMid();}}
+      else if(this.step==='mid'){this.midProg=Math.min(1,this.midProg+0.0011);this.temp=84+12*this.midProg;if(this.midProg>=1){this.temp=96;this.tWatStart=this.tsec;this.step='wat';this.onWat();}}
+      else if(this.step==='wat'){this.watVol=Math.min(1,this.watVol+0.00095);this.temp=96+4*this.watVol;if(this.watVol>=1){this.watVol=1;this.temp=100;this.step='done';this.onDone();}}
+      if(heatOn){this.graph.push({t:this.tsec,T:this.temp});if(this.graph.length>4000)this.graph.shift();this.syncDots();}
+      if(this.step==='eth'||this.step==='wat'){this.dripT++;if(this.dripT>15){this.dripT=0;if(this.drops.length<24)this.drops.push({x:this.outlet.x,y:this.outlet.y,vy:0.7+Math.random()*0.4,tx:this.recv.cx});}}
+      this.updateVapor();this.updateDrops();this.setTemp();this.setPct();
+    }
+    this.draw();this.drawGraph();this.raf=requestAnimationFrame(()=>this.loop());
+  },
+  boilN(){if(this.step==='eth'||this.step==='wat')return 7;if(this.step==='mid')return 2;return 0;},
+  updateVapor(){const N=this.boilN();
+    while(this.vap.length<N)this.vap.push({u:Math.random()*0.2,sp:0.0032+Math.random()*0.0016});
+    while(this.vap.length>N)this.vap.pop();
+    this.vap.forEach(p=>{p.u+=p.sp;if(p.u>=1){p.u=0;p.sp=0.0032+Math.random()*0.0016;if(this.drops.length<18)this.drops.push({x:this.outlet.x,y:this.outlet.y,vy:0.6+Math.random()*0.4,tx:this.activeCx()});}});},
+  updateDrops(){const r=this.recv,f=this.recvFill(),surf=r.baseY-8-(r.baseY-r.topY-14)*f;this.drops.forEach(d=>{d.x+=(d.tx-d.x)*0.05;d.vy+=0.12;d.y+=d.vy;});this.drops=this.drops.filter(d=>d.y<surf-1);},
+  onEth(){this.paused=true;this.controls();this.feedback();beep(700,.12,'sine',.12);
+    popInfo('<h3>🔥 에탄올이 끓기 시작! (약 78°C)</h3><p>온도가 <span class="hi">78°C</span> 부근에 이르자, 끓는점이 낮은 <span class="hi">에탄올</span>이 먼저 끓어 기체가 돼요.</p><p>다만 이건 순수 물질이 아니라 <b>혼합물</b>이라, 에탄올이 빠져나가는 동안 끓는점이 <b>조금씩 계속 올라가요</b>(완전히 일정하지 않아요). 그래프에서 78°C 위로 <b>완만하게 상승하는 구간</b>을 보세요.</p><div class="data"><div class="d"><div class="lab">현재 온도</div><div class="val">≈78°C</div></div><div class="d"><div class="lab">분리 물질</div><div class="val" style="font-size:16px">에탄올</div></div></div>',()=>{this.paused=false;});},
+  onMid(){this.paused=true;this.controls();this.feedback();beep(520,.12,'sine',.1);
+    popInfo('<h3>🌡️ 에탄올이 거의 다 나왔어요</h3><p>에탄올이 대부분 빠져나오자 남은 액체가 점점 <b>물에 가까워져</b> 온도가 <b>더 빠르게</b> 올라가요. 이 사이 구간에서는 <b>소량의 에탄올과 물이 섞여</b> 나올 수 있어, 받는 그릇을 바꿔 줍니다.</p><p>온도가 100°C에 가까워지면 이제 물이 끓을 차례예요.</p>',()=>{this.paused=false;});},
+  onWat(){this.paused=true;this.controls();this.feedback();beep(700,.12,'sine',.12);
+    popInfo('<h3>💧 이제 물이 증류돼요 (≈100°C)</h3><p>에탄올이 거의 빠져나가 이제 <span class="hi2">물</span>이 주로 끓어 나와요. 온도는 물의 끓는점인 <span class="hi2">100°C</span>를 향해 <b>끝까지 천천히 더 올라가</b> 100°C에 가까워집니다.</p><p>그래프를 보면 78°C 부근(에탄올)과 100°C 부근(물) 두 곳에서 상승이 완만해지는 걸 알 수 있어요 — 두 성분이 각각 분리되는 때입니다!</p><div class="data"><div class="d"><div class="lab">현재 온도</div><div class="val">≈'+Math.round(this.temp)+'°C</div></div><div class="d"><div class="lab">분리 물질</div><div class="val" style="font-size:16px">물</div></div></div>',()=>{this.paused=false;});},
+  onDone(){this.paused=true;this.controls();this.feedback();chime();this.askQuestion();},
+  askQuestion(){popShow('<h3>🎉 분별 증류 완료!</h3><p>에탄올과 물을 각각 모았어요. 생각해 볼까요 — <b>왜 에탄올이 물보다 먼저</b> 분리되어 나왔을까요?</p><div class="popbtns" style="flex-wrap:wrap"><button class="qopt" onclick="DLAB.ans(this,true)">끓는점이 더 낮아서</button><button class="qopt" onclick="DLAB.ans(this,false)">끓는점이 더 높아서</button><button class="qopt" onclick="DLAB.ans(this,false)">밀도가 더 커서</button></div><div id="qmsg" style="margin-top:12px;color:#f1e6ff;font-size:14px;line-height:1.6"></div>');},
+  ans(btn,ok){const m=document.getElementById('qmsg');
+    if(ok){if(this.answered)return;btn.classList.add('ok');this.answered=true;document.querySelectorAll('#popCard .qopt').forEach(b=>b.disabled=true);
+      m.innerHTML='정답! 🎉 에탄올은 끓는점이 <b>78°C</b>로 물(100°C)보다 낮아 <b>먼저</b> 끓어 기체가 되어 분리돼요. 끓는점 차가 클수록 분별 증류로 더 잘 나눌 수 있어요.<div class="popbtns"><button class="bigbtn next" onclick="popClose()">닫기</button></div>';chime();}
+    else{btn.classList.add('no');btn.disabled=true;m.innerHTML='다시 생각해 봐요. 그래프에서 <b>먼저 나타난 수평 구간</b>의 온도(78°C)가 힌트예요.';buzz();}},
+  controls(){const c=document.getElementById('labControls');const s=this.step;
+    if(s==='idle')c.innerHTML='<button class="bigbtn start" onclick="DLAB.heatStart()">🔥 가열 시작</button>';
+    else if(s==='heating')c.innerHTML='<button class="bigbtn start" disabled>🔥 가열 중… 온도 상승</button>';
+    else if(s==='eth')c.innerHTML='<button class="bigbtn start" disabled>🔥 에탄올 증류 중 (78°C)</button>';
+    else if(s==='mid')c.innerHTML='<button class="bigbtn start" disabled>🌡️ 온도 상승 중…</button>';
+    else if(s==='wat')c.innerHTML='<button class="bigbtn start" disabled>🔥 물 증류 중 (100°C)</button>';
+    else c.innerHTML='<button class="bigbtn ghost3" onclick="DLAB.restart()">🔁 처음부터 다시</button>';},
+  feedback(){const fb=document.getElementById('labFeedback');const s=this.step;
+    if(s==='idle'){fb.className='live';fb.innerHTML='물과 에탄올 혼합물이 둥근바닥 플라스크에 들어 있어요. 🔥 <b>가열</b>해서 분별 증류를 시작해 봅시다.';}
+    else if(s==='heating'){fb.className='live';fb.innerHTML='🔥 가열 중 — 온도가 오르고 있어요. 78°C가 되면 무슨 일이 일어날까요?';}
+    else if(s==='eth'){fb.className='live ok';fb.innerHTML='💨 78°C 부근에서 <b>에탄올</b>이 주로 증류 중 — 혼합물이라 온도가 <b>천천히 올라가요</b>.';}
+    else if(s==='mid'){fb.className='live';fb.innerHTML='🌡️ 에탄올이 거의 다 나와 온도가 다시 오르는 중 (소량 혼합 구간).';}
+    else if(s==='wat'){fb.className='live ok';fb.innerHTML='💧 100°C에 가까워지며 <b>물</b>이 주로 증류 중 — 끝까지 천천히 올라가요.';}
+    else{fb.className='live ok';fb.innerHTML='🎉 분리 완료! <b>에탄올</b>과 <b>물</b>을 각각 모았어요. 끓는점 차를 이용한 <b>분별 증류</b>입니다.';}},
+  /* drawing */
+  draw(){const ctx=this.ctx,w=LW(this.cv),h=LH(this.cv),fl=this.flask,s=this.step;ctx.clearRect(0,0,w,h);
+    ctx.fillStyle='rgba(70,100,130,.12)';ctx.fillRect(0,this.table,w,3);
+    const heatOn=(s!=='idle'&&s!=='done'),boiling=(s==='eth'||s==='wat');
+    // flame
+    if(heatOn){const by=fl.y+fl.r;ctx.fillStyle='#5a6470';ctx.fillRect(fl.x-26,this.table-6,52,8);ctx.fillStyle='#7a8490';ctx.fillRect(fl.x-4,by+26,8,this.table-6-(by+26));
+      ctx.fillStyle='rgba(255,140,60,.7)';for(let i=0;i<3;i++){const fx=fl.x-12+i*12;ctx.beginPath();ctx.moveTo(fx,by+30);ctx.quadraticCurveTo(fx+7,by+12,fx,by+2);ctx.quadraticCurveTo(fx-7,by+12,fx,by+30);ctx.fill();}
+      ctx.fillStyle='rgba(255,210,90,.8)';ctx.beginPath();ctx.moveTo(fl.x,by+24);ctx.quadraticCurveTo(fl.x+4,by+12,fl.x,by+6);ctx.quadraticCurveTo(fl.x-4,by+12,fl.x,by+24);ctx.fill();}
+    // flask glass + liquid
+    ctx.fillStyle='rgba(120,165,215,.10)';ctx.beginPath();ctx.arc(fl.x,fl.y,fl.r,0,7);ctx.fill();
+    ctx.save();ctx.beginPath();ctx.arc(fl.x,fl.y,fl.r-2,0,7);ctx.clip();
+    const cmp=this.comp();const bottomL=fl.y+fl.r-6,liqTop=bottomL-(bottomL-fl.surfY)*cmp.total;const lg=ctx.createLinearGradient(0,liqTop,0,fl.y+fl.r);lg.addColorStop(0,'rgba(120,190,240,.5)');lg.addColorStop(1,'rgba(80,155,215,.62)');ctx.fillStyle=lg;ctx.fillRect(fl.x-fl.r,liqTop,fl.r*2,fl.r*2);
+    // boiling chips
+    ctx.fillStyle='rgba(140,160,180,.9)';[[-14,fl.r-16],[8,fl.r-10],[-4,fl.r-22],[18,fl.r-20]].forEach(c=>{ctx.fillRect(fl.x+c[0],fl.y+c[1],4,3);});
+    if(boiling){ctx.fillStyle='rgba(255,255,255,.5)';for(let i=0;i<5;i++){const bx=fl.x-30+((i*53+this.tsec*24)%60),by2=fl.y+fl.r-8-((this.tsec*30+i*40)% (fl.r*0.8));ctx.beginPath();ctx.arc(bx,by2,2.2,0,7);ctx.fill();}}
+    ctx.restore();
+    ctx.strokeStyle='rgba(70,110,145,.7)';ctx.lineWidth=3;ctx.beginPath();ctx.arc(fl.x,fl.y,fl.r,0,7);ctx.stroke();
+    ctx.font="12px 'Jua'";ctx.fillStyle='#274a66';ctx.textAlign='center';ctx.fillText('물 + 에탄올',fl.x,fl.y+8);
+    ctx.fillStyle='#3a5266';ctx.font="10px 'Jua'";ctx.fillText('끓임쪽',fl.x+34,fl.y+fl.r-14);
+    // column + glass beads
+    ctx.fillStyle='rgba(120,165,215,.10)';roundRect(ctx,fl.x-15,this.colTop,30,(fl.y-fl.r)-this.colTop+8,5);ctx.fill();
+    ctx.strokeStyle='rgba(70,110,145,.65)';ctx.lineWidth=2.5;roundRect(ctx,fl.x-15,this.colTop,30,(fl.y-fl.r)-this.colTop+8,5);ctx.stroke();
+    ctx.fillStyle='rgba(150,178,208,.75)';for(let i=0;i<10;i++){const gx=fl.x-9+((i%3)*9),gy=this.colTop+14+Math.floor(i/3)*16;ctx.beginPath();ctx.arc(gx,gy,3,0,7);ctx.fill();}
+    ctx.fillStyle='#3a5266';ctx.font="11px 'Jua'";ctx.textAlign='right';ctx.fillText('유리 도막',fl.x-22,this.colTop+30);
+    // digital thermometer (above the column; probe reaches the branch)
+    const dgw=92,dgh=40,dgx=fl.x-dgw/2,dgy=14;
+    ctx.strokeStyle='#7a8a99';ctx.lineWidth=2.5;ctx.beginPath();ctx.moveTo(fl.x,this.branch.y);ctx.lineTo(fl.x,dgy+dgh);ctx.stroke();
+    ctx.fillStyle='#e0556a';ctx.beginPath();ctx.arc(fl.x,this.branch.y,3.4,0,7);ctx.fill();
+    ctx.fillStyle='#e9eef3';roundRect(ctx,dgx,dgy,dgw,dgh,9);ctx.fill();ctx.strokeStyle='#9fb0c0';ctx.lineWidth=1.5;roundRect(ctx,dgx,dgy,dgw,dgh,9);ctx.stroke();
+    ctx.fillStyle='#0f2a1c';roundRect(ctx,dgx+7,dgy+7,dgw-14,dgh-14,5);ctx.fill();
+    ctx.fillStyle='#79f7a0';ctx.font="bold 18px monospace";ctx.textAlign='right';ctx.fillText(this.temp.toFixed(1)+'°C',dgx+dgw-10,dgy+dgh/2+6);
+    ctx.fillStyle='#46586b';ctx.font="10px 'Jua'";ctx.textAlign='center';ctx.fillText('디지털 온도계',fl.x,dgy-4);
+    // branch + condenser
+    ctx.strokeStyle='rgba(70,110,145,.65)';ctx.lineWidth=2.5;ctx.beginPath();ctx.moveTo(fl.x+8,this.branch.y);ctx.lineTo(this.condTop.x,this.condTop.y);ctx.stroke();
+    this.drawCondenser();
+    // 연결관 (adapter) from condenser outlet down into the receiving flask
+    ctx.lineCap='round';
+    ctx.strokeStyle='rgba(70,110,145,.7)';ctx.lineWidth=8;ctx.beginPath();ctx.moveTo(this.outlet.x,this.outlet.y);ctx.quadraticCurveTo(this.outlet.x+30,this.outlet.y+8,this.recv.cx,this.recv.topY-3);ctx.stroke();
+    ctx.strokeStyle='rgba(245,251,255,.7)';ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(this.outlet.x,this.outlet.y);ctx.quadraticCurveTo(this.outlet.x+30,this.outlet.y+8,this.recv.cx,this.recv.topY-3);ctx.stroke();
+    ctx.lineCap='butt';ctx.font="10px 'Jua'";ctx.fillStyle='#3a5266';ctx.textAlign='left';ctx.fillText('연결관',this.outlet.x+24,this.outlet.y+30);
+    // single receiving flask (water cup removed)
+    const wf=(this.ethVol+this.watVol)>0?this.watVol/(this.ethVol+this.watVol):0;
+    const rcol='rgba('+Math.round(72+18*wf)+','+Math.round(178-18*wf)+',225,.6)';
+    this.drawErlen(this.recv,this.recvFill(),rcol,'에탄올');
+    ctx.fillStyle='#cf9a18';ctx.font="11px 'Jua'";ctx.textAlign='center';ctx.fillText('▼ 받는 중',this.recv.cx,this.recv.topY-12);
+    // vapor + drops
+    var GAS='rgba(120,150,185,0.55)',LIQ='#2b7fd0';
+    this.vap.forEach(p=>{const pt=this.ptAt(p.u);const inCond=pt.seg>=3;
+      if(inCond){ctx.fillStyle=LIQ;ctx.beginPath();ctx.ellipse(pt.x,pt.y,2.4,3.3,0,0,7);ctx.fill();}
+      else{ctx.fillStyle=GAS;const r=3.4+Math.sin((p.u+this.tsec)*5)*0.8;ctx.beginPath();ctx.arc(pt.x,pt.y,r,0,7);ctx.fill();}});
+    this.drops.forEach(d=>{ctx.fillStyle=LIQ;ctx.beginPath();ctx.ellipse(d.x,d.y,3,4.2,0,0,7);ctx.fill();ctx.fillStyle='rgba(255,255,255,.6)';ctx.beginPath();ctx.arc(d.x-1,d.y-1.4,1,0,7);ctx.fill();});
+    // labels
+    ctx.font="12px 'Jua'";ctx.textAlign='center';ctx.fillStyle='#3a5266';
+    const mid={x:(this.condTop.x+this.outlet.x)/2,y:(this.condTop.y+this.outlet.y)/2};ctx.fillText('리비히 냉각기',mid.x+8,mid.y-22);
+    // state legend
+    ctx.textAlign='left';ctx.font="11px 'Jua'";
+    ctx.fillStyle=GAS;ctx.beginPath();ctx.arc(16,17,5,0,7);ctx.fill();ctx.strokeStyle='rgba(120,150,185,.85)';ctx.lineWidth=1;ctx.stroke();ctx.fillStyle='#3a5266';ctx.fillText('기체(증기)',26,21);
+    ctx.fillStyle=LIQ;ctx.beginPath();ctx.arc(126,17,4.5,0,7);ctx.fill();ctx.fillStyle='#3a5266';ctx.fillText('액체(방울)',136,21);
+    // live mixture composition in the flask (top-right, changes over time)
+    ctx.font="11px 'Jua'";ctx.textAlign='left';ctx.fillStyle='#33485c';ctx.fillText('플라스크 속 혼합물 (시간에 따라 변화)',w-252,26);
+    drawCompBar(ctx,w-252,32,200,15,cmp.ef);},
+  drawCondenser(){const a=this.condTop,b=this.outlet,ctx=this.ctx;const ang=Math.atan2(b.y-a.y,b.x-a.x),len=Math.hypot(b.x-a.x,b.y-a.y),ca=Math.cos(ang),sa=Math.sin(ang);
+    const ph=(typeof performance!=='undefined'?performance.now():Date.now())/1000;
+    ctx.save();ctx.translate(a.x,a.y);ctx.rotate(ang);
+    // water jacket (filled light blue = cooling water)
+    ctx.fillStyle='rgba(150,205,245,.34)';roundRect(ctx,-6,-16,len+12,32,7);ctx.fill();
+    ctx.strokeStyle='rgba(95,150,195,.7)';ctx.lineWidth=2;roundRect(ctx,-6,-16,len+12,32,7);ctx.stroke();
+    // inner vapor tube (clear)
+    ctx.fillStyle='rgba(255,255,255,.5)';roundRect(ctx,2,-7,len-4,14,4);ctx.fill();
+    ctx.strokeStyle='rgba(70,110,145,.7)';ctx.lineWidth=2;roundRect(ctx,2,-7,len-4,14,4);ctx.stroke();
+    // axial cooling-water flow chevrons (water travels outlet-end -> top, i.e. -x) in lower channel
+    ctx.strokeStyle='rgba(45,135,205,.85)';ctx.lineWidth=2;
+    for(let i=0;i<5;i++){const fx=(len-14)-((ph*45+i*(len/5))%(len-18));const yy=11;ctx.beginPath();ctx.moveTo(fx+5,yy-3);ctx.lineTo(fx,yy);ctx.lineTo(fx+5,yy+3);ctx.stroke();}
+    // hoses (top side) at both ends
+    ctx.strokeStyle='#3f9be0';ctx.lineWidth=5;ctx.lineCap='round';
+    ctx.beginPath();ctx.moveTo(len-18,-38);ctx.lineTo(len-18,-54);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(18,-38);ctx.lineTo(18,-54);ctx.stroke();ctx.lineCap='butt';
+    // inlet port (lower end) — water IN
+    ctx.fillStyle='#9ecbf0';ctx.strokeStyle='#3f9be0';ctx.lineWidth=2;roundRect(ctx,len-23,-38,10,24,3);ctx.fill();ctx.stroke();
+    ctx.fillStyle='#1f7ec8';ctx.beginPath();ctx.moveTo(len-18,-12);ctx.lineTo(len-23,-22);ctx.lineTo(len-13,-22);ctx.closePath();ctx.fill();
+    // outlet port (upper end) — water OUT
+    ctx.fillStyle='#9ecbf0';ctx.strokeStyle='#3f9be0';ctx.lineWidth=2;roundRect(ctx,13,-38,10,24,3);ctx.fill();ctx.stroke();
+    ctx.fillStyle='#1f7ec8';ctx.beginPath();ctx.moveTo(18,-40);ctx.lineTo(13,-30);ctx.lineTo(23,-30);ctx.closePath();ctx.fill();
+    ctx.restore();
+    // upright labels in world space
+    const W=(xr,yr)=>({x:a.x+xr*ca-yr*sa,y:a.y+xr*sa+yr*ca});
+    const inP=W(len-18,-62),outP=W(18,-62);
+    ctx.font="11px 'Jua'";ctx.fillStyle='#1f6aa8';ctx.textAlign='center';
+    ctx.fillText('냉각수 들어옴',inP.x,inP.y);
+    ctx.fillText('냉각수 나감',outP.x,outP.y);},
+  drawErlen(f,vol,col,label){const ctx=this.ctx,cx=f.cx,topY=f.topY,baseY=f.baseY,wTop=f.wTop,wBot=f.wBot;
+    ctx.fillStyle='rgba(120,165,215,.10)';ctx.fillRect(cx-wTop/2,topY-14,wTop,14);
+    ctx.beginPath();ctx.moveTo(cx-wTop/2,topY);ctx.lineTo(cx+wTop/2,topY);ctx.lineTo(cx+wBot/2,baseY);ctx.lineTo(cx-wBot/2,baseY);ctx.closePath();ctx.fillStyle='rgba(120,165,215,.10)';ctx.fill();
+    if(vol>0.001){const lh=(baseY-topY-6)*Math.min(1,vol),ly=baseY-lh;ctx.save();ctx.beginPath();ctx.moveTo(cx-wTop/2,topY);ctx.lineTo(cx+wTop/2,topY);ctx.lineTo(cx+wBot/2,baseY);ctx.lineTo(cx-wBot/2,baseY);ctx.closePath();ctx.clip();ctx.fillStyle=col;ctx.fillRect(cx-wBot/2,ly,wBot,lh);ctx.restore();}
+    ctx.strokeStyle='rgba(70,110,145,.7)';ctx.lineWidth=2.5;ctx.beginPath();ctx.moveTo(cx-wTop/2,topY-14);ctx.lineTo(cx-wTop/2,topY);ctx.lineTo(cx-wBot/2,baseY);ctx.lineTo(cx+wBot/2,baseY);ctx.lineTo(cx+wTop/2,topY);ctx.lineTo(cx+wTop/2,topY-14);ctx.stroke();
+    ctx.font="12px 'Jua'";ctx.fillStyle='#3a5266';ctx.textAlign='center';ctx.fillText(label,cx,baseY+16);},
+  drawGraph(){const ctx=this.gtx,w=LW(this.gc),h=LH(this.gc);ctx.clearRect(0,0,w,h);
+    const mL=44,mR=120,mT=14,mB=30,x0=mL,x1=w-mR,y0=h-mB,y1=mT,Tmax=110;
+    const tMax=Math.max(this.tsec,18);
+    const X=t=>x0+(t/tMax)*(x1-x0),Y=T=>y0+(T/Tmax)*(y1-y0);
+    ctx.strokeStyle='rgba(70,100,130,.55)';ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(x0,y1);ctx.lineTo(x0,y0);ctx.lineTo(x1,y0);ctx.stroke();
+    ctx.fillStyle='#5b6b7a';ctx.font="11px 'Jua'";ctx.textAlign='right';for(let T=0;T<=100;T+=20){ctx.fillText(T+'',x0-6,Y(T)+4);ctx.strokeStyle='rgba(70,100,130,.12)';ctx.beginPath();ctx.moveTo(x0,Y(T));ctx.lineTo(x1,Y(T));ctx.stroke();}
+    ctx.textAlign='center';ctx.fillStyle='#5b6b7a';ctx.fillText('시간(분)',(x0+x1)/2,h-6);ctx.save();ctx.translate(13,(y0+y1)/2);ctx.rotate(-Math.PI/2);ctx.fillText('온도(°C)',0,0);ctx.restore();
+    // bp guide lines
+    ctx.setLineDash([5,4]);ctx.strokeStyle='rgba(31,143,200,.7)';ctx.beginPath();ctx.moveTo(x0,Y(78));ctx.lineTo(x1,Y(78));ctx.stroke();ctx.strokeStyle='rgba(210,125,31,.75)';ctx.beginPath();ctx.moveTo(x0,Y(100));ctx.lineTo(x1,Y(100));ctx.stroke();ctx.setLineDash([]);
+    ctx.fillStyle='#1f8fc8';ctx.font="10px 'Jua'";ctx.textAlign='left';ctx.fillText('78°C 에탄올',x1+8,Y(78)+4);ctx.fillStyle='#d27d1f';ctx.fillText('100°C 물',x1+8,Y(100)+4);
+    // plotted points at the chosen interval (dot-by-dot graph)
+    const segCol=T=>T<=89?'#1f8fc8':'#d27d1f';
+    if(this.dots.length){
+      for(let i=0;i<this.dots.length-1;i++){const a=this.dots[i],b=this.dots[i+1];ctx.strokeStyle=segCol((a.T+b.T)/2);ctx.lineWidth=2.6;ctx.beginPath();ctx.moveTo(X(a.t),Y(a.T));ctx.lineTo(X(b.t),Y(b.T));ctx.stroke();}
+      const last=this.dots[this.dots.length-1];
+      if(this.step!=='idle'){ctx.strokeStyle=segCol((last.T+this.temp)/2);ctx.setLineDash([4,3]);ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(X(last.t),Y(last.T));ctx.lineTo(X(this.tsec),Y(this.temp));ctx.stroke();ctx.setLineDash([]);}
+      this.dots.forEach(d=>{ctx.fillStyle=segCol(d.T);ctx.beginPath();ctx.arc(X(d.t),Y(d.T),3.6,0,7);ctx.fill();ctx.strokeStyle='rgba(35,60,95,.55)';ctx.lineWidth=1;ctx.stroke();});
+    }
+    if(this.step!=='idle'){ctx.fillStyle='#e0556a';ctx.beginPath();ctx.arc(X(this.tsec),Y(this.temp),4.8,0,7);ctx.fill();ctx.strokeStyle='rgba(30,50,80,.6)';ctx.lineWidth=1.5;ctx.stroke();}
+    // region labels (matching textbook)
+    ctx.font="10px 'Jua'";ctx.textAlign='center';
+    if(this.tHeatEnd){ctx.fillStyle='#1f8fc8';ctx.fillText('에탄올이 분리됨',X((this.tHeatEnd+(this.tEthEnd||this.tsec))/2),Y(78)-9);}
+    if(this.tEthEnd){ctx.fillStyle='#6b7a8a';ctx.fillText('소량의 에탄올·물',X((this.tEthEnd+(this.tWatStart||this.tsec))/2),Y(90));}
+    if(this.tWatStart){ctx.fillStyle='#d27d1f';ctx.fillText('물이 분리됨',X((this.tWatStart+this.tsec)/2),Y(100)-9);}},
+};
+
+/* ===== 유리 도막 확대 애니메이션 ===== */
+function openBeadsZoom(){DLAB.paused=true;
+  popShow('<h3>🔍 유리 도막, 확대해 보기</h3><p>증기가 <b>유리 구슬</b> 사이를 지나며 <b>응축(액체로) → 재증발(기체로)</b>을 <b>여러 번</b> 반복해요. 그때마다 위로 가는 증기엔 끓는점이 낮은 <b style="color:var(--eth)">에탄올</b>이 점점 많아지고, 아래로 떨어지는 액체엔 <b style="color:#2f7ec8">물</b>이 많아져요.</p><p>맨 위 막대는 <b>지금 플라스크 속 혼합물의 에탄올:물 비율</b>이에요. 실험이 진행되며 에탄올이 빠져나갈수록 이 비율이 변하니, <b>여러 시점에 다시 열어</b> 비교해 보세요!</p><canvas id="beadCanvas" width="440" height="330"></canvas><div class="popbtns"><button class="bigbtn next" onclick="closeBeadsZoom()">확인</button></div>');
+  const cv=document.getElementById('beadCanvas');fitCanvas(cv);BEADS.start(cv);
+}
+function closeBeadsZoom(){BEADS.stop();document.getElementById('popWrap').classList.remove('on');DLAB.paused=false;}
+
+const BEADS={
+  cv:null,ctx:null,raf:null,beads:[],parts:[],t:0,W:0,H:0,
+  start(cv){this.cv=cv;this.ctx=cv.getContext('2d');this.baseEf=(typeof DLAB!=='undefined'&&DLAB.comp)?DLAB.comp().ef:0.5;this.layout();this.parts=[];this.t=0;for(let i=0;i<15;i++)this.spawn();this.loop();},
+  stop(){if(this.raf)cancelAnimationFrame(this.raf);this.raf=null;},
+  basePur(){return Math.max(0.05,Math.min(0.92,(this.baseEf||0.4)*0.8+0.08+Math.random()*0.14));},
+  layout(){const w=LW(this.cv),h=LH(this.cv);this.W=w;this.H=h;
+    this.colW=w*0.5;this.cx=w*0.5;this.colL=this.cx-this.colW/2;this.colR=this.cx+this.colW/2;this.top=58;this.bot=h-22;
+    this.beads=[];const rows=6,cols=4;for(let r=0;r<rows;r++){const y=this.top+22+r*((this.bot-this.top-38)/(rows-1));const off=(r%2)?((this.colW-28)/(cols-1))/2:0;for(let c=0;c<cols;c++){this.beads.push({x:this.colL+14+off+c*((this.colW-28)/(cols-1)),y,r:11});}}},
+  spawn(){this.parts.push({x:this.colL+10+Math.random()*(this.colW-20),y:this.bot-6,vy:-(0.28+Math.random()*0.34),pur:this.basePur(),state:'rise',hold:0});},
+  loop(){this.t+=0.016;this.update();this.draw();this.raf=requestAnimationFrame(()=>this.loop());},
+  update(){this.parts.forEach(p=>{
+    if(p.state==='rise'){p.y+=p.vy;p.x+=Math.sin(this.t*2.2+p.y*0.05)*0.22;
+      if(p.x<this.colL+6){p.x=this.colL+6;}if(p.x>this.colR-6){p.x=this.colR-6;}
+      for(const b of this.beads){if(Math.abs(p.x-b.x)<b.r&&Math.abs(p.y-b.y)<b.r&&Math.random()<0.05){p.state='cond';p.hold=34+Math.random()*30;p.x=b.x;p.y=b.y-b.r;break;}}
+      if(p.y<this.top+6){p.y=this.bot-6;p.x=this.colL+10+Math.random()*(this.colW-20);p.pur=this.basePur();p.vy=-(0.28+Math.random()*0.34);}
+    }else if(p.state==='cond'){p.hold--;if(p.hold<=0){if(Math.random()<0.6){p.state='rise';p.vy=-(0.28+Math.random()*0.34);p.pur=Math.min(1,p.pur+0.13);}else{p.state='drip';p.vy=0.45+Math.random()*0.4;p.pur=Math.max(0,p.pur-0.13);}}
+    }else{p.y+=p.vy;p.vy+=0.04;p.x+=Math.sin(this.t*1.6+p.x*0.05)*0.15;if(p.y>this.bot-6){p.y=this.bot-6;p.vy=-(0.28+Math.random()*0.34);p.state='rise';p.pur=this.basePur();}}});},
+  colFor(pur){return 'rgba('+Math.round(70+56*pur)+','+Math.round(150+74*pur)+',245,0.96)';},
+  gasFor(pur){return 'rgba('+Math.round(110+30*pur)+','+Math.round(145+48*pur)+','+Math.round(198+28*pur)+',0.55)';},
+  draw(){const ctx=this.ctx,w=this.W,h=this.H;ctx.clearRect(0,0,w,h);
+    const ef=(typeof DLAB!=='undefined'&&DLAB.comp)?DLAB.comp().ef:(this.baseEf||0.5);
+    ctx.font="11px 'Jua'";ctx.textAlign='center';ctx.fillStyle='#33485c';ctx.fillText('플라스크 속 혼합물 (시간 지날수록 변화)',w/2,13);
+    drawCompBar(ctx,this.colL,19,this.colW,14,ef);
+    ctx.fillStyle='rgba(120,165,215,.10)';roundRect(ctx,this.colL,this.top,this.colW,this.bot-this.top,12);ctx.fill();
+    ctx.strokeStyle='rgba(70,110,145,.6)';ctx.lineWidth=2;roundRect(ctx,this.colL,this.top,this.colW,this.bot-this.top,12);ctx.stroke();
+    ctx.fillStyle='rgba(95,165,225,.5)';roundRect(ctx,this.colL+2,this.bot-16,this.colW-4,14,6);ctx.fill();
+    this.beads.forEach(b=>{const g=ctx.createRadialGradient(b.x-3,b.y-3,1,b.x,b.y,b.r);g.addColorStop(0,'rgba(232,239,247,.95)');g.addColorStop(1,'rgba(150,178,205,.8)');ctx.fillStyle=g;ctx.beginPath();ctx.arc(b.x,b.y,b.r,0,7);ctx.fill();ctx.strokeStyle='rgba(150,178,208,.75)';ctx.lineWidth=1;ctx.stroke();});
+    this.parts.forEach(p=>{
+      if(p.state==='cond'){ctx.fillStyle=this.colFor(p.pur);ctx.shadowColor='rgba(70,140,210,.55)';ctx.shadowBlur=6;ctx.beginPath();ctx.ellipse(p.x,p.y,2.7,3.5,0,0,7);ctx.fill();ctx.shadowBlur=0;}
+      else if(p.state==='drip'){ctx.fillStyle=this.colFor(p.pur);ctx.beginPath();ctx.ellipse(p.x,p.y,2.5,3.4,0,0,7);ctx.fill();}
+      else{ctx.fillStyle=this.gasFor(p.pur);const r=3.2+Math.sin(this.t*3+p.y*0.1)*0.7;ctx.beginPath();ctx.arc(p.x,p.y,r,0,7);ctx.fill();}});
+    // enrichment direction + gas/liquid legend
+    ctx.font="11px 'Jua'";ctx.textAlign='left';
+    ctx.fillStyle='#1f8fc8';ctx.fillText('에탄올↑',this.colR+8,this.top+16);
+    ctx.fillStyle='#2f7ec8';ctx.fillText('물 많음',this.colR+8,this.bot-6);
+    ctx.fillStyle=this.gasFor(.6);ctx.beginPath();ctx.arc(this.colL-34,this.bot-2,4.5,0,7);ctx.fill();ctx.strokeStyle='rgba(120,150,185,.85)';ctx.lineWidth=1;ctx.stroke();ctx.fillStyle='#3a5266';ctx.fillText('기체',this.colL-26,this.bot+1);
+    ctx.fillStyle=this.colFor(.4);ctx.beginPath();ctx.arc(this.colL+6,this.bot-2,4,0,7);ctx.fill();ctx.fillStyle='#3a5266';ctx.fillText('액체',this.colL+14,this.bot+1);
+    ctx.textAlign='center';ctx.fillStyle='#2f7ec8';ctx.fillText('▲ 위로 갈수록 에탄올 많은 증기',this.cx,h-6);},
+};
+
+/* ===== 개념 정리 화면 ===== */
+function lockOpts(id){document.querySelectorAll('#'+id+' .qopt').forEach(b=>b.disabled=true);}
+function predictAns(btn,ok){const m=document.getElementById('predMsg');
+  if(ok){btn.classList.add('ok');lockOpts('predOpts');m.className='qmsg ok';m.innerHTML='정답! 🎉 끓는점이 더 낮은 <b>액체 A(50°C)</b>가 더 낮은 온도에서 먼저 끓어 기화해요. 끓는점이 낮을수록 먼저 분리됩니다.';chime();}
+  else{btn.classList.add('no');btn.disabled=true;m.className='qmsg no';m.innerHTML='다시 생각해 봐요. 끓는점이 <b>낮을수록</b> 더 낮은 온도에서 끓어요 — 둘 중 끓는점이 더 낮은 건 어느 쪽일까요?';buzz();}}
+function cqLow(btn,sec){const m=document.getElementById('cqLowMsg');
+  if(sec===1){btn.classList.add('ok');lockOpts('cqLowOpts');m.className='qmsg ok';m.innerHTML='맞아요! <b>① 구간</b>은 낮은 온도(약 50°C)에서 온도가 일정한 구간 — 끓는점이 낮은 <b>A</b>가 주로 끓어 분리돼요.';chime();}
+  else{btn.classList.add('no');btn.disabled=true;m.className='qmsg no';m.innerHTML='힌트: 온도가 <b>낮은 쪽에서 평평하게 유지</b>되는 구간을 찾아보세요.';buzz();}}
+function cqHigh(btn,sec){const m=document.getElementById('cqHighMsg');
+  if(sec===3){btn.classList.add('ok');lockOpts('cqHighOpts');m.className='qmsg ok';m.innerHTML='맞아요! <b>③ 구간</b>은 높은 온도(약 87°C)에서 온도가 일정한 구간 — 끓는점이 높은 <b>B</b>가 주로 끓어 분리돼요.';chime();}
+  else{btn.classList.add('no');btn.disabled=true;m.className='qmsg no';m.innerHTML='힌트: 온도가 <b>높은 쪽에서 평평하게 유지</b>되는 구간을 찾아보세요.';buzz();}}
+function thermoHint(n){const h=document.getElementById('th'+n);if(h)h.classList.add('show');}
+function thermoReveal(){const a=document.getElementById('thAns');if(!a)return;a.className='qmsg ok';a.innerHTML='온도계는 <b>지금 빠져나오는 기체(증기)의 온도</b>를 재요. 그 온도가 곧 그 물질의 <b>끓는점</b>이라, 78°C·100°C처럼 온도가 일정해지는 순간을 보고 <b>어떤 물질이 분리되고 있는지</b> 알 수 있어요. 그래서 증기가 빠져나가는 가지 옆에 달아 둡니다.';chime();}
+function drawConceptGraph(){
+  const cv=document.getElementById('cqCanvas');if(!cv)return;fitCanvas(cv);
+  const ctx=cv.getContext('2d'),w=LW(cv),h=LH(cv);ctx.clearRect(0,0,w,h);
+  const mL=46,mR=18,mT=20,mB=30,x0=mL,x1=w-mR,y0=h-mB,y1=mT,Tmax=110,tMax=100;
+  const X=t=>x0+(t/tMax)*(x1-x0),Y=T=>y0+(T/Tmax)*(y1-y0);
+  const b1=[14,40],b2=[40,58],b3=[58,92];
+  ctx.fillStyle='rgba(43,176,224,.12)';ctx.fillRect(X(b1[0]),y1,X(b1[1])-X(b1[0]),y0-y1);
+  ctx.fillStyle='rgba(120,140,160,.10)';ctx.fillRect(X(b2[0]),y1,X(b2[1])-X(b2[0]),y0-y1);
+  ctx.fillStyle='rgba(239,122,47,.12)';ctx.fillRect(X(b3[0]),y1,X(b3[1])-X(b3[0]),y0-y1);
+  ctx.strokeStyle='rgba(70,100,130,.55)';ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(x0,y1);ctx.lineTo(x0,y0);ctx.lineTo(x1,y0);ctx.stroke();
+  ctx.fillStyle='#5b6b7a';ctx.font="11px 'Jua'";ctx.textAlign='right';[0,50,87].forEach(T=>ctx.fillText(T+'',x0-6,Y(T)+4));
+  ctx.setLineDash([5,4]);
+  ctx.strokeStyle='rgba(31,143,200,.6)';ctx.beginPath();ctx.moveTo(x0,Y(50));ctx.lineTo(x1,Y(50));ctx.stroke();
+  ctx.strokeStyle='rgba(210,125,31,.7)';ctx.beginPath();ctx.moveTo(x0,Y(87));ctx.lineTo(x1,Y(87));ctx.stroke();ctx.setLineDash([]);
+  ctx.textAlign='left';ctx.fillStyle='#1f8fc8';ctx.fillText('50°C (A)',X(b1[0])+2,Y(50)-5);
+  ctx.fillStyle='#d27d1f';ctx.fillText('87°C (B)',X(b3[0])+2,Y(87)-5);
+  const pts=[[6,20],[14,50],[40,50],[58,87],[92,87],[98,90]];
+  ctx.lineWidth=3;
+  for(let i=0;i<pts.length-1;i++){const a=pts[i],bb=pts[i+1];const midT=(a[1]+bb[1])/2;ctx.strokeStyle=midT<=68?'#1f8fc8':'#d27d1f';ctx.beginPath();ctx.moveTo(X(a[0]),Y(a[1]));ctx.lineTo(X(bb[0]),Y(bb[1]));ctx.stroke();}
+  ctx.font="bold 16px 'Jua'";ctx.textAlign='center';
+  ctx.fillStyle='#1f8fc8';ctx.fillText('①',X((b1[0]+b1[1])/2),y1+18);
+  ctx.fillStyle='#6b7a8a';ctx.fillText('②',X((b2[0]+b2[1])/2),y1+18);
+  ctx.fillStyle='#d27d1f';ctx.fillText('③',X((b3[0]+b3[1])/2),y1+18);
+  ctx.font="11px 'Jua'";ctx.fillStyle='#5b6b7a';ctx.textAlign='center';ctx.fillText('시간(분)',(x0+x1)/2,h-6);
+  ctx.save();ctx.translate(13,(y0+y1)/2);ctx.rotate(-Math.PI/2);ctx.fillText('온도(°C)',0,0);ctx.restore();
+}
+
+function drawCompBar(ctx,x,y,w,h,ef){
+  ef=Math.max(0,Math.min(1,ef));const ew=Math.round(w*ef);
+  ctx.fillStyle='#e3ebf3';ctx.fillRect(x,y,w,h);
+  ctx.fillStyle='#2bb0e0';ctx.fillRect(x,y,ew,h);
+  ctx.fillStyle='#3f86c8';ctx.fillRect(x+ew,y,w-ew,h);
+  ctx.restore();
+  ctx.strokeStyle='rgba(120,160,200,.65)';ctx.lineWidth=1;roundRect(ctx,x,y,w,h,h/2);ctx.stroke();
+  ctx.font="10px 'Jua'";ctx.textAlign='left';ctx.fillStyle='#1f7398';ctx.fillText('에탄올 '+Math.round(ef*100)+'%',x+2,y+h+12);
+  ctx.textAlign='right';ctx.fillStyle='#2a5a8c';ctx.fillText('물 '+Math.round((1-ef)*100)+'%',x+w-2,y+h+12);
+}
+let dpr=Math.min(window.devicePixelRatio||1,2);
+function fitCanvas(cv){if(!cv.dataset.lw){cv.dataset.lw=cv.getAttribute('width');cv.dataset.lh=cv.getAttribute('height');}
+  const LWd=+cv.dataset.lw,LHd=+cv.dataset.lh;const cssW=cv.clientWidth||cv.parentElement.clientWidth||LWd;const cssH=cssW*(LHd/LWd);
+  cv.style.height=cssH+'px';cv.width=Math.round(cssW*dpr);cv.height=Math.round(cssH*dpr);cv.getContext('2d').setTransform(cv.width/LWd,0,0,cv.width/LWd,0,0);cv._lw=LWd;cv._lh=LHd;}
+function LW(cv){return cv._lw;}function LH(cv){return cv._lh;}
+function roundRect(ctx,x,y,w,h,r){if(w<2*r)r=w/2;if(h<2*r)r=h/2;ctx.beginPath();ctx.moveTo(x+r,y);ctx.arcTo(x+w,y,x+w,y+h,r);ctx.arcTo(x+w,y+h,x,y+h,r);ctx.arcTo(x,y+h,x,y,r);ctx.arcTo(x,y,x+w,y,r);ctx.closePath();}
+let rt;window.addEventListener('resize',()=>{clearTimeout(rt);rt=setTimeout(()=>{const a=document.querySelector('.screen.active');if(a&&a.id==='screen-lab'&&DLAB.cv){fitCanvas(DLAB.cv);fitCanvas(DLAB.gc);DLAB.layout();}else if(a&&a.id==='screen-concept'){drawConceptGraph();}},200);});
+</script>
+</body>
+</html>
