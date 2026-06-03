@@ -354,17 +354,62 @@ button{font-family:'Galmuri11',monospace !important;letter-spacing:0 !important}
 
         <div id="mtReveal2img" class="reveal">
           <div class="note"><b>정답이에요! 🎉</b> 기름은 국물(물)보다 <span class="key2">밀도</span>가 작아 위로 떠요. 그래서 위층의 <b>기름만 살살 걷어내면</b> 칼로리를 확 줄일 수 있죠. 이것이 바로 <span class="key">밀도 차를 이용한 분리</span>의 1단계랍니다!</div>
-          <div class="comic-strip" style="margin-top:12px">
-          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px">
-          <figure style="margin:0;position:relative"><span style="position:absolute;top:6px;left:6px;width:22px;height:22px;border-radius:50%;background:rgba(13,143,179,.92);color:#fff;font-family:'Jua',sans-serif;font-size:12px;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 6px rgba(0,0,0,.45);z-index:1">1</span><img src="images/malatang-comic-1.png" alt="마라탕 밀도 분리 만화 1컷" loading="lazy" style="width:100%;height:auto;display:block;border-radius:10px;border:1px solid rgba(120,200,255,.28);background:#0c1d2b;box-shadow:0 6px 18px -10px rgba(0,0,0,.5)"></figure>
-          <figure style="margin:0;position:relative"><span style="position:absolute;top:6px;left:6px;width:22px;height:22px;border-radius:50%;background:rgba(13,143,179,.92);color:#fff;font-family:'Jua',sans-serif;font-size:12px;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 6px rgba(0,0,0,.45);z-index:1">2</span><img src="images/malatang-comic-2.png" alt="마라탕 밀도 분리 만화 2컷" loading="lazy" style="width:100%;height:auto;display:block;border-radius:10px;border:1px solid rgba(120,200,255,.28);background:#0c1d2b;box-shadow:0 6px 18px -10px rgba(0,0,0,.5)"></figure>
-          <figure style="margin:0;position:relative"><span style="position:absolute;top:6px;left:6px;width:22px;height:22px;border-radius:50%;background:rgba(13,143,179,.92);color:#fff;font-family:'Jua',sans-serif;font-size:12px;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 6px rgba(0,0,0,.45);z-index:1">3</span><img src="images/malatang-comic-3.png" alt="마라탕 밀도 분리 만화 3컷" loading="lazy" style="width:100%;height:auto;display:block;border-radius:10px;border:1px solid rgba(120,200,255,.28);background:#0c1d2b;box-shadow:0 6px 18px -10px rgba(0,0,0,.5)"></figure>
-          <figure style="margin:0;position:relative"><span style="position:absolute;top:6px;left:6px;width:22px;height:22px;border-radius:50%;background:rgba(13,143,179,.92);color:#fff;font-family:'Jua',sans-serif;font-size:12px;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 6px rgba(0,0,0,.45);z-index:1">4</span><img src="images/malatang-comic-4.png" alt="마라탕 밀도 분리 만화 4컷" loading="lazy" style="width:100%;height:auto;display:block;border-radius:10px;border:1px solid rgba(120,200,255,.28);background:#0c1d2b;box-shadow:0 6px 18px -10px rgba(0,0,0,.5)"></figure>
-          <figure style="margin:0;position:relative"><span style="position:absolute;top:6px;left:6px;width:22px;height:22px;border-radius:50%;background:rgba(13,143,179,.92);color:#fff;font-family:'Jua',sans-serif;font-size:12px;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 6px rgba(0,0,0,.45);z-index:1">5</span><img src="images/malatang-comic-5.png" alt="마라탕 밀도 분리 만화 5컷" loading="lazy" style="width:100%;height:auto;display:block;border-radius:10px;border:1px solid rgba(120,200,255,.28);background:#0c1d2b;box-shadow:0 6px 18px -10px rgba(0,0,0,.5)"></figure>
-          <figure style="margin:0;position:relative"><span style="position:absolute;top:6px;left:6px;width:22px;height:22px;border-radius:50%;background:rgba(13,143,179,.92);color:#fff;font-family:'Jua',sans-serif;font-size:12px;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 6px rgba(0,0,0,.45);z-index:1">6</span><img src="images/malatang-comic-6.png" alt="마라탕 밀도 분리 만화 6컷" loading="lazy" style="width:100%;height:auto;display:block;border-radius:10px;border:1px solid rgba(120,200,255,.28);background:#0c1d2b;box-shadow:0 6px 18px -10px rgba(0,0,0,.5)"></figure>
-          <figure style="margin:0;position:relative"><span style="position:absolute;top:6px;left:6px;width:22px;height:22px;border-radius:50%;background:rgba(13,143,179,.92);color:#fff;font-family:'Jua',sans-serif;font-size:12px;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 6px rgba(0,0,0,.45);z-index:1">7</span><img src="images/malatang-comic-7.png" alt="마라탕 밀도 분리 만화 7컷" loading="lazy" style="width:100%;height:auto;display:block;border-radius:10px;border:1px solid rgba(120,200,255,.28);background:#0c1d2b;box-shadow:0 6px 18px -10px rgba(0,0,0,.5)"></figure>
+          <div class="comic-tabs" id="malatangComic" style="margin-top:12px">
+          <div class="ctabs">
+            <button type="button" class="on" data-c="1">1</button>
+            <button type="button" data-c="2">2</button>
+            <button type="button" data-c="3">3</button>
+            <button type="button" data-c="4">4</button>
+            <button type="button" data-c="5">5</button>
+            <button type="button" data-c="6">6</button>
+            <button type="button" data-c="7">7</button>
           </div>
-          <div class="vcap">▲ 마라탕 기름 분리 이야기 — 순서대로 1 → 7</div>
+          <div class="cpanels">
+            <img class="on" data-c="1" src="images/malatang-comic-1.png" alt="마라탕 밀도 분리 만화 1컷" loading="lazy">
+            <img data-c="2" src="images/malatang-comic-2.png" alt="마라탕 밀도 분리 만화 2컷" loading="lazy">
+            <img data-c="3" src="images/malatang-comic-3.png" alt="마라탕 밀도 분리 만화 3컷" loading="lazy">
+            <img data-c="4" src="images/malatang-comic-4.png" alt="마라탕 밀도 분리 만화 4컷" loading="lazy">
+            <img data-c="5" src="images/malatang-comic-5.png" alt="마라탕 밀도 분리 만화 5컷" loading="lazy">
+            <img data-c="6" src="images/malatang-comic-6.png" alt="마라탕 밀도 분리 만화 6컷" loading="lazy">
+            <img data-c="7" src="images/malatang-comic-7.png" alt="마라탕 밀도 분리 만화 7컷" loading="lazy">
+          </div>
+          <div class="cnav">
+            <button type="button" data-step="-1">◀ 이전</button>
+            <span class="clabel">1 / 7</span>
+            <button type="button" data-step="1">다음 ▶</button>
+          </div>
+          <div class="vcap">▲ 마라탕 기름 분리 이야기 — 컷을 눌러 넘겨보세요 (1 → 7)</div>
+          <style>
+            #malatangComic .ctabs{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin-bottom:10px}
+            #malatangComic .ctabs button{width:36px;height:36px;border-radius:10px;border:1px solid rgba(120,200,255,.3);background:rgba(126,224,255,.12);color:#cfe7f7;font-family:'Jua',sans-serif;font-size:16px;cursor:pointer;transition:.12s;padding:0}
+            #malatangComic .ctabs button:hover{background:rgba(126,224,255,.25)}
+            #malatangComic .ctabs button.on{background:#38bdf8;border-color:#7ee0ff;color:#06212f;box-shadow:0 4px 12px -4px rgba(56,189,248,.6)}
+            #malatangComic .cpanels{position:relative}
+            #malatangComic .cpanels img{width:100%;display:none;border-radius:12px;border:1px solid rgba(120,200,255,.28);box-shadow:0 10px 28px -14px rgba(0,0,0,.7);background:#0c1d2b}
+            #malatangComic .cpanels img.on{display:block;animation:comicfade .25s ease}
+            @keyframes comicfade{from{opacity:0}to{opacity:1}}
+            #malatangComic .cnav{display:flex;justify-content:space-between;align-items:center;margin-top:10px;gap:10px}
+            #malatangComic .cnav button{font-family:'Jua',sans-serif;font-size:14px;padding:8px 16px;border-radius:10px;border:1px solid rgba(120,200,255,.3);background:rgba(126,224,255,.12);color:#eaf6ff;cursor:pointer}
+            #malatangComic .cnav button:hover{background:rgba(126,224,255,.25)}
+            #malatangComic .clabel{font-family:'Jua',sans-serif;color:#a9c8db;font-size:14px}
+          </style>
+          <script>
+            (function(){
+              var root=document.getElementById('malatangComic'); if(!root||root.dataset.init) return; root.dataset.init='1';
+              var imgs=[].slice.call(root.querySelectorAll('.cpanels img'));
+              var tabs=[].slice.call(root.querySelectorAll('.ctabs button'));
+              var label=root.querySelector('.clabel');
+              var total=imgs.length, cur=1;
+              function show(n){ cur=n<1?total:(n>total?1:n);
+                imgs.forEach(function(im){ im.classList.toggle('on', +im.getAttribute('data-c')===cur); });
+                tabs.forEach(function(b){ b.classList.toggle('on', +b.getAttribute('data-c')===cur); });
+                if(label) label.textContent=cur+' / '+total;
+              }
+              tabs.forEach(function(b){ b.addEventListener('click', function(){ show(+b.getAttribute('data-c')); }); });
+              root.querySelectorAll('.cnav button[data-step]').forEach(function(b){ b.addEventListener('click', function(){ show(cur+(+b.getAttribute('data-step'))); }); });
+              show(1);
+            })();
+          </script>
         </div>
         </div>
       </div>
