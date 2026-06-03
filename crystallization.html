@@ -303,7 +303,7 @@ const BLAB={
       +'<div class="qcol"><button class="qopt" onclick="BLAB.ansPred(this,true)">가열해 모두 녹인 뒤, 천천히 냉각해 석출되는 결정을 거른다</button>'
       +'<button class="qopt" onclick="BLAB.ansPred(this,false)">찬물을 더 부어 묽게 만든 뒤 거른다</button>'
       +'<button class="qopt" onclick="BLAB.ansPred(this,false)">가열하지 않고 그냥 거름종이로 거른다</button></div>'
-      +'<div id="qmsg" style="margin-top:12px;color:#dcf6ec;font-size:14px;line-height:1.6"></div>');},
+      +'<div id="qmsg" style="margin-top:12px;color:#2c4256;font-size:14px;line-height:1.6"></div>');},
   ansPred(btn,ok){const m=document.getElementById('qmsg'),cfg=this.cfg;
     if(ok){btn.classList.add('ok');document.querySelectorAll('#popCard .qopt').forEach(b=>b.disabled=true);_cont=()=>this.askCase();
       m.innerHTML='정답! 🎉 <b>'+cfg.aName+'</b>은 식으면 용해도가 크게 줄어 결정으로 석출되고, <b>'+cfg.bName+'</b>은 계속 녹아 있어요. 그래서 <b>가열 → 냉각 → 거름</b>으로 분리합니다.<div class="popbtns"><button class="bigbtn next" onclick="popClose()">다음 →</button></div>';chime();}
@@ -313,7 +313,7 @@ const BLAB={
       +'<div class="qcol"><button class="qopt" onclick="BLAB.ansCase(this,1)">① 용해도 차이가 작은 물질끼리 혼합되어 있을 때</button>'
       +'<button class="qopt" onclick="BLAB.ansCase(this,2)">② 용해도 차이가 큰 물질끼리 혼합되어 있을 때</button>'
       +'<button class="qopt" onclick="BLAB.ansCase(this,3)">③ 온도에 따른 용해도 차가 큰 물질과 작은 물질이 혼합되어 있을 때</button></div>'
-      +'<div id="qmsg" style="margin-top:12px;color:#dcf6ec;font-size:14px;line-height:1.6"></div>');},
+      +'<div id="qmsg" style="margin-top:12px;color:#2c4256;font-size:14px;line-height:1.6"></div>');},
   ansCase(btn,sec){const m=document.getElementById('qmsg');
     if(sec===3){btn.classList.add('ok');document.querySelectorAll('#popCard .qopt').forEach(b=>b.disabled=true);_cont=()=>this.askCommon();
       m.innerHTML='정답! 🎉 <b>온도에 따른 용해도 차가 큰 물질</b>과 <b>작은 물질</b>이 섞여 있을 때, 냉각만으로 용해도 차가 큰 물질을 결정으로 골라낼 수 있어 가장 효과적이에요.<div class="popbtns"><button class="bigbtn next" onclick="popClose()">다음 →</button></div>';chime();}
@@ -333,15 +333,34 @@ const BLAB={
       +'<div class="qcol"><button class="qopt" onclick="BLAB.ansCommon(this,true)">온도에 따른 용해도 차가 <b>큰</b> 물질</button>'
       +'<button class="qopt" onclick="BLAB.ansCommon(this,false)">온도에 따른 용해도 차가 <b>작은</b> 물질</button>'
       +'<button class="qopt" onclick="BLAB.ansCommon(this,false)">물에 잘 녹지 않는 물질</button></div>'
-      +'<div id="qmsg" style="margin-top:12px;color:#dcf6ec;font-size:14px;line-height:1.6"></div>');},
+      +'<div id="qmsg" style="margin-top:12px;color:#2c4256;font-size:14px;line-height:1.6"></div>');},
   ansCommon(btn,ok){const m=document.getElementById('qmsg');
     if(ok){btn.classList.add('ok');document.querySelectorAll('#popCard .qopt').forEach(b=>b.disabled=true);this.preDone=true;_cont=()=>this.beginSetup();
       m.innerHTML='정답! 🎉 <b>온도에 따른 용해도 차가 큰 물질과 작은 물질이 혼합되어 있을 때, 온도에 따른 용해도 차가 큰 물질이 먼저 석출되어 분리</b>돼요. (그래서 곡선이 가파른 질산칼륨·붕산이 결정이 됩니다.)<div class="popbtns"><button class="bigbtn next" onclick="popClose()">실험 준비 시작 →</button></div>';chime();}
     else{btn.classList.add('no');btn.disabled=true;m.innerHTML='힌트: 식혔을 때 용해도가 <b>확 줄어드는</b>(곡선이 가파른) 물질이 "넘쳐서" 결정이 돼요.';buzz();}},
 
-  /* ===== 온도 질문 (붕산 실험) ===== */
+  /* ===== 온도 질문 (붕산 실험) — 팝업 안에 용해도 곡선 표시 ===== */
+  popCurveSVG(){const cfg=this.cfg,W=300,H=180,mL=38,mR=12,mT=14,mB=24,x0=mL,x1=W-mR,y0=H-mB,y1=mT,Tmax=105,Smax=cfg.curveSmax;
+    const X=t=>(x0+(t/Tmax)*(x1-x0)).toFixed(1),Y=s=>(y0+(Math.min(s,Smax)/Smax)*(y1-y0)).toFixed(1);
+    let pa='',pb='';for(let t=0;t<=100;t+=4)pa+=(t===0?'M':'L')+X(t)+' '+Y(this.solA(t))+' ';for(let t=0;t<=100;t+=4)pb+=(t===0?'M':'L')+X(t)+' '+Y(this.solB(t))+' ';
+    let tx='';for(let t=0;t<=100;t+=20)tx+='<text x="'+X(t)+'" y="'+(y0+12)+'" fill="#5c6b7d" font-size="9" text-anchor="middle" font-family="Jua">'+t+'</text>';
+    let ty='';cfg.curveTicks.forEach(s=>{ty+='<text x="'+(x0-4)+'" y="'+(+Y(s)+3)+'" fill="#5c6b7d" font-size="9" text-anchor="end" font-family="Jua">'+s+'</text>';});
+    return '<svg viewBox="0 0 '+W+' '+H+'" style="width:100%;max-width:330px;display:block;margin:8px auto 4px;background:rgba(30,60,90,.05);border:1px solid var(--panel-line);border-radius:10px">'
+      +'<line x1="'+x0+'" y1="'+y1+'" x2="'+x0+'" y2="'+y0+'" stroke="#7e93a8" stroke-width="1.2"/><line x1="'+x0+'" y1="'+y0+'" x2="'+x1+'" y2="'+y0+'" stroke="#7e93a8" stroke-width="1.2"/>'
+      +tx+ty
+      +'<text x="'+((x0+x1)/2)+'" y="'+(H-2)+'" fill="#5c6b7d" font-size="9" text-anchor="middle" font-family="Jua">온도(°C) →</text>'
+      +'<line x1="'+x0+'" y1="'+Y(cfg.concA)+'" x2="'+x1+'" y2="'+Y(cfg.concA)+'" stroke="#2f8fd0" stroke-width="1.3" stroke-dasharray="4 3" opacity="0.7"/>'
+      +'<line x1="'+x0+'" y1="'+Y(cfg.concB)+'" x2="'+x1+'" y2="'+Y(cfg.concB)+'" stroke="#d6568f" stroke-width="1.3" stroke-dasharray="4 3" opacity="0.7"/>'
+      +'<path d="'+pa+'" fill="none" stroke="#2f8fd0" stroke-width="2.6"/><path d="'+pb+'" fill="none" stroke="#d6568f" stroke-width="2.6"/>'
+      +'<text x="'+X(64)+'" y="'+(+Y(this.solA(72))-4)+'" fill="#2f8fd0" font-size="10.5" font-family="Jua" font-weight="bold">'+cfg.aName+'</text>'
+      +'<text x="'+X(5)+'" y="'+(+Y(this.solB(16))-4)+'" fill="#d6568f" font-size="10.5" font-family="Jua" font-weight="bold">'+cfg.bName+'</text>'
+      +'</svg>';},
   askTempQ(){const cfg=this.cfg;
-    popShow('<h3>🔥 먼저 생각해 보기</h3><p>'+cfg.bName+'과 '+cfg.aName+'을 <b>모두 녹이려면</b> 온도를 몇 °C까지 올려야 할까요?</p><p style="color:#9fc0d4;font-size:13px;margin-top:-2px">아래 <b>용해도 곡선</b>을 참고하세요.</p><div class="popbtns" style="flex-wrap:wrap"><button class="qopt" onclick="BLAB.tempAns(this,30)">30°C</button><button class="qopt" onclick="BLAB.tempAns(this,60)">60°C</button><button class="qopt" onclick="BLAB.tempAns(this,100)">100°C</button></div><div id="qmsg" style="margin-top:12px;color:#dcf6ec;font-size:14px;line-height:1.6"></div>');},
+    popShow('<h3>🔥 먼저 생각해 보기</h3><p>'+cfg.bName+'과 '+cfg.aName+'을 <b>모두 녹이려면</b> 온도를 몇 °C까지 올려야 할까요?</p>'
+      +'<p style="color:#5c6b7d;font-size:13px;margin:-2px 0 0">아래 <b>용해도 곡선</b>을 참고하세요. (점선 = 물 100g에 넣은 양)</p>'
+      +this.popCurveSVG()
+      +'<div class="popbtns" style="flex-wrap:wrap"><button class="qopt" onclick="BLAB.tempAns(this,30)">30°C</button><button class="qopt" onclick="BLAB.tempAns(this,60)">60°C</button><button class="qopt" onclick="BLAB.tempAns(this,100)">100°C</button></div>'
+      +'<div id="qmsg" style="margin-top:12px;color:#2c4256;font-size:14px;line-height:1.6"></div>');},
   tempAns(btn,val){const m=document.getElementById('qmsg'),cfg=this.cfg;
     if(val===100){if(this.preDone)return;btn.classList.add('ok');this.preDone=true;document.querySelectorAll('#popCard .qopt').forEach(b=>b.disabled=true);_cont=()=>this.beginSetup();
       m.innerHTML='정답! 🎉 '+cfg.aName+' '+Math.round(cfg.concA)+'g(물 100g당)을 다 녹이려면 용해도가 그만큼 커져야 해요. 안전하게 <b>100°C</b>까지 가열하면 모두 녹습니다.<div class="popbtns"><button class="bigbtn next" onclick="popClose()">실험 준비 시작 →</button></div>';chime();}
@@ -377,7 +396,7 @@ const BLAB={
   crystByTemp(){const cfg=this.cfg,ex=Math.max(0,Math.min(1,(cfg.concA-this.solA(this.temp))/cfg.concA)),want=Math.round(cfg.Na*ex);
     this.parts.forEach(p=>{if(p.type==='a')p.state=(p.ki<want?'cryst':'sol');});this.layoutHomes();},
   moveParts(){const filt=(this.step==='filtering'||this.step==='done');const stirring=(this.step==='stirring');
-    const swirl=stirring||this.step==='ready_heat'||this.step==='heating';
+    const swirl=stirring||this.step==='heating';
     this.parts.forEach(p=>{
       if(p.state==='pre')return;
       const confined=(p.state==='sol')||(swirl&&p.state==='solid');
@@ -394,20 +413,20 @@ const BLAB={
   loop(){const cfg=this.cfg;
     if(!this.paused){
       if(this.water<this.waterT)this.water=Math.min(this.waterT,this.water+0.035);
-      if(this.step==='stirring'){this.stirT--;if(this.stirT<=0){this.step='ready_heat';this.setStep('⑥ 가열 준비 완료');this.spBody('<b class="hi">⚠️ 아직 녹지 않은 용질이 있어요!</b><br>상온('+Math.round(this.temp)+'°C)에서는 용해도가 낮아 '+cfg.aName+'·'+cfg.bName+'이 다 녹지 못하고 일부가 떠다녀요. 🔥 <b>가열</b>하면 용해도가 커져 모두 녹아요!');this.controls();this.feedback();pop();}}
+      if(this.step==='stirring'){this.stirT--;if(this.stirT<=0){this.step='ready_heat';this.setStep('⑥ 가열 준비 완료');this.spBody('<b class="hi">⚠️ 아직 녹지 않은 용질이 있어요!</b><br>상온('+Math.round(this.temp)+'°C)에서는 용해도가 낮아 '+cfg.aName+'·'+cfg.bName+'이 다 녹지 못하고 일부가 바닥에 가라앉아 있어요. 🔥 <b>가열</b>하면 용해도가 커져 모두 녹아요!');this.controls();this.feedback();pop();}}
       if(this.anim)this.temp+=(this.target-this.temp)*(this.anim==='cool'?0.01:0.02);
       if(this.anim==='heat'){this.dissolveByFrac();
-        if(Math.abs(this.temp-this.target)<0.6){this.temp=100;this.anim=null;this.step='hot';this.parts.forEach(p=>{if(p.state==='solid')p.state='sol';});this.setStep('⑦ 다 녹음 (100°C)');this.spBody('<b class="hi2">✅ 모든 '+cfg.aName+'과 '+cfg.bName+'이 녹았어요!</b><br>온도가 올라가 용해도가 커지면서(100°C) 떠다니던 고체가 전부 녹아 맑은 용액이 됐어요. 이제 ❄️ <b>냉각</b>해 봅시다.');this.controls();this.feedback();chime();}}
+        if(Math.abs(this.temp-this.target)<0.6){this.temp=100;this.anim=null;this.step='hot';this.parts.forEach(p=>{if(p.state==='solid')p.state='sol';});this.setStep('⑦ 다 녹음 (100°C)');this.spBody('<b class="hi2">✅ 모든 '+cfg.aName+'과 '+cfg.bName+'이 녹았어요!</b><br>온도가 올라가 용해도가 커지면서(100°C) 가라앉아 있던 고체가 전부 녹아 맑은 용액이 됐어요. 이제 ❄️ <b>냉각</b>해 봅시다.');this.controls();this.feedback();chime();}}
       else if(this.anim==='cool'){this.crystByTemp();
         if(!this.crystStarted&&this.solA(this.temp)<cfg.concA){this.crystStarted=true;
           this.spBody('<b class="hi2">❄️ '+cfg.aName+' 석출 시작!</b><br>온도가 '+Math.round(this.temp)+'°C까지 내려가 '+cfg.aName+' 용해도가 넣은 양('+Math.round(cfg.concA)+')보다 작아졌어요. 더 녹아 있을 수 없는 만큼이 <b class="hi">결정</b>으로 나오기 시작!<div class="spd"><div class="c"><div class="l">'+cfg.aName+' 용해도</div><div class="v">'+this.solA(this.temp).toFixed(1)+'</div></div><div class="c"><div class="l">넣은 양</div><div class="v">'+Math.round(cfg.concA)+'</div></div></div>'+cfg.bName+'은 용해도가 훨씬 커서 계속 녹아 있어요.');pop();}
         if(Math.abs(this.temp-this.target)<0.6){this.temp=cfg.coolTarget;this.anim=null;this.step='cooled';this.crystByTemp();this.setStep('⑨ 냉각 완료 — 석출!');this.controls();this.feedback();chime();
           const out=((cfg.concA-this.solA(cfg.coolTarget))*cfg.water/100).toFixed(1);
-          this.spBody('<b class="hi2">🔬 냉각 완료 ('+Math.round(cfg.coolTarget)+'°C)</b><br>'+cfg.aName+' 용해도 약 '+this.solA(cfg.coolTarget).toFixed(1)+' → 넣은 '+Math.round(cfg.concA)+'에서 그만큼을 뺀 양이 결정으로 석출됐어요.<div class="spd"><div class="c"><div class="l">석출된 '+cfg.aName+'</div><div class="v">약 '+out+'g</div></div><div class="c"><div class="l">'+cfg.bName+'</div><div class="v">전부 용해</div></div></div>');
+          this.spBody('<b class="hi2">🔬 냉각 완료 ('+Math.round(cfg.coolTarget)+'°C)</b><br>'+cfg.aName+' 용해도 약 '+this.solA(cfg.coolTarget).toFixed(1)+' → 넣은 '+Math.round(cfg.concA)+'에서 그만큼을 뺀 양이 결정으로 석출됐어요. (용해도만큼의 '+cfg.aName+'은 계속 녹아 있어요.)<div class="spd"><div class="c"><div class="l">석출된 '+cfg.aName+'</div><div class="v">약 '+out+'g</div></div><div class="c"><div class="l">'+cfg.bName+'</div><div class="v">전부 용해</div></div></div>');
           this.askQuestion();}}
       if(this.step==='filtering'){this.fprog+=(1-this.fprog)*0.015+0.002;this.filtrate=Math.min(1,this.fprog*1.05);
         if(this.fprog>0.985){this.fprog=1;this.filtrate=1;this.step='done';this.setStep('⑭ 분리 완료!');this.controls();this.feedback();chime();
-          this.spBody('<b class="hi2">🎉 분리 완료!</b><br>거름종이 위 <b class="hi">'+cfg.aName+' 결정</b>, 아래 <b>'+cfg.bName+' 거름액</b>. 온도에 따른 용해도 차가 큰 <b>'+cfg.aName+'</b>이 먼저 석출되어 분리됐어요. 이것이 <b>분별 결정</b>!<button class="spbtn" onclick="show(\'analysis\')">📈 그래프 구간 분석 →</button>');}}
+          this.spBody('<b class="hi2">🎉 분리 완료!</b><br>거름종이 위에는 <b class="hi">'+cfg.aName+' 결정</b>이 남았어요. 거름액에는 <b>'+cfg.bName+'</b> 전부와, 그 온도에서 <b>녹을 수 있는 만큼의 '+cfg.aName+'</b>이 함께 녹아 있어요(포화 용액).<br><span style="color:#6b7a8a;font-size:11.5px">※ '+cfg.aName+'은 100% 회수되지 않아요 — 그 온도의 용해도만큼은 거름액에 녹은 채 남습니다.</span><button class="spbtn" onclick="show(\'analysis\')">📈 그래프 구간 분석 →</button>');}}
       this.setTemp();this.moveParts();
     }
     this.draw();this.drawCurve();this.raf=requestAnimationFrame(()=>this.loop());
@@ -443,7 +462,7 @@ const BLAB={
     else if(s==='setup_b'){fb.className='live';fb.innerHTML=cfg.aName+'을 넣었어요. 🔵 <b>'+cfg.bName+' '+cfg.bAmt+'g</b>도 넣어요.';}
     else if(s==='setup_stir'){fb.className='live';fb.innerHTML='시약을 다 넣었어요. 🥢 <b>유리 막대</b>로 잘 저어요.';}
     else if(s==='stirring'){fb.className='live';fb.innerHTML='🥢 골고루 섞이도록 젓는 중…';}
-    else if(s==='ready_heat'){fb.className='live ok';fb.innerHTML='아직 녹지 않은 용질이 떠다녀요. 🔥 <b>가열장치에 올려</b> 가열하면 모두 녹아요!';}
+    else if(s==='ready_heat'){fb.className='live ok';fb.innerHTML='아직 녹지 않은 용질이 바닥에 가라앉아 있어요. 🔥 <b>가열장치에 올려</b> 가열하면 모두 녹아요!';}
     else if(s==='heating'){fb.className='live';fb.innerHTML='🔥 온도가 오르며 고체가 모두 녹고 있어요.';}
     else if(s==='hot'){fb.className='live ok';fb.innerHTML='✅ 100°C에서 '+cfg.aName+'과 '+cfg.bName+'이 <b>모두</b> 녹았어요. 이제 '+(ice?'🧊 <b>얼음물</b>에 담가 냉각':'❄️ <b>서서히 냉각</b>')+'해요.';}
     else if(s==='cooling'){fb.className='live';fb.innerHTML=(ice?'🧊 얼음물에서 빠르게 식는 중':'❄️ 천천히 식는 중')+' — 용해도 차가 큰 <b>'+cfg.aName+'</b>이 결정으로 빠져나와요.';}
@@ -452,7 +471,7 @@ const BLAB={
     else if(s==='filt_wet'){fb.className='live';fb.innerHTML='거름종이를 올렸어요. 💧 물을 살짝 적셔 깔때기에 <b>밀착</b>시켜요.';}
     else if(s==='filt_pour'){fb.className='live';fb.innerHTML='거름종이를 적셨어요. ⚗️ 이제 <b>용액을 부어</b> 걸러요.';}
     else if(s==='filtering'){fb.className='live';fb.innerHTML='⚗️ 거르는 중 — 결정은 종이에 남고, '+cfg.bName+' 용액은 아래로 통과해요.';}
-    else{fb.className='live ok';fb.innerHTML='🎉 분리 완료! 거름종이 위 <b>'+cfg.aName+'</b>, 아래 <b>'+cfg.bName+' 거름액</b>. 이것이 <b>분별 결정</b>이에요.';}},
+    else{fb.className='live ok';fb.innerHTML='🎉 분리 완료! 거름종이 위 <b>'+cfg.aName+' 결정</b>, 아래 <b>거름액</b>('+cfg.bName+' + 녹아 있는 '+cfg.aName+' 일부). 이것이 <b>분별 결정</b>이에요.';}},
   /* ===== drawing ===== */
   drawBeaker(b,level,col,hot,small){const ctx=this.ctx,X=b.x,Y=b.y,W=b.w,H=b.h;
     ctx.fillStyle='rgba(200,235,255,.05)';roundRect(ctx,X,Y,W,H,10);ctx.fill();
@@ -496,7 +515,7 @@ const BLAB={
     if(filterStage){this.drawFilter(ctx,this.paperWet);this.drawBeaker(this.lb,this.filtrate,cfg.liq,false,true);
       if(filtering){this.parts.forEach(p=>{if(p.state==='sol')this.drawParticle(ctx,p);});this.parts.forEach(p=>{if(p.state==='paper')this.drawParticle(ctx,p);});}
       if(st==='filtering'){ctx.strokeStyle='rgba(150,210,255,.7)';ctx.lineWidth=4;ctx.beginPath();ctx.moveTo(b.x+b.w-6,b.lt+8);ctx.quadraticCurveTo(b.x+b.w+70,b.y+4,this.fn.cx-6,this.fn.rimY+10);ctx.stroke();}
-      ctx.font="12px 'Jua'";ctx.textAlign='center';ctx.fillStyle='#fff';ctx.fillText(filtering?('거름종이 위 '+cfg.aName):'거름종이',this.fn.cx,this.fn.rimY-22);ctx.fillStyle='#dfeaff';ctx.fillText('깔때기',this.fn.cx-2,this.fn.rimY-6);ctx.fillStyle='#bfe6ff';ctx.fillText(filtering?(cfg.bName+' 거름액'):'받는 비커',this.lb.cx,this.lb.top+this.lb.h+16);ctx.fillStyle='#aeb8c4';ctx.fillText('깔때기대',this.standX+18,this.tableY+16);}
+      ctx.font="12px 'Jua'";ctx.textAlign='center';ctx.fillStyle='#fff';ctx.fillText(filtering?('거름종이 위 '+cfg.aName):'거름종이',this.fn.cx,this.fn.rimY-22);ctx.fillStyle='#dfeaff';ctx.fillText('깔때기',this.fn.cx-2,this.fn.rimY-6);ctx.fillStyle='#bfe6ff';ctx.fillText(filtering?'거름액':'받는 비커',this.lb.cx,this.lb.top+this.lb.h+16);ctx.fillStyle='#aeb8c4';ctx.fillText('깔때기대',this.standX+18,this.tableY+16);}
     ctx.font="12px 'Jua'";ctx.textAlign='left';ctx.fillStyle=cfg.aCol;ctx.beginPath();ctx.arc(16,18,5,0,7);ctx.fill();ctx.fillStyle='#eaf2ff';ctx.fillText(cfg.aName+'(용해도 차 큼·석출)',26,22);
     ctx.fillStyle=cfg.bCol;ctx.beginPath();ctx.arc(236,18,5,0,7);ctx.fill();ctx.fillStyle='#bdf3e3';ctx.fillText(cfg.bName+'(녹아 있음)',246,22);},
   drawFilter(ctx,wet){const f=this.fn;ctx.fillStyle='#5a6470';ctx.fillRect(this.standX-4,this.tableY-2,44,8);
