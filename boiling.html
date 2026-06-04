@@ -18,14 +18,40 @@
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{margin:0;height:100%;overflow:hidden}
 body{font-family:'Gowun Dodum',sans-serif;color:var(--text);
-  background:radial-gradient(1200px 800px at 18% -10%,#4a2412 0%,transparent 55%),
-             radial-gradient(1000px 700px at 95% 110%,#3a1d0e 0%,transparent 50%),
-             linear-gradient(160deg,var(--bg),var(--bg2) 60%,var(--bg3));
+  /* Minecraft 느낌의 단계형 픽셀 노을 하늘 + 지평선 글로우 */
+  background:
+    radial-gradient(140% 70% at 50% 96%, rgba(255,138,75,.30) 0%, rgba(255,138,75,0) 58%),
+    linear-gradient(180deg,
+      #120a06 0%,  #120a06 14%,
+      #1c0e07 14%, #1c0e07 28%,
+      #271409 28%, #271409 42%,
+      #361b0e 42%, #361b0e 56%,
+      #482311 56%, #482311 70%,
+      #5b2d15 70%, #5b2d15 84%,
+      #6e3617 84%, #6e3617 100%);
+  background-attachment:fixed;
   user-select:none;touch-action:manipulation}
+/* 블록(픽셀) 격자 텍스처 — 하늘·여백에 마인크래프트 느낌 */
+body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
+  background-image:
+    repeating-linear-gradient(0deg, rgba(0,0,0,.16) 0 2px, transparent 2px 28px),
+    repeating-linear-gradient(90deg, rgba(0,0,0,.16) 0 2px, transparent 2px 28px),
+    repeating-linear-gradient(90deg, rgba(255,210,160,.045) 0 2px, transparent 2px 28px);
+  opacity:.5}
+/* 떠오르는 픽셀 불티(공장 스파크) */
 .bubbles{position:fixed;inset:0;overflow:hidden;pointer-events:none;z-index:0}
-.bubbles i{position:absolute;bottom:-40px;border-radius:50%;
-  background:radial-gradient(circle at 35% 30%,rgba(255,210,160,.5),rgba(255,140,80,.08) 60%,transparent);animation:rise linear infinite}
-@keyframes rise{to{transform:translateY(-110vh) translateX(30px);opacity:0}}
+.bubbles i{position:absolute;bottom:-30px;border-radius:0;
+  background:#ffb15c;
+  box-shadow:0 0 7px rgba(255,140,70,.7),0 0 2px rgba(255,220,150,.9);
+  animation:rise linear infinite}
+@keyframes rise{
+  0%{opacity:0;transform:translateY(0) translateX(0)}
+  12%{opacity:1}
+  88%{opacity:.85}
+  100%{transform:translateY(-108vh) translateX(26px);opacity:0}}
+/* 공장·석유 정유시설 픽셀 배경 (화면 하단 고정) */
+.scene{position:fixed;left:0;bottom:0;width:100%;height:min(48vh,340px);z-index:0;pointer-events:none;
+  shape-rendering:crispEdges}
 #app{position:relative;z-index:1;height:100%;display:flex;flex-direction:column}
 .topbar{display:flex;align-items:center;gap:12px;padding:12px 18px;background:linear-gradient(180deg,rgba(22,12,8,.85),rgba(22,12,8,.2));border-bottom:1px solid var(--panel-line);backdrop-filter:blur(6px)}
 .topbar .badge{font-family:'Jua';font-size:13px;color:#3a1505;background:linear-gradient(135deg,var(--accent2),var(--gold));padding:5px 12px;border-radius:20px}
@@ -128,9 +154,274 @@ canvas{display:block;width:100%;border-radius:14px;touch-action:none}
 .result .big{font-family:'Black Han Sans';font-size:28px;display:block;margin-bottom:4px}
 .result.perfect .big{color:var(--good)}.result.miss .big{color:var(--bad)}
 @media(max-width:680px){.ctable{font-size:12.5px}}
+
+/* ===== 여정 모드 ===== */
+.jhint-sub{color:var(--muted);font-size:13.5px;margin:-6px 0 14px;line-height:1.55}
+.jstage{position:relative;width:100%;height:min(62vh,540px);border-radius:20px;overflow:hidden;border:1px solid var(--panel-line);box-shadow:var(--shadow);image-rendering:pixelated;background:#0a0604}
+.jscene{position:absolute;inset:0;overflow:hidden}
+.pixgrid::after{content:'';position:absolute;inset:0;pointer-events:none;background-image:repeating-linear-gradient(0deg,rgba(0,0,0,.10) 0 1px,transparent 1px 22px),repeating-linear-gradient(90deg,rgba(0,0,0,.10) 0 1px,transparent 1px 22px);opacity:.45}
+.sun{position:absolute;width:58px;height:58px;background:#ffe9a8;box-shadow:0 0 0 8px rgba(255,233,168,.22),0 0 34px rgba(255,210,120,.55)}
+.cloud{position:absolute;height:10px;width:22px;background:rgba(255,255,255,.85);box-shadow:14px 0 0 rgba(255,255,255,.85),28px 0 0 rgba(255,255,255,.7),-12px 4px 0 rgba(255,255,255,.7);animation:drift linear infinite}
+@keyframes drift{from{transform:translateX(-60px)}to{transform:translateX(115vw)}}
+.bg-drill{background:linear-gradient(180deg,#ffe1a8 0%,#ffce8e 16%,#ffbd7c 30%,#efaa64 44%,#cda05c 52%,#cda05c 52%)}
+.dr-ground{position:absolute;left:0;right:0;bottom:0;height:46%;background:linear-gradient(180deg,#b8814a,#9a6a3a 32%,#7c5430 64%,#5e3f24)}
+.dr-ground::before{content:'';position:absolute;inset:0;background-image:repeating-linear-gradient(90deg,rgba(0,0,0,.07) 0 2px,transparent 2px 26px),repeating-linear-gradient(0deg,rgba(0,0,0,.07) 0 2px,transparent 2px 26px)}
+.dr-sea{position:absolute;right:0;bottom:46%;width:32%;height:13%;background:linear-gradient(180deg,#7ec8ec,#4aa3cf);clip-path:polygon(22% 0,100% 0,100% 100%,0 100%)}
+.dr-derrick{position:absolute;bottom:40%;width:106px;height:184px}
+.dr-miner{position:absolute;bottom:42%;width:56px;height:82px}
+.dr-bit.jolt{animation:jolt .12s}
+@keyframes jolt{0%,100%{transform:translateY(0)}50%{transform:translateY(7px)}}
+.dr-barrel{position:absolute;bottom:7%;width:32px;height:42px;background:#3f2715;border:2px solid #241509;border-radius:3px;overflow:hidden}
+.dr-barrel i{position:absolute;left:0;right:0;bottom:0;height:0;background:#1a0f08;transition:height .2s}
+.dr-splash{position:absolute;width:7px;height:7px;background:#1a0f08;animation:splash .5s ease-out forwards}
+@keyframes splash{0%{transform:translate(0,0);opacity:1}100%{transform:translate(var(--dx,0),-42px);opacity:0}}
+.j-hud{position:absolute;left:0;right:0;top:0;padding:12px 14px;display:flex;flex-direction:column;gap:8px;pointer-events:none}
+.gauge{height:22px;background:rgba(20,10,6,.7);border:2px solid var(--panel-line);border-radius:12px;overflow:hidden;position:relative}
+.gauge>i{position:absolute;left:0;top:0;bottom:0;width:0;background:linear-gradient(90deg,#ff8a4b,#ffd34d);transition:width .12s}
+.gauge>span{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:'Jua';font-size:13px;color:#fff;text-shadow:0 1px 2px #000}
+.j-hint{font-family:'Jua';font-size:13px;color:#fff;text-shadow:0 1px 3px rgba(0,0,0,.6);background:rgba(20,10,6,.45);padding:5px 10px;border-radius:10px;align-self:flex-start}
+.factpop{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:16px;z-index:20;background:rgba(10,6,4,.55)}
+.factpop-card{background:rgba(24,12,6,.97);border:3px solid var(--accent);border-radius:18px;padding:20px;max-width:380px;width:94%;box-shadow:0 20px 50px rgba(0,0,0,.55);animation:popa .25s;text-align:center}
+.factpop-card .fic{font-size:40px}
+.factpop-card h3{font-family:'Black Han Sans';font-size:21px;margin:8px 0;color:var(--accent)}
+.factpop-card p{color:#ffe9d6;font-size:14.5px;line-height:1.7;margin:6px 0 16px}
+.bg-sea{background:linear-gradient(180deg,#cdeeff 0%,#a7ddf6 22%,#83cbed 38%,#54a9d3 50%,#54a9d3 50%)}
+.sea-water{position:absolute;left:0;right:0;bottom:0;height:54%;background:linear-gradient(180deg,#3f9bc8,#2c7fad 42%,#1f6690)}
+.waves{position:absolute;left:0;right:0;bottom:0;height:54%;pointer-events:none;background-image:repeating-linear-gradient(0deg,rgba(255,255,255,.10) 0 2px,transparent 2px 16px);animation:wavemove 1.4s steps(2) infinite}
+@keyframes wavemove{from{background-position:0 0}to{background-position:8px 0}}
+.sea-refinery{position:absolute;right:3%;bottom:50%;width:88px;height:66px;opacity:.5}
+.dock{position:absolute;right:0;bottom:30%;width:10%;height:26%;background:linear-gradient(180deg,#7c5430,#5e3f24);border-left:3px solid #ffd34d}
+.dock::before{content:'\2693';position:absolute;top:-22px;left:50%;transform:translateX(-50%);font-size:18px}
+.ship{position:absolute;width:84px;height:48px;left:24px;top:50%}
+.ship.bump{animation:bump .2s}
+@keyframes bump{0%,100%{filter:none}50%{filter:brightness(1.6)}}
+@keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+.obstacle{position:absolute;width:42px;height:38px;display:flex;align-items:center;justify-content:center;font-size:28px;filter:drop-shadow(0 3px 4px rgba(0,0,0,.4))}
+.sea-prog{height:18px;background:rgba(10,20,30,.6);border:2px solid rgba(255,255,255,.3);border-radius:10px;overflow:hidden;position:relative}
+.sea-prog>i{position:absolute;left:0;top:0;bottom:0;width:0;background:linear-gradient(90deg,#7ee0ff,#34d399);transition:width .1s}
+.sea-prog>span{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:'Jua';font-size:12px;color:#fff;text-shadow:0 1px 2px #000}
+.dpad{display:grid;grid-template-columns:repeat(3,50px);grid-template-rows:repeat(3,50px);gap:6px;justify-content:center;margin-top:12px}
+.dpad button{font-family:'Jua';font-size:20px;color:#3a1505;background:linear-gradient(135deg,var(--accent2),var(--accent));border:none;border-radius:12px;cursor:pointer;box-shadow:0 4px 0 rgba(0,0,0,.3);user-select:none;touch-action:none}
+.dpad button:active{transform:translateY(2px);box-shadow:0 2px 0 rgba(0,0,0,.3)}
+.dpad .up{grid-column:2;grid-row:1}.dpad .left{grid-column:1;grid-row:2}.dpad .right{grid-column:3;grid-row:2}.dpad .down{grid-column:2;grid-row:3}
+.dpad .mid{grid-column:2;grid-row:2;background:rgba(255,170,100,.12);box-shadow:none;color:var(--accent)}
+.bg-port{background:linear-gradient(180deg,#ffd09a 0%,#ff9e63 24%,#e87a4a 42%,#b85a34 54%,#b85a34 54%)}
+.port-water{position:absolute;left:0;right:0;bottom:0;height:36%;background:linear-gradient(180deg,#a35a36,#6e3c22)}
+.arrive-msg{position:absolute;left:50%;top:16%;transform:translateX(-50%);text-align:center;background:rgba(24,12,6,.92);border:3px solid var(--gold);border-radius:16px;padding:16px 20px;max-width:86%;animation:popa .3s}
+.arrive-msg h3{font-family:'Black Han Sans';font-size:24px;color:var(--gold);margin:0 0 8px}
+.arrive-msg p{color:#ffe9d6;font-size:14.5px;line-height:1.6;margin:0}
+/* ===== 증류탑 시뮬레이터 ===== */
+.stepbar{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px}
+.step{font-family:'Jua';font-size:12.5px;padding:6px 10px;border-radius:10px;background:rgba(30,16,8,.6);border:1px solid var(--panel-line);color:var(--muted)}
+.step.on{background:linear-gradient(135deg,var(--accent2),var(--gold));color:#3a1505;border-color:var(--gold)}
+.sim-legend{display:flex;flex-wrap:wrap;gap:7px;margin:10px 0}
+.legchip{display:flex;align-items:center;gap:6px;font-family:'Gowun Dodum';font-size:12px;background:rgba(30,16,8,.55);border:1px solid var(--panel-line);border-radius:10px;padding:5px 9px;color:#ffe9d6}
+.legchip .sw{width:12px;height:12px;border-radius:0;flex:none}
+.legchip b{color:var(--accent);font-family:'Jua'}
+.simnarr{margin-top:10px;padding:12px 14px;border-radius:14px;background:rgba(30,16,8,.6);border:1px solid var(--panel-line);font-size:14.5px;line-height:1.55;color:#ffe9d6;min-height:46px}
+.simnarr b{color:var(--gold)}
+.simnarr.ok{background:rgba(52,211,153,.15);border-color:var(--good)}
+
+/* ===== 업로드 배경 이미지 적용 ===== */
+#screen-home{position:relative;background:url('distill_img/home.jpg') center/cover no-repeat,linear-gradient(160deg,#26506a,#16323f 58%,#3a2414);image-rendering:pixelated}
+#screen-home::before{content:'';position:absolute;inset:0;background:linear-gradient(180deg,rgba(8,5,3,.46),rgba(8,5,3,.30) 42%,rgba(8,5,3,.60));pointer-events:none;z-index:0}
+#screen-home .wrap{position:relative;z-index:1}
+body[data-s="home"] .scene,body[data-s="home"] .bubbles{display:none}
+.bg-drill{background:url('distill_img/drill.jpg') center/cover no-repeat,linear-gradient(180deg,#ffe1a8 0%,#ffce8e 16%,#ffbd7c 30%,#efaa64 44%,#cda05c 52%,#cda05c 52%);image-rendering:pixelated}
+.bg-sea{background:url('distill_img/sail.jpg') center/cover no-repeat,linear-gradient(180deg,#cdeeff 0%,#a7ddf6 22%,#83cbed 38%,#54a9d3 50%,#54a9d3 50%);image-rendering:pixelated}
+.bg-port{background:url('distill_img/arrive.jpg') center/cover no-repeat,linear-gradient(180deg,#ffd09a 0%,#ff9e63 24%,#e87a4a 42%,#b85a34 54%,#b85a34 54%);image-rendering:pixelated}
+.bg-drill.pixgrid::after,.bg-sea.pixgrid::after,.bg-port.pixgrid::after{display:none}
+.bg-drill .sun,.bg-drill .cloud,.bg-drill .dr-sea,.bg-drill .dr-ground,.bg-drill .dr-derrick,.bg-drill .dr-miner,.bg-drill .dr-barrel{display:none}
+.bg-sea .sun,.bg-sea .cloud,.bg-sea .sea-refinery,.bg-sea .sea-water,.bg-sea .waves{display:none}
+.bg-port .sun,.bg-port .cloud,.bg-port .port-water{display:none}
+
+/* ===== 가독성: 배경 위 글자가 묻히지 않게 ===== */
+#screen-home .hero{background:radial-gradient(130% 110% at 50% 32%,rgba(10,6,4,.62),rgba(10,6,4,.20));border-radius:24px;padding:24px 18px 18px;margin-top:6px}
+#screen-home .hero h2{filter:drop-shadow(0 3px 12px rgba(0,0,0,.85))}
+#screen-home .hero .eyebrow{text-shadow:0 1px 8px rgba(0,0,0,.9)}
+#screen-home .hero p{color:#ffe9d6 !important;text-shadow:0 1px 8px rgba(0,0,0,.9)}
+.j-hint{background:rgba(16,9,5,.66) !important}
 </style>
 </head>
 <body>
+<svg class="scene" viewBox="0 0 720 200" preserveAspectRatio="xMidYMax slice" aria-hidden="true">
+  <rect x="0" y="120" width="720" height="58" fill="#5a2c15" opacity="0.30"/>
+  <rect x="0" y="138" width="720" height="40" fill="#6e3417" opacity="0.28"/>
+  <!-- 펌프잭(석유 시추) -->
+  <g>
+    <rect x="64" y="150" width="64" height="24" fill="#241509"/>
+    <rect x="64" y="150" width="64" height="3" fill="#3f2715"/>
+    <rect x="92" y="118" width="8" height="34" fill="#3f2715"/>
+    <rect x="84" y="146" width="24" height="6" fill="#2a1a0f"/>
+    <g>
+      <animateTransform attributeName="transform" type="rotate" values="-8 96 120;8 96 120;-8 96 120" keyTimes="0;0.5;1" dur="3.6s" calcMode="spline" keySplines="0.45 0 0.55 1;0.45 0 0.55 1" repeatCount="indefinite"/>
+      <rect x="72" y="117" width="56" height="6" fill="#6b4930"/>
+      <rect x="66" y="116" width="8" height="16" fill="#7d5638"/>
+      <rect x="64" y="128" width="6" height="6" fill="#7d5638"/>
+      <rect x="124" y="115" width="12" height="14" fill="#2a1a0f"/>
+    </g>
+    <rect x="70" y="132" width="3" height="20" fill="#241509"/>
+  </g>
+  <!-- 저장 탱크 A -->
+  <g>
+    <rect x="150" y="132" width="56" height="42" fill="#523219"/>
+    <rect x="150" y="132" width="7" height="42" fill="#6b4930"/>
+    <rect x="199" y="132" width="7" height="42" fill="#2a1a0f"/>
+    <rect x="158" y="126" width="40" height="6" fill="#5c3a22"/>
+    <rect x="168" y="122" width="20" height="4" fill="#6b4930"/>
+    <rect x="150" y="150" width="56" height="2" fill="#241509"/>
+    <rect x="176" y="132" width="2" height="42" fill="#241509"/>
+    <rect x="160" y="156" width="6" height="7" fill="#ffb15c"/>
+  </g>
+  <rect x="120" y="160" width="40" height="6" fill="#5c3a22"/>
+  <rect x="120" y="160" width="40" height="2" fill="#7d5638"/>
+  <!-- 증류탑 1 -->
+  <g>
+    <rect x="250" y="58" width="30" height="116" fill="#5c3a22"/>
+    <rect x="250" y="58" width="7" height="116" fill="#6b4930"/>
+    <rect x="273" y="58" width="7" height="116" fill="#3f2715"/>
+    <rect x="250" y="76" width="30" height="3" fill="#2a1a0f"/>
+    <rect x="250" y="100" width="30" height="3" fill="#2a1a0f"/>
+    <rect x="250" y="124" width="30" height="3" fill="#2a1a0f"/>
+    <rect x="250" y="148" width="30" height="3" fill="#2a1a0f"/>
+    <rect x="255" y="52" width="20" height="6" fill="#6b4930"/>
+    <rect x="261" y="46" width="8" height="6" fill="#7d5638"/>
+    <rect x="257" y="84" width="6" height="7" fill="#ffd34d"><animate attributeName="opacity" values="1;1;0.4;1" keyTimes="0;0.7;0.78;1" dur="4s" repeatCount="indefinite"/></rect>
+    <rect x="267" y="108" width="6" height="7" fill="#ffb15c"/>
+    <rect x="257" y="132" width="6" height="7" fill="#ffd34d"/>
+  </g>
+  <!-- 증류탑 2 (가장 높음) -->
+  <g>
+    <rect x="296" y="42" width="34" height="132" fill="#6b4930"/>
+    <rect x="296" y="42" width="8" height="132" fill="#7d5638"/>
+    <rect x="322" y="42" width="8" height="132" fill="#3f2715"/>
+    <rect x="296" y="60" width="34" height="3" fill="#241509"/>
+    <rect x="296" y="84" width="34" height="3" fill="#241509"/>
+    <rect x="296" y="108" width="34" height="3" fill="#241509"/>
+    <rect x="296" y="132" width="34" height="3" fill="#241509"/>
+    <rect x="296" y="154" width="34" height="3" fill="#241509"/>
+    <rect x="301" y="36" width="24" height="6" fill="#7d5638"/>
+    <rect x="308" y="30" width="10" height="6" fill="#9a7152"/>
+    <rect x="311" y="24" width="4" height="6" fill="#ff6b4a"><animate attributeName="opacity" values="1;0.15;1" dur="1.3s" repeatCount="indefinite"/></rect>
+    <rect x="303" y="70" width="7" height="8" fill="#ffd34d"/>
+    <rect x="315" y="94" width="7" height="8" fill="#ffb15c"><animate attributeName="opacity" values="1;1;0.35;1" keyTimes="0;0.6;0.68;1" dur="3.3s" repeatCount="indefinite"/></rect>
+    <rect x="303" y="118" width="7" height="8" fill="#ffd34d"/>
+    <rect x="315" y="142" width="7" height="8" fill="#ffb15c"/>
+  </g>
+  <!-- 굴뚝 1 + 연기 -->
+  <g>
+    <rect x="338" y="80" width="16" height="94" fill="#3f2715"/>
+    <rect x="338" y="80" width="4" height="94" fill="#523219"/>
+    <rect x="336" y="74" width="20" height="6" fill="#523219"/>
+    <rect x="336" y="92" width="20" height="3" fill="#241509"/>
+    <rect x="340" y="64" width="12" height="9" fill="#8a7466" opacity="0"><animate attributeName="opacity" values="0;0.5;0" dur="4.2s" repeatCount="indefinite"/><animateTransform attributeName="transform" type="translate" values="0 0;10 -48" dur="4.2s" repeatCount="indefinite"/></rect>
+    <rect x="340" y="64" width="12" height="9" fill="#9a8678" opacity="0"><animate attributeName="opacity" values="0;0.45;0" dur="4.2s" begin="1.4s" repeatCount="indefinite"/><animateTransform attributeName="transform" type="translate" values="0 0;6 -48" dur="4.2s" begin="1.4s" repeatCount="indefinite"/></rect>
+    <rect x="340" y="64" width="12" height="9" fill="#8a7466" opacity="0"><animate attributeName="opacity" values="0;0.4;0" dur="4.2s" begin="2.8s" repeatCount="indefinite"/><animateTransform attributeName="transform" type="translate" values="0 0;13 -48" dur="4.2s" begin="2.8s" repeatCount="indefinite"/></rect>
+  </g>
+  <!-- 플레어 스택 + 불꽃 -->
+  <g>
+    <rect x="364" y="96" width="14" height="78" fill="#3f2715"/>
+    <rect x="364" y="96" width="4" height="78" fill="#523219"/>
+    <rect x="362" y="92" width="18" height="4" fill="#523219"/>
+    <rect x="358" y="72" width="24" height="24" fill="#ff8a4b" opacity="0.14"/>
+    <rect x="366" y="84" width="10" height="10" fill="#ff6b4a"><animate attributeName="opacity" values="0.9;0.55;0.95;0.6;0.9" dur="0.5s" repeatCount="indefinite"/></rect>
+    <rect x="367" y="76" width="8" height="10" fill="#ff8a4b"/>
+    <rect x="369" y="70" width="4" height="8" fill="#ffd34d"><animate attributeName="height" values="8;14;5;10;8" dur="0.55s" repeatCount="indefinite"/><animate attributeName="y" values="70;64;73;67;70" dur="0.55s" repeatCount="indefinite"/></rect>
+  </g>
+  <!-- 돔 저장 탱크 -->
+  <g>
+    <rect x="390" y="120" width="66" height="54" fill="#5c3a22"/>
+    <rect x="390" y="120" width="8" height="54" fill="#6b4930"/>
+    <rect x="448" y="120" width="8" height="54" fill="#2a1a0f"/>
+    <rect x="398" y="112" width="50" height="8" fill="#6b4930"/>
+    <rect x="406" y="106" width="34" height="6" fill="#5c3a22"/>
+    <rect x="414" y="102" width="18" height="4" fill="#6b4930"/>
+    <rect x="390" y="140" width="66" height="3" fill="#241509"/>
+    <rect x="390" y="158" width="66" height="3" fill="#241509"/>
+    <rect x="420" y="120" width="2" height="54" fill="#241509"/>
+    <rect x="400" y="146" width="7" height="8" fill="#ffb15c"/>
+    <rect x="438" y="146" width="7" height="8" fill="#ffd34d"/>
+  </g>
+  <!-- 굴뚝 2 + 연기 -->
+  <g>
+    <rect x="466" y="88" width="14" height="86" fill="#3f2715"/>
+    <rect x="466" y="88" width="4" height="86" fill="#523219"/>
+    <rect x="464" y="82" width="18" height="6" fill="#523219"/>
+    <rect x="468" y="72" width="11" height="8" fill="#8a7466" opacity="0"><animate attributeName="opacity" values="0;0.45;0" dur="4.6s" begin="0.7s" repeatCount="indefinite"/><animateTransform attributeName="transform" type="translate" values="0 0;9 -44" dur="4.6s" begin="0.7s" repeatCount="indefinite"/></rect>
+    <rect x="468" y="72" width="11" height="8" fill="#9a8678" opacity="0"><animate attributeName="opacity" values="0;0.4;0" dur="4.6s" begin="2.4s" repeatCount="indefinite"/><animateTransform attributeName="transform" type="translate" values="0 0;6 -44" dur="4.6s" begin="2.4s" repeatCount="indefinite"/></rect>
+  </g>
+  <!-- 구형 저장구 -->
+  <g>
+    <rect x="512" y="150" width="5" height="22" fill="#2a1a0f"/>
+    <rect x="540" y="150" width="5" height="22" fill="#2a1a0f"/>
+    <rect x="514" y="120" width="30" height="32" fill="#5c3a22"/>
+    <rect x="510" y="126" width="38" height="20" fill="#5c3a22"/>
+    <rect x="514" y="120" width="10" height="32" fill="#6b4930"/>
+    <rect x="510" y="126" width="6" height="20" fill="#6b4930"/>
+    <rect x="538" y="120" width="6" height="32" fill="#3f2715"/>
+    <rect x="542" y="126" width="6" height="20" fill="#3f2715"/>
+    <rect x="520" y="122" width="8" height="6" fill="#ffb15c" opacity="0.8"/>
+  </g>
+  <!-- 증류탑 3 -->
+  <g>
+    <rect x="572" y="74" width="26" height="100" fill="#523219"/>
+    <rect x="572" y="74" width="6" height="100" fill="#6b4930"/>
+    <rect x="592" y="74" width="6" height="100" fill="#2a1a0f"/>
+    <rect x="572" y="92" width="26" height="3" fill="#241509"/>
+    <rect x="572" y="116" width="26" height="3" fill="#241509"/>
+    <rect x="572" y="140" width="26" height="3" fill="#241509"/>
+    <rect x="576" y="68" width="18" height="6" fill="#6b4930"/>
+    <rect x="582" y="62" width="6" height="6" fill="#7d5638"/>
+    <rect x="578" y="100" width="6" height="7" fill="#ffd34d"/>
+    <rect x="586" y="124" width="6" height="7" fill="#ffb15c"/>
+  </g>
+  <!-- 저장 탱크 B -->
+  <g>
+    <rect x="612" y="138" width="50" height="36" fill="#523219"/>
+    <rect x="612" y="138" width="6" height="36" fill="#6b4930"/>
+    <rect x="656" y="138" width="6" height="36" fill="#2a1a0f"/>
+    <rect x="620" y="132" width="34" height="6" fill="#5c3a22"/>
+    <rect x="612" y="154" width="50" height="2" fill="#241509"/>
+    <rect x="636" y="138" width="2" height="36" fill="#241509"/>
+  </g>
+  <!-- 전경 파이프 랙 + 밸브 -->
+  <rect x="0" y="162" width="720" height="7" fill="#5c3a22"/>
+  <rect x="0" y="162" width="720" height="2" fill="#7d5638"/>
+  <rect x="0" y="167" width="720" height="2" fill="#241509"/>
+  <rect x="180" y="158" width="6" height="6" fill="#3f2715"/>
+  <rect x="360" y="158" width="6" height="6" fill="#3f2715"/>
+  <rect x="430" y="158" width="6" height="6" fill="#3f2715"/>
+  <rect x="600" y="158" width="6" height="6" fill="#3f2715"/>
+  <rect x="266" y="162" width="4" height="12" fill="#523219"/>
+  <rect x="420" y="162" width="4" height="12" fill="#523219"/>
+  <rect x="528" y="162" width="4" height="12" fill="#523219"/>
+  <!-- 기름 드럼 -->
+  <g>
+    <rect x="214" y="156" width="18" height="18" fill="#3f2715"/>
+    <rect x="214" y="156" width="5" height="18" fill="#523219"/>
+    <rect x="214" y="161" width="18" height="2" fill="#241509"/>
+    <rect x="214" y="167" width="18" height="2" fill="#241509"/>
+    <rect x="234" y="158" width="16" height="16" fill="#46291a"/>
+    <rect x="234" y="158" width="4" height="16" fill="#5c3a22"/>
+    <rect x="234" y="163" width="16" height="2" fill="#241509"/>
+    <rect x="486" y="162" width="22" height="12" fill="#3f2715"/>
+    <rect x="486" y="162" width="22" height="3" fill="#523219"/>
+    <rect x="491" y="162" width="2" height="12" fill="#241509"/>
+    <rect x="501" y="162" width="2" height="12" fill="#241509"/>
+  </g>
+  <!-- 지면(아스팔트 블록) -->
+  <rect x="0" y="174" width="720" height="26" fill="#1a100a"/>
+  <rect x="0" y="174" width="720" height="3" fill="#2e1d11"/>
+  <rect x="60" y="177" width="2" height="23" fill="#120b07"/>
+  <rect x="180" y="177" width="2" height="23" fill="#120b07"/>
+  <rect x="300" y="177" width="2" height="23" fill="#120b07"/>
+  <rect x="420" y="177" width="2" height="23" fill="#120b07"/>
+  <rect x="540" y="177" width="2" height="23" fill="#120b07"/>
+  <rect x="660" y="177" width="2" height="23" fill="#120b07"/>
+  <!-- 기름 웅덩이 -->
+  <rect x="300" y="178" width="120" height="4" fill="#0f0a06"/>
+  <rect x="312" y="178" width="46" height="1" fill="#6e3417" opacity="0.55"/>
+</svg>
 <div class="bubbles" id="bubbles"></div>
 <div id="app">
   <div class="topbar">
@@ -150,9 +441,11 @@ canvas{display:block;width:100%;border-radius:14px;touch-action:none}
         <p>섞인 액체를 <b>가열</b>하면 끓는점이 <b>낮은</b> 물질이 먼저 끓어 나와요. 그 증기를 식혀 모으면? 증류로 깨끗하게 분리!</p>
       </div>
       <div class="menu">
+        <div class="card" onclick="show('journey')"><div class="glow"></div><span class="tag lab">스토리</span><span class="ic">🛢️</span><h3>원유의 여정</h3><p>시추 → 항해 → 증류탑! 캐릭터를 움직여 원유가 분리되는 과정을 체험해요.</p></div>
         <div class="card" onclick="show('learn')"><div class="glow"></div><span class="tag learn">학습</span><span class="ic">📖</span><h3>학습하기</h3><p>증류 · 분별 증류 · 원유의 분리까지! 빈칸을 채우며 익혀요.</p></div>
         <div class="card" onclick="show('quiz')"><div class="glow"></div><span class="tag quiz">퀴즈</span><span class="ic">📝</span><h3>핵심 빈칸 채우기</h3><p>단어를 탭해 빈칸에 쏙! 핵심 개념을 스스로 정리해요.</p></div>
         <div class="card" onclick="show('lab')"><div class="glow"></div><span class="tag lab">실험</span><span class="ic">🏭</span><h3>원유 증류탑</h3><p>물질을 골라 증류탑 알맞은 층에 배치! 가열하면 입자가 끓는점 따라 올라가 분리돼요.</p></div>
+        <div class="card" onclick="show('anim')"><div class="glow"></div><span class="tag lab" style="background:rgba(126,224,255,.18);color:#aeeaff">애니메이션</span><span class="ic">🎬</span><h3>분별 증류 애니메이션</h3><p>색깔 분자가 끓는점 높이에서 액체로 응결돼 분리되는 과정을 직접 관찰해요.</p></div>
       </div>
     </div>
   </section>
@@ -218,67 +511,75 @@ canvas{display:block;width:100%;border-radius:14px;touch-action:none}
     </div>
   </section>
 
-  <!-- LAB : 원유 증류탑 -->
-  <section class="screen" id="screen-lab">
+  <!-- JOURNEY : 원유의 여정 -->
+  <section class="screen" id="screen-journey">
     <div class="wrap">
-      <div class="shead"><span class="dot"></span>원유 증류탑</div>
-      <div class="gamewrap">
-        <div class="hud">
-          <span class="chip">상태 <b id="labState">대기 중</b></span>
-          <span class="chip">배치 <b id="labPlaced">0</b>/5</span>
-        </div>
-        <div style="position:relative">
-          <canvas id="tower" width="600" height="600"></canvas>
-          <div id="condPopup" class="condpop" style="display:none"><div class="condpop-card" id="condCard"></div></div>
-        </div>
-        <div id="labFeedback" class="live">🛢️ 먼저 <b>원유 저장소</b>를 클릭해 보세요! 원유 안에 무엇이 들어 있는지 살펴봅니다.</div>
-        <div id="labPlay" style="display:none">
-          <div style="font-family:'Jua';color:var(--accent);margin:14px 0 6px">🧪 분리할 물질 — 탭해서 고른 뒤, 증류탑의 빈 칸을 탭하세요</div>
-          <div class="tray" id="labChips"></div>
-        </div>
-        <div class="actionrow" id="labControls"></div>
-        <div id="labAfter" style="display:none">
-        <p class="tip">증류탑은 <b>위로 갈수록 온도가 낮아</b>요. 끓는점이 <b>낮을수록 위쪽</b>(석유 가스), <b>높을수록 아래쪽</b>(중유·찌꺼기)에서 분리됩니다. 🔥가열로 입자가 올라가는 모습을 확인!</p>
-        <button class="bigbtn ghost3" style="width:100%;margin-top:12px" onclick="toggleConcept()"><span id="conceptArrow">▸</span> 📚 증류탑 개념 다시 보기</button>
-        <div id="labConcept" style="display:none;margin-top:14px">
-          <div class="lblock" style="margin-bottom:12px">
-            <h4>🏭 왜 층마다 다른 물질이 나올까?</h4>
-            <p>원유를 뜨겁게 가열하면 성분들이 모두 <span class="key2">기체</span>로 변해 증류탑을 타고 올라가요. 증류탑은 <span class="key">아래가 가장 뜨겁고 위로 갈수록 온도가 낮아집니다.</span></p>
-            <p>올라가던 기체는 <span class="hl">자기 끓는점보다 온도가 낮은 높이</span>에 도달하면 다시 <span class="key3">액체로 응축</span>되어 그 층의 관으로 빠져나와요. 그래서 끓는점이 <b>낮은 물질일수록 더 높이(더 차가운 곳까지)</b> 올라가 위쪽에서 분리됩니다.</p>
-            <div class="note"><b>한 문장 정리</b> — 끓는점이 낮은 물질이 먼저 기화하고, 위쪽 찬 곳에서 먼저 응축돼 나온다! (증류의 원리 = 가열 → 기화 → 냉각 → 액화)</div>
-          </div>
-          <div class="lblock" style="margin-bottom:0">
-            <h4>📋 증류탑에서 분리되는 물질</h4>
-            <table class="ctable">
-              <tr><th>위치</th><th>성분 (끓는점)</th><th>쓰임</th></tr>
-              <tr><td>맨 위 ⬆️</td><td>석유 가스(LPG) <b>-42~1℃</b></td><td>가정·차량 연료</td></tr>
-              <tr><td>↑</td><td>휘발유·나프타 <b>30~120℃</b></td><td>자동차 연료·화학 원료</td></tr>
-              <tr><td>↑</td><td>등유·제트 연료 <b>150~280℃</b></td><td>난방·항공기</td></tr>
-              <tr><td>↓</td><td>경유 <b>230~350℃</b></td><td>트럭·버스</td></tr>
-              <tr><td>↓</td><td>중유 <b>300℃~</b></td><td>선박·발전</td></tr>
-              <tr><td>맨 아래 ⬇️</td><td>찌꺼기·아스팔트 (잔여물)</td><td>도로 포장</td></tr>
-            </table>
-          </div>
-        </div>
-        </div>
-      </div>
+      <div class="shead"><span class="dot"></span><span id="jTitle">원유의 여정</span></div>
+      <p class="jhint-sub">시추로 원유를 뽑고 → 배로 정유공장까지 운반 → 증류탑에서 가열해 분리! 캐릭터를 직접 움직여 보세요.</p>
+      <div class="jstage" id="jStage"></div>
+      <div class="actionrow" id="jControls" style="margin-top:14px"></div>
     </div>
   </section>
+
+  <!-- LAB : 증류탑 유분 배치 -->
+  <section class="screen" id="screen-lab">
+    <div class="wrap">
+      <div class="shead"><span class="dot"></span>증류탑 — 유분 배치하기</div>
+      <div class="stepbar" id="stillSteps">
+        <span class="step">1 · 원리 이해</span><span class="step">2 · 유분 배치</span><span class="step">3 · 분리구 탐구</span>
+      </div>
+      <div id="stillIntro"></div>
+      <div class="gamewrap">
+        <div style="position:relative">
+          <canvas id="still" width="600" height="600"></canvas>
+          <div id="stillPop" class="condpop" style="display:none"><div class="condpop-card" id="stillPopCard"></div></div>
+        </div>
+        <div id="stillTrayWrap" style="display:none">
+          <div style="font-family:'Jua';color:var(--accent);margin:14px 0 6px">🧪 배치할 유분 — 탭해서 고른 뒤, 알맞은 높이의 칸을 탭하세요</div>
+          <div class="tray" id="stillTray"></div>
+        </div>
+      </div>
+      <div class="simnarr" id="stillNarr"></div>
+      <div class="actionrow" id="stillControls"></div>
+    </div>
+  </section>
+
+  <!-- ANIM : 분별 증류 애니메이션 -->
+  <section class="screen" id="screen-anim">
+    <div class="wrap">
+      <div class="shead"><span class="dot"></span>분별 증류 애니메이션</div>
+      <p class="qintro">색이 곧 성분이에요. <b>원유(혼합물)</b>를 가열하면 분자들이 기체로 올라가다, <b>‘탑 온도 = 자기 끓는점’</b>인 높이에서 <b>액체로 응결</b>되어 그 층 출구로 모여요. 분자가 작을수록(끓는점 낮음) 더 위에서 분리됩니다.</p>
+      <div class="gamewrap">
+        <canvas id="animcv" width="620" height="600"></canvas>
+        <div style="display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin-top:14px">
+          <button class="bigbtn heat" id="animPlay" style="flex:0 0 auto" onclick="ANIM.toggle()">▶ 가열 시작</button>
+          <button class="bigbtn ghost3" style="flex:0 0 auto" onclick="ANIM.reset()">↺ 다시</button>
+          <span style="font-family:'Jua';color:var(--muted);font-size:13px">속도</span>
+          <input type="range" id="animSpd" min="0.5" max="2" step="0.1" value="1" oninput="ANIM.setSpeed(this.value)" style="flex:1;min-width:120px;max-width:220px;accent-color:var(--accent)">
+          <span id="animSpdOut" style="font-family:'Jua';font-size:13px;min-width:36px">1.0x</span>
+        </div>
+      </div>
+      <div class="sim-legend" id="animLegend"></div>
+    </div>
+  </section>
+
 </div>
 
 <script>
 function show(id){
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
   document.getElementById('screen-'+id).classList.add('active');
+  document.body.dataset.s=id;
   stopAll();
   if(id==='quiz') QUIZ.init();
   if(id==='lab') LAB.init();
+  if(id==='journey') JOURNEY.init();
+  if(id==='anim') ANIM.init();
   document.querySelector('.screen.active').scrollTop=0;
 }
 function goHub(){ location.href='index.html'; }
-function stopAll(){ if(LAB.raf)cancelAnimationFrame(LAB.raf); }
+function stopAll(){ if(window.LAB&&LAB.cleanup)LAB.cleanup(); if(window.ANIM&&ANIM.cleanup)ANIM.cleanup(); if(window.JOURNEY&&JOURNEY.stop)JOURNEY.stop(); }
 function rb(el){ el.classList.toggle('shown'); beep(el.classList.contains('shown')?880:440,.06,'triangle',.12); }
-function toggleConcept(){const e=document.getElementById('labConcept'),ar=document.getElementById('conceptArrow');const open=e.style.display==='none';e.style.display=open?'block':'none';if(ar)ar.textContent=open?'▾':'▸';beep(open?700:500,.05,'sine',.1);}
 
 const AC=window.AudioContext||window.webkitAudioContext;let actx=null;
 function ac(){if(!actx)actx=new AC();if(actx.state==='suspended')actx.resume();return actx;}
@@ -327,261 +628,541 @@ const QUIZ={
   reset(){this.init();}
 };
 
-/* LAB : 원유 증류탑 — 배치 미션 + 입자 분리 시뮬레이션 */
-const LAB={
-  cv:null,ctx:null,raf:null,heating:false,won:false,
-  selected:null,placed:{},bubbles:[],flash:{},
-  // geometry (design space 600x600)
-  TX:215,TW:150,TY:44,TH:470,
-  TANK_X:24,TANK_Y:400,TANK_W:92,TANK_H:104,
-  PIPE_END:404,SLOT_X:414,SLOT_W:152,
-  subs:[
-    {id:'LPG',nm:'석유 가스(LPG)',rg:'-42~1℃',c:'#8fe3ff',y:92},
-    {id:'GAS',nm:'휘발유·나프타',rg:'30~120℃',c:'#ffd34d',y:168},
-    {id:'KER',nm:'등유·제트',rg:'150~280℃',c:'#ffb15c',y:244},
-    {id:'DIE',nm:'경유',rg:'230~350℃',c:'#ff8a4b',y:320},
-    {id:'FUE',nm:'중유',rg:'300℃~',c:'#ef5a3a',y:396},
-    {id:'ASP',nm:'찌꺼기',rg:'잔여물',c:'#7a5230',y:474,locked:true}
-  ],
-  temps:[{y:92,t:'30℃'},{y:168,t:'120℃'},{y:244,t:'250℃'},{y:320,t:'320℃'},{y:396,t:'350℃'},{y:474,t:'400℃+'}],
-  init(){
-    this.cv=document.getElementById('tower');this.ctx=this.cv.getContext('2d');fitCanvas(this.cv);
-    this.heating=false;this.won=false;this.selected=null;this.bubbles=[];this.flash={};this.seen={};this.queue=[];this.activePop=null;this.phase='locked';
-    this.placed={ASP:true};
-    document.getElementById('labState').textContent='대기 중';
-    document.getElementById('condPopup').style.display='none';
-    document.getElementById('labPlay').style.display='none';
-    document.getElementById('labAfter').style.display='none';
-    this.cv.onpointerdown=(e)=>this.tap(e);
-    this.renderChips();this.controls();this.count();
-    this.feedback('🛢️ 먼저 <b>원유 저장소</b>를 클릭해 보세요! 원유 안에 무엇이 들어 있는지 살펴봅니다.','');
-    cancelAnimationFrame(this.raf);this.loop();
+/* ===== 캐릭터·배 픽셀 스프라이트 (직접 그린 SVG) ===== */
+const SPRITES={
+  miner:`<svg viewBox="0 0 24 34" preserveAspectRatio="xMidYMid meet">
+<rect x="7" y="26" width="4" height="7" fill="#2a1a0f"/><rect x="13" y="26" width="4" height="7" fill="#2a1a0f"/>
+<rect x="6" y="32" width="6" height="2" fill="#1a100a"/><rect x="13" y="32" width="6" height="2" fill="#1a100a"/>
+<rect x="6" y="15" width="12" height="12" fill="#ff8a4b"/><rect x="6" y="15" width="12" height="3" fill="#ffb15c"/>
+<rect x="11" y="15" width="2" height="12" fill="#d96a32"/><rect x="6" y="21" width="12" height="2" fill="#ffe488"/>
+<rect x="3" y="16" width="3" height="9" fill="#e87a4a"/><rect x="18" y="16" width="3" height="9" fill="#e87a4a"/>
+<rect x="3" y="24" width="3" height="3" fill="#f3c89a"/><rect x="18" y="24" width="3" height="3" fill="#f3c89a"/>
+<rect x="8" y="8" width="8" height="7" fill="#f3c89a"/><rect x="13" y="10" width="2" height="2" fill="#2a1a0f"/>
+<rect x="7" y="4" width="10" height="4" fill="#ffd34d"/><rect x="9" y="2" width="6" height="2" fill="#ffe488"/>
+<rect x="6" y="7" width="12" height="2" fill="#e0b020"/><rect x="15" y="5" width="2" height="2" fill="#fff"/></svg>`,
+  ship:`<svg viewBox="0 0 64 36" preserveAspectRatio="xMidYMid meet">
+<rect x="4" y="20" width="56" height="10" fill="#8a3b20"/><polygon points="60,20 64,21 60,30" fill="#8a3b20"/>
+<rect x="2" y="20" width="60" height="3" fill="#a8552f"/><rect x="6" y="28" width="52" height="3" fill="#5c2614"/>
+<rect x="6" y="17" width="48" height="3" fill="#caa05c"/>
+<rect x="10" y="9" width="10" height="9" fill="#3f2715"/><rect x="10" y="9" width="10" height="2" fill="#5c3a22"/><rect x="10" y="13" width="10" height="2" fill="#241509"/>
+<rect x="23" y="9" width="10" height="9" fill="#46291a"/><rect x="23" y="9" width="10" height="2" fill="#5c3a22"/><rect x="23" y="13" width="10" height="2" fill="#241509"/>
+<rect x="38" y="6" width="14" height="12" fill="#523219"/><rect x="40" y="9" width="4" height="3" fill="#8fe3ff"/><rect x="46" y="9" width="4" height="3" fill="#8fe3ff"/>
+<rect x="44" y="0" width="5" height="6" fill="#2a1a0f"/><rect x="44" y="0" width="5" height="2" fill="#ff6b4a"/>
+<rect x="6" y="2" width="2" height="8" fill="#7d5638"/><rect x="8" y="2" width="6" height="4" fill="#ff8a4b"/></svg>`,
+  derrick:`<svg viewBox="0 0 48 64" preserveAspectRatio="xMidYMax meet">
+<rect x="8" y="14" width="3" height="42" fill="#5c3a22"/><rect x="37" y="14" width="3" height="42" fill="#5c3a22"/>
+<rect x="8" y="22" width="32" height="2" fill="#6b4930"/><rect x="8" y="32" width="32" height="2" fill="#6b4930"/><rect x="8" y="42" width="32" height="2" fill="#6b4930"/>
+<rect x="6" y="10" width="36" height="5" fill="#6b4930"/><rect x="20" y="4" width="8" height="6" fill="#523219"/>
+<rect x="2" y="54" width="44" height="6" fill="#3f2715"/><rect x="2" y="54" width="44" height="2" fill="#5c3a22"/>
+<g class="dr-bit"><rect x="22" y="14" width="4" height="40" fill="#9a7152"/><rect x="20" y="52" width="8" height="6" fill="#7d5638"/><rect x="22" y="58" width="4" height="4" fill="#caa05c"/></g></svg>`,
+  refinery:`<svg viewBox="0 0 90 70" preserveAspectRatio="xMidYMax meet">
+<rect x="10" y="20" width="10" height="46" fill="#2a1a0f"/><rect x="24" y="12" width="12" height="54" fill="#3f2715"/>
+<rect x="40" y="26" width="8" height="40" fill="#2a1a0f"/><rect x="52" y="18" width="14" height="48" fill="#3f2715"/>
+<rect x="70" y="30" width="10" height="36" fill="#2a1a0f"/><rect x="26" y="6" width="3" height="6" fill="#ff6b4a"/>
+<rect x="0" y="64" width="90" height="6" fill="#1a100a"/></svg>`
+};
+
+/* ===== 원유의 여정 (시추 → 항해 → 도착) ===== */
+const JOURNEY={
+  raf:null, keys:{}, spaceDown:false, _kd:null, _ku:null,
+  init(){ this.stop(); this.startDrill(); },
+  stop(){
+    if(this.raf){cancelAnimationFrame(this.raf);this.raf=null;}
+    if(this._kd){window.removeEventListener('keydown',this._kd);this._kd=null;}
+    if(this._ku){window.removeEventListener('keyup',this._ku);this._ku=null;}
+    this.keys={}; this.spaceDown=false;
   },
-  feedback(msg,cls){const fb=document.getElementById('labFeedback');fb.className='live '+(cls||'');fb.innerHTML=msg;},
-  count(){const n=this.subs.filter(s=>!s.locked&&this.placed[s.id]).length;document.getElementById('labPlaced').textContent=n;},
-  renderChips(){
-    const c=document.getElementById('labChips');c.innerHTML='';
-    const list=this.subs.filter(s=>!s.locked);
-    if(!this._order){this._order=this.shuffle(list.map(s=>s.id));}
-    this._order.forEach(id=>{
-      const s=this.subs.find(x=>x.id===id);
+  stage(){return document.getElementById('jStage');},
+  ctrl(){return document.getElementById('jControls');},
+  setTitle(t){const e=document.getElementById('jTitle');if(e)e.textContent=t;},
+
+  startDrill(){
+    this.setTitle('① 석유 시추');
+    const st={v:0,done:false,cards:{}};
+    this.stage().innerHTML=`
+      <div class="jscene bg-drill pixgrid">
+        <div class="sun" style="left:8%;top:8%"></div>
+        <div class="cloud" style="top:14%;animation-duration:38s"></div>
+        <div class="cloud" style="top:24%;animation-duration:54s;animation-delay:-22s"></div>
+        <div class="dr-sea"></div><div class="dr-ground"></div>
+        <div class="dr-derrick" style="left:46%">${SPRITES.derrick}</div>
+        <div class="dr-miner" style="left:30%">${SPRITES.miner}</div>
+        <div class="dr-barrel" style="left:8%"><i id="brl0"></i></div>
+        <div class="dr-barrel" style="left:14%"><i id="brl1"></i></div>
+        <div class="dr-barrel" style="left:20%"><i id="brl2"></i></div>
+      </div>
+      <div class="j-hud">
+        <div class="gauge"><i id="drFill"></i><span id="drPct">원유 0%</span></div>
+        <div class="j-hint">⛏️ 스페이스바를 연타! (모바일은 아래 버튼 탭)</div>
+      </div>
+      <div class="factpop" id="drFact" style="display:none"><div class="factpop-card" id="drFactCard"></div></div>`;
+    this.ctrl().innerHTML=`
+      <button class="bigbtn heat" id="drMash">⛏️ 시추하기!</button>
+      <button class="bigbtn ghost3" onclick="show('home')">⌂ 그만두기</button>`;
+    const bit=this.stage().querySelector('.dr-bit');
+    const fill=document.getElementById('drFill'),pct=document.getElementById('drPct');
+    const brls=[document.getElementById('brl0'),document.getElementById('brl1'),document.getElementById('brl2')];
+    const facts=[
+      {ic:'🛢️',t:'원유가 뭐예요?',p:'수백만 년 전 바다 생물이 땅속에 묻혀 만들어진 검은 액체예요. 한 가지 물질이 아니라 <b>끓는점이 다른 여러 물질이 섞인 혼합물</b>이랍니다!'},
+      {ic:'💡',t:'왜 중요해요?',p:'자동차·비행기 연료, 플라스틱, 옷(합성섬유), 화장품, 약, 도로(아스팔트)까지! 거의 모든 것에 들어가서 <b>"검은 황금"</b>이라 불려요.'},
+      {ic:'🤔',t:'그냥 쓰면 안 돼요?',p:'안 돼요. 여러 물질이 섞여 있어 그대로는 쓸모가 적어요. <b>끓는점 차이로 분리(증류)</b>해야 휘발유·등유·경유처럼 쓸모 있는 것으로 나뉘어요.'},
+      {ic:'🏭',t:'분리가 중요한 이유!',p:'분리해야 각각 알맞은 곳에 써요. (LPG=취사, 휘발유=자동차, 등유=난방·비행기…) <b>원유 하나에서 수십 가지 제품</b>이 나오죠. 그래서 증류탑이 꼭 필요해요!'}
+    ];
+    const showFact=(i,last)=>{
+      const c=facts[i],pop=document.getElementById('drFact');
+      document.getElementById('drFactCard').innerHTML=
+        `<div class="fic">${c.ic}</div><h3>${c.t}</h3><p>${c.p}</p>`+
+        (last?`<button class="bigbtn next" style="width:100%" id="drGo">🚢 원유를 배에 싣고 출발! →</button>`
+             :`<button class="bigbtn quizbtn" style="width:100%" id="drNext">계속 시추하기 ⛏️</button>`);
+      pop.style.display='flex';
+      const b=document.getElementById(last?'drGo':'drNext');
+      b.onclick=()=>{pop.style.display='none'; if(last)this.startSail();};
+    };
+    const update=()=>{
+      fill.style.width=st.v+'%'; pct.textContent='원유 '+Math.floor(st.v)+'%';
+      brls.forEach((b,idx)=>{const seg=Math.max(0,Math.min(100,(st.v-idx*33.3)/33.3*100)); if(b)b.style.height=seg+'%';});
+    };
+    const splash=()=>{
+      const sc=this.stage().querySelector('.jscene'); if(!sc)return;
+      const s=document.createElement('div'); s.className='dr-splash';
+      s.style.left='47%'; s.style.bottom='40%'; s.style.setProperty('--dx',(Math.random()*20-10)+'px');
+      sc.appendChild(s); s.addEventListener('animationend',()=>s.remove());
+    };
+    const mash=()=>{
+      if(st.done)return; const pop=document.getElementById('drFact'); if(pop&&pop.style.display!=='none')return;
+      st.v=Math.min(100,st.v+2.5); update();
+      if(bit){bit.classList.remove('jolt');void bit.offsetWidth;bit.classList.add('jolt');}
+      splash(); beep(120+Math.random()*40,.05,'square',.09);
+      [25,50,75,100].forEach((m,i)=>{ if(st.v>=m&&!st.cards[m]){st.cards[m]=true; const last=(m===100); if(last){st.done=true;chime();} showFact(i,last);} });
+    };
+    document.getElementById('drMash').addEventListener('pointerdown',(e)=>{e.preventDefault();ac();mash();});
+    this._kd=(e)=>{ if(e.code==='Space'||e.key===' '){e.preventDefault(); if(!this.spaceDown){this.spaceDown=true;ac();mash();}} };
+    this._ku=(e)=>{ if(e.code==='Space'||e.key===' ')this.spaceDown=false; };
+    window.addEventListener('keydown',this._kd); window.addEventListener('keyup',this._ku);
+    update();
+  },
+
+  startSail(){
+    this.stop(); this.setTitle('② 바다 항해');
+    this.stage().innerHTML=`
+      <div class="jscene bg-sea pixgrid">
+        <div class="sun" style="right:10%;top:10%"></div>
+        <div class="cloud" style="top:12%;animation-duration:46s"></div>
+        <div class="cloud" style="top:20%;animation-duration:62s;animation-delay:-30s"></div>
+        <div class="sea-refinery">${SPRITES.refinery}</div>
+        <div class="sea-water"></div><div class="waves"></div>
+        <div class="dock" id="dock"></div>
+        <div class="obstacle" style="left:42%;top:34%">🪨</div>
+        <div class="obstacle" style="left:56%;top:66%">🪨</div>
+        <div class="obstacle" style="left:68%;top:44%">🌊</div>
+        <div class="obstacle" style="left:32%;top:62%">🛟</div>
+        <div class="ship" id="ship">${SPRITES.ship}</div>
+      </div>
+      <div class="j-hud">
+        <div class="sea-prog"><i id="seaFill"></i><span id="seaTxt">정유공장까지 0%</span></div>
+        <div class="j-hint">⬅➡⬆⬇ 방향키 또는 아래 D패드로 배를 조종해 ⚓항구로!</div>
+      </div>`;
+    this.ctrl().innerHTML=`
+      <div class="dpad">
+        <button class="up" data-dir="up">▲</button>
+        <button class="left" data-dir="left">◀</button>
+        <button class="mid" disabled>⛵</button>
+        <button class="right" data-dir="right">▶</button>
+        <button class="down" data-dir="down">▼</button>
+      </div>
+      <div style="width:100%;text-align:center;margin-top:6px"><button class="bigbtn ghost3" onclick="show('home')">⌂ 그만두기</button></div>`;
+    const stage=this.stage(), ship=document.getElementById('ship'), dock=document.getElementById('dock');
+    const obs=[...stage.querySelectorAll('.obstacle')];
+    let sx=24, sy=(stage.clientHeight||420)*0.5; const SP=3.2;
+    const place=()=>{ship.style.left=sx+'px';ship.style.top=sy+'px';};
+    place();
+    this._kd=(e)=>{const m={ArrowUp:'up',ArrowDown:'down',ArrowLeft:'left',ArrowRight:'right'}; if(m[e.key]){e.preventDefault();this.keys[m[e.key]]=true;}};
+    this._ku=(e)=>{const m={ArrowUp:'up',ArrowDown:'down',ArrowLeft:'left',ArrowRight:'right'}; if(m[e.key])this.keys[m[e.key]]=false;};
+    window.addEventListener('keydown',this._kd); window.addEventListener('keyup',this._ku);
+    this.ctrl().querySelectorAll('.dpad button[data-dir]').forEach(b=>{
+      const d=b.dataset.dir, on=(e)=>{e.preventDefault();this.keys[d]=true;}, off=()=>{this.keys[d]=false;};
+      b.addEventListener('pointerdown',on); b.addEventListener('pointerup',off); b.addEventListener('pointerleave',off); b.addEventListener('pointercancel',off);
+    });
+    const rin=(el)=>{const r=el.getBoundingClientRect(),s=stage.getBoundingClientRect();return{l:r.left-s.left,t:r.top-s.top,w:r.width,h:r.height};};
+    const hit=(ax,ay)=>{const sw=ship.offsetWidth,sh=ship.offsetHeight,pad=6; for(const o of obs){const r=rin(o); if(ax+pad<r.l+r.w&&ax+sw-pad>r.l&&ay+pad<r.t+r.h&&ay+sh-pad>r.t)return true;} return false;};
+    const bump=()=>{ship.classList.remove('bump');void ship.offsetWidth;ship.classList.add('bump');};
+    const loop=()=>{
+      const W=stage.clientWidth,H=stage.clientHeight;
+      let nx=sx,ny=sy;
+      if(this.keys.left)nx-=SP; if(this.keys.right)nx+=SP; if(this.keys.up)ny-=SP; if(this.keys.down)ny+=SP;
+      nx=Math.max(0,Math.min(W-ship.offsetWidth,nx)); ny=Math.max(0,Math.min(H-ship.offsetHeight,ny));
+      if(!hit(nx,sy))sx=nx; else bump();
+      if(!hit(sx,ny))sy=ny; else bump();
+      place();
+      const dr=rin(dock),goal=dr.l-ship.offsetWidth;
+      const p=Math.max(0,Math.min(100, goal>0? sx/goal*100:100));
+      const f=document.getElementById('seaFill'),tx=document.getElementById('seaTxt'); if(f){f.style.width=p+'%';tx.textContent='정유공장까지 '+Math.floor(p)+'%';}
+      if(sx+ship.offsetWidth>=dr.l+2 && sy+ship.offsetHeight>dr.t-24 && sy<dr.t+dr.h+24){ this.startArrive(); return; }
+      this.raf=requestAnimationFrame(loop);
+    };
+    this.raf=requestAnimationFrame(loop);
+  },
+
+  startArrive(){
+    this.stop(); this.setTitle('③ 정유공장 도착'); chime();
+    this.stage().innerHTML=`
+      <div class="jscene bg-port pixgrid">
+        <div class="sun" style="left:12%;top:12%"></div>
+        <div class="cloud" style="top:14%;animation-duration:50s"></div>
+        <div class="port-water"><div class="waves" style="height:100%"></div></div>
+        <div class="ship" style="left:48%;bottom:14%;top:auto;animation:bob 2.4s ease-in-out infinite">${SPRITES.ship}</div>
+        <div class="arrive-msg">
+          <h3>🎉 정유공장 도착!</h3>
+          <p>시추한 원유를 무사히 실어왔어요.<br>이제 <b>증류탑에 넣고 가열</b>해서 끓는점 차이로 분리해 봅시다!</p>
+        </div>
+      </div>`;
+    this.ctrl().innerHTML=`
+      <button class="bigbtn next" onclick="show('lab')">🔥 증류탑으로 가기 →</button>
+      <button class="bigbtn ghost3" onclick="show('home')">⌂ 메뉴</button>`;
+  }
+};
+
+/* ===== 증류탑 유분 배치 (원리 학습 → 배치 → 분리구 탐구) ===== */
+const LAB={
+  cv:null,ctx:null,raf:null,phase:'learn',selected:null,placed:{},order:null,flash:{},
+  CX:170,CW:100,CTOP:64,CBOT:455,
+  POTX:160,POTY:470,POTW:120,POTH:56,
+  TtopC:25,TbotC:400,
+  fracs:[
+    {id:'LPG',nm:'LPG(석유가스)',bp:'-42~1℃',sy:80,c:'#8fe3ff',hint:'가장 차가운 맨 위 (기체로 배출)',
+      use:'가정용 연료(취사·난방), 라이터 가스, LPG 자동차 연료로 써요.',
+      why:'끓는점이 가장 낮아 가장 차가운 맨 위까지 올라가요. 그 온도에서도 잘 식지 않아 기체 상태로 꼭대기에서 빠져나갑니다.'},
+    {id:'GAS',nm:'휘발유·나프타',bp:'30~120℃',sy:140,c:'#ffd34d',hint:'약 100℃ 부근',
+      use:'자동차 연료(가솔린), 플라스틱·합성섬유 같은 화학 제품의 원료로 써요.',
+      why:'끓는점이 낮아 비교적 차가운 위쪽 높이에서 다시 액체로 응축되어 분리됩니다.'},
+    {id:'KER',nm:'등유',bp:'150~280℃',sy:235,c:'#ffb15c',hint:'약 200℃ 부근',
+      use:'난방용 석유(석유난로), 비행기 연료(항공유), 등불용으로 써요.',
+      why:'중간 정도의 끓는점이라 탑의 중간 높이(중간 온도)에서 응축되어 분리됩니다.'},
+    {id:'DIE',nm:'경유',bp:'230~350℃',sy:330,c:'#ff8a4b',hint:'약 300℃ 부근',
+      use:'디젤 자동차·트럭·버스·기차·배의 연료, 발전기 연료로 써요.',
+      why:'끓는점이 높아 더 뜨거운 아래쪽 높이까지 내려와야 응축되어 분리됩니다.'},
+    {id:'FUE',nm:'중유',bp:'300℃ 이상',sy:415,c:'#ef5a3a',hint:'약 370℃ 부근',
+      use:'큰 배(선박)의 연료, 화력 발전소의 연료로 써요.',
+      why:'끓는점이 매우 높아 탑에서 가장 뜨거운 아래쪽에서 응축되어 분리됩니다.'},
+    {id:'RES',nm:'잔여물(아스팔트)',bp:'350℃ 이상',pot:true,c:'#7a5230',hint:'가장 뜨거운 맨 아래 (안 끓음)',
+      use:'도로 포장용 아스팔트, 지붕 방수재 등으로 써요.',
+      why:'끓는점이 너무 높아 기체로 변하지 못하고, 탑 맨 아래 바닥에 액체로 남습니다.'}
+  ],
+  yForT(T){return this.CTOP+(T-this.TtopC)/(this.TbotC-this.TtopC)*(this.CBOT-this.CTOP);},
+  cleanup(){ if(this.raf){cancelAnimationFrame(this.raf);this.raf=null;} },
+  shuffle(a){a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;},
+  init(){
+    this.cleanup();
+    this.cv=document.getElementById('still'); this.ctx=this.cv.getContext('2d'); fitCanvas(this.cv);
+    this.phase='learn'; this.selected=null; this.placed={}; this.flash={}; this.order=this.shuffle(this.fracs.map(f=>f.id));
+    document.getElementById('stillPop').style.display='none';
+    document.getElementById('stillTrayWrap').style.display='none';
+    this.cv.onpointerdown=(e)=>this.tap(e);
+    this.setStep(0); this.showIntro(); this.renderControls();
+    this.narr('아래 <b>증류탑의 원리</b>를 먼저 읽어요. 다 읽었으면 “배치 시작”을 눌러 유분을 알맞은 높이에 놓아 봐요!');
+    this.loop();
+  },
+  narr(h,ok){const n=document.getElementById('stillNarr'); if(n){n.className='simnarr'+(ok?' ok':'');n.innerHTML=h;}},
+  setStep(i){document.querySelectorAll('#stillSteps .step').forEach((el,idx)=>el.classList.toggle('on',idx===i));},
+  showIntro(){
+    const el=document.getElementById('stillIntro');
+    el.innerHTML=`<div class="lblock" style="margin-bottom:14px">
+      <h4>🏭 증류탑은 어떻게 분리할까?</h4>
+      <p><b>1.</b> 원유(혼합물)를 약 <span class="key">350~400℃</span>로 가열하면 성분 대부분이 <span class="key2">기체로 기화</span>되어 탑을 타고 올라가요.</p>
+      <p><b>2.</b> 탑은 <span class="key">아래가 가장 뜨겁고, 위로 갈수록 차가워져요</span>(온도 구배).</p>
+      <p><b>3.</b> 올라가던 기체는 <span class="hl">자기 끓는점만큼 식는 높이</span>에 닿으면 다시 <span class="key3">액체로 응축</span>되어 그 층의 관으로 빠져나와요.</p>
+      <p><b>4.</b> 그래서 <b>끓는점이 낮은 물질일수록 더 높이(찬 곳)에서</b>, 높은 물질일수록 아래(뜨거운 곳)에서 분리돼요.</p>
+      <div class="note"><b>배치 규칙</b> — 끓는점이 낮은 유분을 위쪽 칸에, 높은 유분을 아래쪽 칸에! 끓는점이 너무 높은 잔여물은 맨 아래 바닥에 남아요.</div>
+    </div>`;
+  },
+  renderControls(){
+    const c=document.getElementById('stillControls');
+    if(this.phase==='learn'){ c.innerHTML=`<button class="bigbtn heat" onclick="LAB.startPlace()">📥 배치 시작 →</button>`; return; }
+    const allDone=this.fracs.every(f=>this.placed[f.id]);
+    let h=`<button class="bigbtn ghost3" onclick="LAB.init()">↺ 처음부터</button>`;
+    if(allDone) h+=`<button class="bigbtn next" onclick="show('quiz')">📝 퀴즈 풀기</button>`;
+    c.innerHTML=h;
+  },
+  startPlace(){
+    ac(); this.phase='place'; this.setStep(1);
+    document.getElementById('stillTrayWrap').style.display='block';
+    document.getElementById('stillIntro').innerHTML='<div class="note" style="margin:0 0 14px"><b>배치 규칙</b> — 끓는점이 <b>낮은 유분일수록 위쪽</b>(찬 곳), <b>높을수록 아래쪽</b>(뜨거운 곳)! 잔여물은 맨 아래 바닥에 남아요.</div>';
+    this.renderTray(); this.renderControls();
+    this.narr('칩을 하나 골라(탭) → 끓는점에 맞는 <b>탑의 칸</b>을 탭하세요. (위쪽일수록 차가움 = 끓는점 낮음)');
+  },
+  renderTray(){
+    const t=document.getElementById('stillTray'); if(!t)return; t.innerHTML='';
+    this.order.forEach(id=>{
+      const f=this.fracs.find(x=>x.id===id);
       const b=document.createElement('button');
       b.className='chipitem'+(this.placed[id]?' done':'')+(this.selected===id?' on':'');
-      b.style.setProperty('--cc',s.c);
-      b.innerHTML=`<span class="sw"></span><span class="nm">${s.nm}</span><span class="rg">${s.rg}</span>`;
+      b.style.setProperty('--cc',f.c);
+      b.innerHTML=`<span class="sw"></span><span class="nm">${f.nm}</span><span class="rg">끓는점 ${f.bp}</span>`;
       b.onclick=()=>this.pick(id);
-      c.appendChild(b);
+      t.appendChild(b);
     });
   },
-  shuffle(a){a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;},
-  pick(id){if(this.phase!=='play')return;ac();if(this.placed[id])return;this.selected=this.selected===id?null:id;pop();this.renderChips();
-    if(this.selected)this.feedback('👆 이제 증류탑에서 <b>'+this.subs.find(s=>s.id===id).nm+'</b>이(가) 나올 칸을 탭하세요. (끓는점 낮을수록 위!)','');
+  pick(id){ if(this.phase!=='place'||this.placed[id])return; ac(); this.selected=this.selected===id?null:id; pop(); this.renderTray();
+    if(this.selected){const f=this.fracs.find(x=>x.id===id); this.narr(`<b>${f.nm}</b> (끓는점 ${f.bp})를 골랐어요. 이 끓는점이면 탑의 <b>어느 높이</b>에서 나올까요? 알맞은 칸을 탭하세요.`);}
+  },
+  hitbox(f){
+    const CR=this.CX+this.CW;
+    if(f.pot) return {x:this.POTX,y:this.POTY,w:this.POTW,h:this.POTH};
+    return {x:CR+38,y:f.sy-18,w:205,h:36};
   },
   tap(e){
     const p=ptr(this.cv,e);
-    if(this.phase!=='play'){
-      if(p.x>=this.TANK_X&&p.x<=this.TANK_X+this.TANK_W&&p.y>=this.TANK_Y&&p.y<=this.TANK_Y+this.TANK_H)this.showOilStorage();
-      return;
-    }
-    for(const s of this.subs){
-      if(p.x>=this.SLOT_X&&p.x<=this.SLOT_X+this.SLOT_W&&p.y>=s.y-19&&p.y<=s.y+19){this.onSlot(s);return;}
-    }
-  },
-  onSlot(s){
-    if(this.placed[s.id]||s.locked)return;
-    if(!this.selected){this.feedback('⚠️ 먼저 아래 목록에서 <b>물질</b>을 고르세요.','no');buzz();return;}
-    ac();
-    if(this.selected===s.id){
-      this.placed[s.id]=true;this.selected=null;chime();
-      this.renderChips();this.count();
-      this.feedback('✅ <b>'+s.nm+'</b> 배치 성공! 끓는점이 '+s.rg+'이라 이 높이에서 나와요.','ok');
-      this.checkWin();
-    }else{
-      this.flash[s.id]=performance.now()+550;buzz();
-      this.feedback('❌ 이 칸은 끓는점이 다른 물질 자리예요. 위로 갈수록 <b>온도가 낮은(끓는점 낮은)</b> 물질이 나옵니다.','no');
-    }
-  },
-  checkWin(){
-    const all=this.subs.filter(s=>!s.locked).every(s=>this.placed[s.id]);
-    if(all&&!this.won){
-      this.won=true;this.heating=true;document.getElementById('labState').textContent='분리 진행 중';
-      this.feedback('🎉 <b>모든 유분 배치 완료!</b> 원유가 끓는점에 따라 LPG(맨 위)부터 찌꺼기(맨 아래)까지 분리됐어요. 가열 입자가 올라가는 모습을 확인해 보세요!','ok');
-      this.controls();setTimeout(chime,200);
-    }
-  },
-  controls(){
-    const c=document.getElementById('labControls');let h='';
-    if(this.phase!=='play'){
-      c.innerHTML=`<button class="bigbtn heat" onclick="LAB.showOilStorage()">🛢️ 원유 저장소 살펴보기</button><button class="bigbtn ghost3" onclick="LAB._order=null;LAB.init()">↺ 초기화</button>`;
-      return;
-    }
-    if(this.heating)h+=`<button class="bigbtn ghost3" onclick="LAB.stop()">⏹ 가열 중지</button>`;
-    else h+=`<button class="bigbtn heat" onclick="LAB.heat()">🔥 가열 시작</button>`;
-    h+=`<button class="bigbtn ghost3" onclick="LAB._order=null;LAB.init()">↺ 초기화</button>`;
-    if(this.won)h+=`<button class="bigbtn next" onclick="show('quiz')">📝 빈칸 퀴즈</button>`;
-    c.innerHTML=h;
-  },
-  heat(){if(this.phase!=='play')return;ac();this.heating=true;document.getElementById('labState').textContent='가열 중';beep(170,.3,'sawtooth',.12);this.controls();},
-  stop(){this.heating=false;this.bubbles=[];if(!this.won)document.getElementById('labState').textContent='대기 중';this.controls();},
-  spawn(){
-    const s=this.subs[Math.floor(Math.random()*5)];
-    this.bubbles.push({x:this.TANK_X+18+Math.random()*50,y:this.TANK_Y+18+Math.random()*60,
-      r:3+Math.random()*2.5,sp:1.4+Math.random()*1.4,c:s.c,ty:s.y,id:s.id,st:'t2t'});
-  },
-  condense(id){
-    if(this.seen[id]||this.activePop===id||this.queue.includes(id))return;
-    this.queue.push(id);this.maybeShow();
-  },
-  update(){
-    const PIPE_Y=this.TY+this.TH-44, TC=this.TX+this.TW/2;
-    for(let i=this.bubbles.length-1;i>=0;i--){
-      const b=this.bubbles[i];
-      if(b.st==='t2t'){
-        if(Math.abs(b.y-PIPE_Y)>5)b.y+=(PIPE_Y-b.y)*0.1;
-        b.x+=b.sp;
-        if(b.x>=TC-10+Math.random()*20)b.st='rise';
-      }else if(b.st==='rise'){
-        b.y-=b.sp;b.x+=Math.sin(b.y*0.05)*0.5;
-        if(b.y<=b.ty){b.y=b.ty;b.st='exit';this.condense(b.id);}
-      }else if(b.st==='exit'){
-        b.x+=b.sp;
-        if(b.ty>100){const pb=b.ty+7;if(b.y+b.r<pb)b.y+=0.5;}
-        else b.y+=Math.sin(b.x*0.1)*0.2;
-        if(b.x>this.PIPE_END-6){b.st='fall';b.stopY=b.ty+14-b.r-Math.random()*3;}
-      }else if(b.st==='fall'){
-        if(b.y<b.stopY)b.y+=b.sp*2;else b.x=LW(this.cv)+100;
+    for(const f of this.fracs){
+      const b=this.hitbox(f);
+      if(p.x>=b.x&&p.x<=b.x+b.w&&p.y>=b.y&&p.y<=b.y+b.h){
+        if(this.placed[f.id]){ this.showInfo(f.id); return; }
+        if(this.phase==='place'){
+          if(!this.selected){ this.narr('⚠️ 먼저 아래에서 <b>유분 칩</b>을 하나 고르세요.'); buzz(); return; }
+          this.tryPlace(f); return;
+        }
       }
-      if(b.x>LW(this.cv))this.bubbles.splice(i,1);
     }
   },
-  loop(){
-    if(this.heating){if(Math.random()<0.4)this.spawn();this.update();}
-    this.draw();this.raf=requestAnimationFrame(()=>this.loop());
+  tryPlace(slotFrac){
+    ac();
+    if(this.selected===slotFrac.id){
+      this.placed[slotFrac.id]=true; const f=slotFrac; this.selected=null; chime();
+      this.renderTray(); this.renderControls();
+      this.narr(`✅ <b>${f.nm}</b> 배치 성공! 끓는점 ${f.bp}이라 이 높이에서 분리돼요. 반짝이는 칸을 <b>클릭</b>하면 용도와 분리 이유를 볼 수 있어요 ✨`,true);
+      if(this.fracs.every(x=>this.placed[x.id])){ this.setStep(2); this.narr('🏆 <b>모든 유분 배치 완료!</b> 이제 반짝이는 <b>각 분리구를 클릭</b>해서, 무엇이고 어디에 쓰이며 왜 거기서 나오는지 알아봐요 ✨',true); }
+    } else {
+      this.flash[slotFrac.id]=performance.now()+550; buzz();
+      const sel=this.fracs.find(x=>x.id===this.selected);
+      this.narr(`❌ 이 칸은 끓는점이 다른 유분 자리예요. <b>${sel?sel.nm:'고른 유분'}</b>의 끓는점(${sel?sel.bp:''})을 다시 보고 더 알맞은 높이를 찾아보세요. (끓는점 낮을수록 위!)`);
+    }
+  },
+  showInfo(id){
+    const f=this.fracs.find(x=>x.id===id); if(!f)return; ac();
+    const card=document.getElementById('stillPopCard'); card.style.borderColor=f.c;
+    card.innerHTML=`<div style="display:flex;align-items:center;gap:8px;justify-content:center">
+        <span style="width:18px;height:18px;border-radius:4px;background:${f.c};display:inline-block"></span>
+        <h3 style="font-family:'Black Han Sans';font-size:22px;margin:0;color:${f.c}">${f.nm}</h3></div>
+      <div style="font-family:'Jua';color:var(--gold);margin:8px 0 12px">끓는점 ${f.bp}</div>
+      <div style="text-align:left;background:rgba(255,170,100,.08);border:1px solid var(--panel-line);border-radius:12px;padding:12px;margin-bottom:10px">
+        <div style="font-family:'Jua';color:var(--accent);font-size:14px;margin-bottom:4px">🛠️ 어디에 쓰일까?</div>
+        <div style="color:#ffe9d6;font-size:14px;line-height:1.6">${f.use}</div></div>
+      <div style="text-align:left;background:rgba(126,224,255,.08);border:1px solid var(--panel-line);border-radius:12px;padding:12px;margin-bottom:14px">
+        <div style="font-family:'Jua';color:var(--water);font-size:14px;margin-bottom:4px">🔍 왜 여기서 분리될까?</div>
+        <div style="color:#ffe9d6;font-size:14px;line-height:1.6">${f.why}</div></div>
+      <button class="bigbtn next" style="width:100%" onclick="LAB.closeInfo()">✔ 확인</button>`;
+    document.getElementById('stillPop').style.display='flex';
+    chime();
+  },
+  closeInfo(){ document.getElementById('stillPop').style.display='none'; pop(); },
+  loop(){ this.draw(); this.raf=requestAnimationFrame(()=>this.loop()); },
+  sparkle(ctx,x,y,w,h,now){
+    const a=0.4+0.35*Math.sin(now/220);
+    ctx.save(); ctx.globalAlpha=a; ctx.strokeStyle='#fff7c8'; ctx.lineWidth=2.5; roundRect(ctx,x-2,y-2,w+4,h+4,8); ctx.stroke(); ctx.restore();
+    for(let i=0;i<3;i++){
+      const sx=x+w*(0.22+0.28*i)+Math.sin(now/300+i*2.1)*4;
+      const sy=y+(i%2? h*0.28 : h*0.7);
+      const tw=(Math.sin(now/180+i*1.7)+1)/2;
+      ctx.globalAlpha=tw; ctx.fillStyle='#fff';
+      const s=2+tw*2.5; ctx.fillRect(sx-s/2,sy-1,s,2); ctx.fillRect(sx-1,sy-s/2,2,s);
+      ctx.globalAlpha=1;
+    }
   },
   draw(){
-    const ctx=this.ctx,w=LW(this.cv),h=LH(this.cv);
-    ctx.clearRect(0,0,w,h);
-    const TX=this.TX,TW=this.TW,TY=this.TY,TH=this.TH,TR=TX+TW,TB=TY+TH;
-    // tower body (metallic warm)
-    const g=ctx.createLinearGradient(TX,0,TR,0);
-    g.addColorStop(0,'#5b4636');g.addColorStop(.2,'#9a8472');g.addColorStop(.5,'#b6a18d');g.addColorStop(.8,'#7d6450');g.addColorStop(1,'#4a3829');
-    ctx.fillStyle=g;roundRect(ctx,TX,TY,TW,TH,8);ctx.fill();
-    // trays + bubble caps
-    ctx.lineWidth=1;
-    for(let i=1;i<10;i++){const y=TY+i*(TH/10);
-      ctx.strokeStyle='rgba(40,26,16,.4)';ctx.setLineDash([5,5]);ctx.beginPath();ctx.moveTo(TX+10,y);ctx.lineTo(TR-10,y);ctx.stroke();ctx.setLineDash([]);
-      ctx.fillStyle='rgba(255,240,220,.35)';for(let j=0;j<4;j++)ctx.fillRect(TX+24+j*30,y-4,9,4);
-    }
-    // pipes + buckets + slots per level
-    this.subs.forEach(s=>{
-      const y=s.y;
-      // pipe
-      const pg=ctx.createLinearGradient(0,y-8,0,y+8);pg.addColorStop(0,'#8a6a52');pg.addColorStop(.5,'#d8c4b0');pg.addColorStop(1,'#6b4f3a');
-      ctx.fillStyle=pg;ctx.fillRect(TR,y-7,this.PIPE_END-TR,14);
-      ctx.strokeStyle='#3a2818';ctx.lineWidth=1;ctx.strokeRect(TR,y-7,this.PIPE_END-TR,14);
-      // bucket
-      const bx=this.PIPE_END-4;ctx.fillStyle='rgba(255,250,245,.6)';ctx.strokeStyle='#6b4f3a';ctx.lineWidth=1.5;
-      ctx.beginPath();ctx.moveTo(bx,y-2);ctx.lineTo(bx+3,y+18);ctx.lineTo(bx+15,y+18);ctx.lineTo(bx+18,y-2);ctx.stroke();
-      // slot
-      const sx=this.SLOT_X,sy=y-19,sw=this.SLOT_W,sh=38;
-      const done=this.placed[s.id],flashing=this.flash[s.id]&&this.flash[s.id]>performance.now();
+    const ctx=this.ctx,w=LW(this.cv),h=LH(this.cv); ctx.clearRect(0,0,w,h);
+    const now=performance.now();
+    const CX=this.CX,CW=this.CW,CTOP=this.CTOP,CBOT=this.CBOT,CR=CX+CW;
+    const g=ctx.createLinearGradient(0,CTOP,0,CBOT);
+    g.addColorStop(0,'#7ec8ff');g.addColorStop(.28,'#9fe0c0');g.addColorStop(.5,'#ffd34d');g.addColorStop(.74,'#ff8a4b');g.addColorStop(1,'#e5402a');
+    ctx.fillStyle=g; roundRect(ctx,CX,CTOP,CW,CBOT-CTOP,8); ctx.fill();
+    ctx.lineWidth=1; ctx.strokeStyle='rgba(40,20,10,.2)';
+    for(let i=1;i<12;i++){const y=CTOP+i*((CBOT-CTOP)/12); ctx.setLineDash([4,4]);ctx.beginPath();ctx.moveTo(CX+8,y);ctx.lineTo(CR-8,y);ctx.stroke();ctx.setLineDash([]);}
+    ctx.strokeStyle='rgba(255,230,200,.5)';ctx.lineWidth=3;roundRect(ctx,CX,CTOP,CW,CBOT-CTOP,8);ctx.stroke();
+    ctx.font="11px 'Jua'";ctx.fillStyle='#aeeaff';ctx.textAlign='center';ctx.fillText('❄ 위로 갈수록 차가움',CX+CW/2,CTOP-10);
+    ctx.textAlign='right';ctx.font="bold 10px 'Jua'";
+    [25,100,200,300,400].forEach(T=>{const y=this.yForT(T);ctx.strokeStyle='#9a7a5c';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(CX-10,y);ctx.lineTo(CX-3,y);ctx.stroke();ctx.fillStyle='#d8b79c';ctx.fillText(T+'℃',CX-13,y+3);});
+    const PX=this.POTX,PY=this.POTY,PW=this.POTW,PH=this.POTH;
+    ctx.fillStyle='#5b4636';ctx.fillRect(CX+CW/2-14,CBOT,28,PY-CBOT);
+    {const fy=PY+PH; for(let i=0;i<6;i++){const fx=PX+12+i*((PW-24)/5),fl=7+(Math.sin(now/120+i)+1)*5;ctx.fillStyle=i%2?'#ffd34d':'#ff7a3a';ctx.beginPath();ctx.moveTo(fx,fy+16);ctx.quadraticCurveTo(fx+5,fy+4,fx,fy+16-fl);ctx.quadraticCurveTo(fx-5,fy+4,fx,fy+16);ctx.fill();}}
+    const resDone=this.placed['RES'];
+    ctx.fillStyle=resDone?'#5a3c22':'#3a2414';roundRect(ctx,PX,PY,PW,PH,6);ctx.fill();
+    ctx.strokeStyle='#1a100a';ctx.lineWidth=3;roundRect(ctx,PX,PY,PW,PH,6);ctx.stroke();
+    ctx.fillStyle='#1a0f08';ctx.fillRect(PX+6,PY+PH-22,PW-12,16);
+    for(let i=0;i<4;i++){const bx=PX+14+Math.random()*(PW-28),by=PY+PH-8-Math.random()*12;ctx.fillStyle='rgba(255,170,100,.45)';ctx.beginPath();ctx.arc(bx,by,2,0,7);ctx.fill();}
+    ctx.fillStyle='#ffe7cf';ctx.font="bold 11px 'Jua'";ctx.textAlign='center';ctx.fillText('원유(혼합물)',PX+PW/2,PY+15);
+    this.fracs.forEach(f=>{
+      const b=this.hitbox(f);
+      const done=this.placed[f.id];
+      const flashing=this.flash[f.id]&&this.flash[f.id]>now;
+      const selActive=this.phase==='place'&&this.selected&&!done;
+      if(f.pot){
+        if(done){
+          this.sparkle(ctx,PX,PY,PW,PH,now);
+          ctx.fillStyle='#ffe7cf';ctx.font="bold 12px 'Jua'";ctx.textAlign='center';ctx.fillText('✅ '+f.nm,PX+PW/2,PY+34);
+          ctx.fillStyle='#aeeaff';ctx.font="10px 'Jua'";ctx.fillText('클릭해 설명 보기',PX+PW/2,PY+48);
+        } else if(this.phase==='place'){
+          ctx.strokeStyle=selActive?'#ffd34d':'rgba(255,211,77,.55)';ctx.lineWidth=selActive?3:2;ctx.setLineDash([6,5]);roundRect(ctx,PX-3,PY-3,PW+6,PH+6,7);ctx.stroke();ctx.setLineDash([]);
+          ctx.fillStyle='#ffe08a';ctx.font="10px 'Jua'";ctx.textAlign='center';ctx.fillText(f.hint,PX+PW/2,PY+34);
+        }
+        return;
+      }
+      ctx.fillStyle='#6b4930';ctx.fillRect(CR,f.sy-4,b.x-CR,8);ctx.strokeStyle='#2a1a0f';ctx.lineWidth=1;ctx.strokeRect(CR,f.sy-4,b.x-CR,8);
       if(done){
-        ctx.fillStyle=s.c;ctx.globalAlpha=s.locked?.9:.85;roundRect(ctx,sx,sy,sw,sh,9);ctx.fill();ctx.globalAlpha=1;
-        ctx.strokeStyle=s.locked?'#5b4636':'#34d399';ctx.lineWidth=2.5;roundRect(ctx,sx,sy,sw,sh,9);ctx.stroke();
-        ctx.font="bold 14px 'Jua'";ctx.textAlign='center';ctx.fillStyle=s.id==='LPG'?'#0a3a4a':(s.locked?'#fff':'#2a1505');
-        ctx.fillText((s.locked?'🔒 ':'✅ ')+s.nm,sx+sw/2,y+5);
-      }else{
-        const active=this.selected&&!s.locked;
-        ctx.fillStyle=flashing?'rgba(251,113,133,.28)':'rgba(30,16,8,.5)';roundRect(ctx,sx,sy,sw,sh,9);ctx.fill();
-        ctx.strokeStyle=flashing?'#fb7185':(active?'#ffb15c':'rgba(255,170,100,.4)');
-        ctx.lineWidth=active||flashing?2.5:2;ctx.setLineDash(active?[]:[6,5]);roundRect(ctx,sx,sy,sw,sh,9);ctx.stroke();ctx.setLineDash([]);
-        ctx.font="13px 'Jua'";ctx.textAlign='center';ctx.fillStyle=active?'#ffd9a8':'#b89a82';ctx.fillText('여기에 배치',sx+sw/2,y+5);
+        ctx.fillStyle=f.c;ctx.globalAlpha=.9;roundRect(ctx,b.x,b.y,b.w,b.h,7);ctx.fill();ctx.globalAlpha=1;
+        this.sparkle(ctx,b.x,b.y,b.w,b.h,now);
+        ctx.strokeStyle='#34d399';ctx.lineWidth=2.5;roundRect(ctx,b.x,b.y,b.w,b.h,7);ctx.stroke();
+        ctx.fillStyle=f.id==='LPG'?'#0a3a4a':'#2a1505';ctx.font="bold 13px 'Jua'";ctx.textAlign='left';ctx.fillText('✅ '+f.nm,b.x+10,f.sy-1);
+        ctx.fillStyle=f.id==='LPG'?'#0a3a4a':'#3a2410';ctx.font="10px 'Jua'";ctx.fillText('클릭! 용도·이유 보기',b.x+10,f.sy+13);
+      } else if(this.phase==='place'){
+        ctx.fillStyle=flashing?'rgba(251,113,133,.3)':'rgba(20,12,6,.55)';roundRect(ctx,b.x,b.y,b.w,b.h,7);ctx.fill();
+        ctx.strokeStyle=flashing?'#fb7185':(selActive?'#ffd34d':'rgba(255,211,77,.45)');ctx.lineWidth=selActive||flashing?2.5:2;ctx.setLineDash(selActive?[]:[6,5]);roundRect(ctx,b.x,b.y,b.w,b.h,7);ctx.stroke();ctx.setLineDash([]);
+        ctx.fillStyle='#ffd9a8';ctx.font="bold 12px 'Jua'";ctx.textAlign='left';ctx.fillText(f.hint,b.x+10,f.sy-2);
+        ctx.fillStyle='#b89a82';ctx.font="10px 'Jua'";ctx.fillText('여기에 배치',b.x+10,f.sy+12);
+      } else {
+        ctx.strokeStyle='rgba(255,211,77,.3)';ctx.lineWidth=1.5;ctx.setLineDash([5,5]);roundRect(ctx,b.x,b.y,b.w,b.h,7);ctx.stroke();ctx.setLineDash([]);
+        ctx.fillStyle='#9a7a5c';ctx.font="11px 'Jua'";ctx.textAlign='left';ctx.fillText(f.hint,b.x+10,f.sy+4);
       }
     });
-    // tower outline + top hint
-    ctx.strokeStyle='rgba(255,210,170,.5)';ctx.lineWidth=3;roundRect(ctx,TX,TY,TW,TH,8);ctx.stroke();
-    ctx.font="12px 'Jua'";ctx.fillStyle='#ffe08a';ctx.textAlign='center';ctx.fillText('⬆ 위로 갈수록 온도 낮음(끓는점 낮음)',TX+TW/2,TY-8);
-    // temps (left)
-    ctx.textAlign='right';ctx.font="bold 11px 'Jua'";
-    this.temps.forEach(t=>{ctx.strokeStyle='#9a7a5c';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(TX-12,t.y);ctx.lineTo(TX-3,t.y);ctx.stroke();ctx.fillStyle='#d8b79c';ctx.fillText(t.t,TX-16,t.y+4);});
-    // tank + furnace
-    const KX=this.TANK_X,KY=this.TANK_Y,KW=this.TANK_W,KH=this.TANK_H;
-    // furnace
-    ctx.fillStyle='#7a1414';ctx.beginPath();ctx.moveTo(KX,KY+KH);ctx.lineTo(KX+KW,KY+KH);ctx.lineTo(KX+KW+10,KY+KH+26);ctx.lineTo(KX-10,KY+KH+26);ctx.closePath();ctx.fill();
-    if(this.heating){ctx.fillStyle='rgba(255,120,60,.8)';for(let i=0;i<5;i++){const fx=KX+12+i*18;const fl=8+Math.random()*12;ctx.beginPath();ctx.moveTo(fx,KY+KH+22);ctx.quadraticCurveTo(fx+6,KY+KH+8,fx,KY+KH+22-fl);ctx.quadraticCurveTo(fx-6,KY+KH+8,fx,KY+KH+22);ctx.fill();}}
-    // connect pipe tank->tower
-    const CY=TB-44;ctx.fillStyle='#5b4636';ctx.fillRect(KX+KW,CY,TX-(KX+KW),18);ctx.strokeStyle='#3a2818';ctx.lineWidth=1.5;ctx.strokeRect(KX+KW,CY,TX-(KX+KW),18);
-    ctx.fillStyle='#ffe8cf';ctx.beginPath();ctx.moveTo(KX+KW+18,CY+4);ctx.lineTo(KX+KW+28,CY+9);ctx.lineTo(KX+KW+18,CY+14);ctx.fill();
-    // tank body
-    const tg=ctx.createLinearGradient(KX,0,KX+KW,0);tg.addColorStop(0,'#2a1c12');tg.addColorStop(.4,'#473322');tg.addColorStop(1,'#1c120a');
-    ctx.fillStyle=tg;ctx.fillRect(KX,KY,KW,KH);ctx.lineWidth=3;ctx.strokeStyle='#0f0a06';ctx.strokeRect(KX,KY,KW,KH);
-    ctx.fillStyle='#ffe7cf';ctx.font="bold 14px 'Jua'";ctx.textAlign='center';ctx.fillText('원유',KX+KW/2,KY+42);ctx.fillText('저장소',KX+KW/2,KY+62);
-    if(this.phase!=='play'){
-      const pulse=Math.sin(performance.now()/250)*2;
-      ctx.strokeStyle='#ffd34d';ctx.lineWidth=3;ctx.setLineDash([7,5]);ctx.strokeRect(KX-4,KY-4,KW+8,KH+8);ctx.setLineDash([]);
-      ctx.fillStyle='#ffd34d';ctx.font="bold 13px 'Jua'";ctx.textAlign='center';ctx.fillText('👆 클릭!',KX+KW/2,KY-14-pulse);
+  }
+};
+
+/* ===== 분별 증류 애니메이션 (입자 모형 · 액화 연출 · 혼합물) ===== */
+const ANIM={
+  cv:null,ctx:null,raf:null,loopOn:false,playing:false,speed:1,last:0,spawnT:0,spawnIdx:0,parts:[],res:[],flashes:[],
+  CX:175,CW:120,CTOP:70,CBOT:470,
+  POTX:185,POTY:478,POTW:100,POTH:56,
+  fracs:[
+    {id:'LPG',nm:'석유가스(LPG)',bp:'≤ 40℃',n:1,c:'#5ab0ff',oy:120,temp:'약 30℃'},
+    {id:'GAS',nm:'휘발유',bp:'40~120℃',n:2,c:'#ffd34d',oy:200,temp:'약 90℃'},
+    {id:'KER',nm:'등유',bp:'120~240℃',n:3,c:'#5fd38a',oy:280,temp:'약 180℃'},
+    {id:'DIE',nm:'경유',bp:'240~350℃',n:4,c:'#ff9e3d',oy:360,temp:'약 290℃'},
+    {id:'FUE',nm:'중유',bp:'≥ 350℃',n:5,c:'#ef5a4a',oy:440,temp:'약 370℃'}
+  ],
+  beadOffsets(n){const a=[];for(let i=0;i<n;i++){a.push({ox:(i-(n-1)/2)*7,oy:(i%2?2:-2)});}return a;},
+  cleanup(){ this.loopOn=false; this.playing=false; if(this.raf){cancelAnimationFrame(this.raf);this.raf=null;} },
+  init(){
+    this.cleanup();
+    this.cv=document.getElementById('animcv'); this.ctx=this.cv.getContext('2d'); fitCanvas(this.cv);
+    this.playing=false; this.parts=[]; this.flashes=[]; this.spawnT=0; this.spawnIdx=0; this.last=0; this.speed=1;
+    this.fracs.forEach(f=>{f.got=0; f.off=this.beadOffsets(f.n);});
+    this.initRes(); this.renderLegend(); this.setBtn();
+    const sl=document.getElementById('animSpd'); if(sl){sl.value=1;} const so=document.getElementById('animSpdOut'); if(so)so.textContent='1.0x';
+    this.loopOn=true; this.raf=requestAnimationFrame((t)=>this.tick(t));
+  },
+  initRes(){
+    this.res=[];
+    const types=['LPG','GAS','KER','DIE','FUE','RES'];
+    const col={LPG:'#5ab0ff',GAS:'#ffd34d',KER:'#5fd38a',DIE:'#ff9e3d',FUE:'#ef5a4a',RES:'#9a6b3a'};
+    const cnt={LPG:1,GAS:2,KER:3,DIE:4,FUE:5,RES:6};
+    for(let i=0;i<10;i++){const t=types[i%6];
+      this.res.push({x:this.POTX+16+Math.random()*(this.POTW-32),y:this.POTY+13+Math.random()*(this.POTH-24),c:col[t],off:this.beadOffsets(cnt[t]),ph:Math.random()*6});}
+  },
+  renderLegend(){
+    const el=document.getElementById('animLegend'); if(!el)return;
+    el.innerHTML=this.fracs.map(f=>`<span class="legchip"><span class="sw" style="background:${f.c}"></span>${f.nm} · <b>${f.bp}</b> · 분자 ${f.n}칸</span>`).join('')
+      +`<span class="legchip"><span class="sw" style="background:#9a6b3a"></span>잔여물(아스팔트) · <b>안 끓음</b> · 바닥에 남음</span>`;
+  },
+  setBtn(){const b=document.getElementById('animPlay'); if(b)b.innerHTML=this.playing?'⏸ 일시정지':'▶ 가열 시작';},
+  setSpeed(v){this.speed=parseFloat(v); const o=document.getElementById('animSpdOut'); if(o)o.textContent=this.speed.toFixed(1)+'x';},
+  toggle(){ ac(); this.playing=!this.playing; this.setBtn(); },
+  reset(){ ac(); this.parts=[]; this.flashes=[]; this.fracs.forEach(f=>f.got=0); this.spawnIdx=0; this.spawnT=0; this.playing=false; this.setBtn(); },
+  spawn(){
+    if(this.parts.length>28)return;
+    const f=this.fracs[this.spawnIdx%this.fracs.length]; this.spawnIdx++;
+    this.parts.push({f,x:this.POTX+16+Math.random()*(this.POTW-32),y:this.POTY+4,state:'gas',cond:0,ph:Math.random()*6,jx:(Math.random()-0.5)*0.45});
+  },
+  tick(ts){
+    if(!this.last)this.last=ts; let dt=(ts-this.last)/16.67; this.last=ts; if(dt>3)dt=3;
+    const sp=dt*this.speed; const CR=this.CX+this.CW;
+    this.res.forEach(d=>{d.ph+=0.045*dt;});
+    for(let i=this.flashes.length-1;i>=0;i--){const fl=this.flashes[i]; fl.r+=2.3*sp; fl.life-=0.045*sp; if(fl.life<=0)this.flashes.splice(i,1);}
+    if(this.playing){
+      this.spawnT+=sp; if(this.spawnT>13){this.spawnT=0; this.spawn();}
+      for(let i=this.parts.length-1;i>=0;i--){const p=this.parts[i],f=p.f;
+        if(p.state==='gas'){
+          p.y-=1.25*sp; p.x+=p.jx*sp+(Math.random()-0.5)*0.3; p.ph+=0.32*dt;
+          if(p.x<this.CX+9)p.x=this.CX+9; if(p.x>CR-9)p.x=CR-9;
+          if(p.y<=f.oy){ p.y=f.oy; p.state='cond'; p.cond=0; this.flashes.push({x:p.x,y:f.oy,r:3,life:1,c:f.c}); }
+        } else if(p.state==='cond'){
+          p.cond+=0.07*sp; p.y+=0.25*sp; if(p.cond>=1){p.cond=1; p.state='drain';}
+        } else {
+          p.x+=2.4*sp; p.y+=(f.oy+2-p.y)*0.2;
+          if(p.x>=CR+20){ f.got++; this.parts.splice(i,1); continue; }
+        }
+      }
     }
-    // bubbles
-    this.bubbles.forEach(b=>{
-      ctx.beginPath();ctx.arc(b.x,b.y,b.r,0,7);ctx.fillStyle=b.c;ctx.fill();
-      if(b.st==='rise'||b.st==='t2t'){ctx.strokeStyle='rgba(0,0,0,.2)';ctx.lineWidth=1;ctx.stroke();}
+    this.draw();
+    if(this.loopOn){ this.raf=requestAnimationFrame((t)=>this.tick(t)); } else { this.raf=null; }
+  },
+  drawMol(ctx,cx,cy,off,color,opt){
+    const scale=opt.scale||1, cond=opt.cond||0, gas=opt.gas;
+    const pts=off.map((o,i)=>{
+      let jx=0,jy=0;
+      if(gas){const v=2.3*(1-cond); jx=Math.sin(opt.ph+i*1.3)*v; jy=Math.cos(opt.ph*1.1+i*0.9)*v;}
+      return {x:cx+o.ox*scale+jx, y:cy+o.oy*scale+jy};
     });
+    if(pts.length>1){ctx.strokeStyle=color;ctx.globalAlpha=gas?0.45:0.9;ctx.lineWidth=2.2*scale;ctx.lineCap='round';ctx.beginPath();for(let i=0;i<pts.length-1;i++){ctx.moveTo(pts[i].x,pts[i].y);ctx.lineTo(pts[i+1].x,pts[i+1].y);}ctx.stroke();ctx.globalAlpha=1;}
+    const r=3.3*scale;
+    pts.forEach((pt)=>{
+      ctx.beginPath();ctx.arc(pt.x,pt.y,r,0,7);
+      ctx.fillStyle=color; ctx.globalAlpha=gas?(0.5+0.45*cond):1; ctx.fill(); ctx.globalAlpha=1;
+      if(!gas||cond>0.4){ctx.strokeStyle='rgba(18,11,5,.85)';ctx.lineWidth=1;ctx.stroke();}
+    });
+    if(!gas){ctx.fillStyle='rgba(255,255,255,.7)';ctx.beginPath();ctx.arc(pts[0].x-r*0.3,pts[0].y-r*0.3,r*0.32,0,7);ctx.fill();}
   },
-  maybeShow(){
-    if(this.activePop||this.queue.length===0)return;
-    this.activePop=this.queue.shift();
-    this.showCard(this.subs.find(s=>s.id===this.activePop));
-  },
-  showCard(s){
-    const t=(this.temps.find(x=>x.y===s.y)||{}).t||'';
-    const card=document.getElementById('condCard');
-    card.style.borderColor=s.c;
-    card.innerHTML=`<div style="font-size:34px">${s.id==='LPG'?'💨':'💧'}</div>
-      <h3 style="font-family:'Black Han Sans';font-size:22px;margin:6px 0;color:${s.c}">${s.nm}</h3>
-      <p style="color:#ffe9d6;font-size:14.5px;line-height:1.65;margin:4px 0 14px">끓는점 <b>${s.rg}</b><br>${s.id==='LPG'?'끓는점이 매우 낮아 <b>기체 상태</b>로 증류탑 맨 위에서 분리돼요!':'증류탑을 올라가다 약 <b>'+t+'</b> 높이에서 <b>기체 → 액체로 응축</b>되어 분리돼요!'}</p>
-      <button class="bigbtn next" style="width:100%" onclick="LAB.confirmPopup()">✔ 확인 (다시 안 보기)</button>`;
-    document.getElementById('condPopup').style.display='flex';
-    beep(s.id==='LPG'?880:720,.08,'triangle',.12);
-  },
-  confirmPopup(){
-    if(this.activePop)this.seen[this.activePop]=true;
-    this.activePop=null;
-    document.getElementById('condPopup').style.display='none';
-    pop();this.maybeShow();
-  },
-  showOilStorage(){
-    ac();
-    const chips=this.subs.map(s=>`<span class="oilchip"><span class="d" style="background:${s.c}"></span>${s.nm}</span>`).join('');
-    const card=document.getElementById('condCard');
-    card.style.borderColor='var(--accent)';
-    card.innerHTML=`<div style="font-size:30px">🛢️🔬</div>
-      <h3 style="font-family:'Black Han Sans';font-size:20px;margin:6px 0;color:var(--accent)">원유 저장소 속을 살펴봤어요</h3>
-      <p style="color:#ffe9d6;font-size:13.5px;line-height:1.6;margin:2px 0 8px">원유는 끓는점이 서로 다른 여러 물질이 <b>섞여 있는 혼합물</b>이에요.</p>
-      <div style="margin:4px 0 12px">${chips}</div>
-      <div style="background:rgba(255,170,100,.1);border:1px solid var(--panel-line);border-radius:12px;padding:13px;margin-bottom:8px;text-align:left">
-        <div style="font-family:'Jua';color:var(--gold);font-size:14.5px;margin-bottom:9px">❓ 원유 저장소의 원유는 <b>액체 상태</b>예요. 이를 <b>가열</b>하면 어떻게 될까요?</div>
-        <button class="qopt" onclick="LAB.answerStart(true)">끓는점이 <b>낮은</b> 물질부터 기체로 변해 증류탑 위로 올라간다</button>
-        <button class="qopt" onclick="LAB.answerStart(false)">끓는점이 <b>높은</b> 물질부터 먼저 기체가 되어 올라간다</button>
-        <button class="qopt" onclick="LAB.answerStart(false)">모든 물질이 한꺼번에 똑같이 끓어 <b>분리되지 않는다</b></button>
-      </div>
-      <div id="qMsg" style="min-height:20px;font-family:'Jua';font-size:13px"></div>`;
-    document.getElementById('condPopup').style.display='flex';
-    beep(720,.08,'triangle',.12);
-  },
-  answerStart(correct){
-    ac();
-    const msg=document.getElementById('qMsg');
-    if(correct){
-      chime();this.phase='play';
-      document.getElementById('condPopup').style.display='none';
-      document.getElementById('labPlay').style.display='block';
-      document.getElementById('labAfter').style.display='block';
-      this.feedback('✅ <b>정답!</b> 끓는점이 낮은 물질부터 기체가 되어 증류탑을 올라가요. 이제 물질을 골라 알맞은 층에 배치하고 🔥가열해 실험해 보세요!','ok');
-      this.renderChips();this.controls();
-    }else{
-      buzz();
-      if(msg){msg.style.color='#ff9a82';msg.innerHTML='❌ 다시 생각해 보세요! 끓는점이 <b>낮을수록</b> 더 낮은 온도에서 쉽게 기체가 돼요.';}
-    }
+  draw(){
+    const ctx=this.ctx,W=LW(this.cv),H=LH(this.cv); ctx.clearRect(0,0,W,H);
+    const now=performance.now();
+    const CX=this.CX,CW=this.CW,CTOP=this.CTOP,CBOT=this.CBOT,CR=CX+CW;
+    ctx.textAlign='left';ctx.fillStyle='#d8b79c';ctx.font="bold 12px 'Jua'";ctx.fillText('탑 안의 온도',34,52);
+    // column gradient
+    const g=ctx.createLinearGradient(0,CTOP,0,CBOT);
+    g.addColorStop(0,'#7ec8ff');g.addColorStop(.30,'#7ed9b0');g.addColorStop(.6,'#ffc24d');g.addColorStop(1,'#e5402a');
+    ctx.fillStyle=g; roundRect(ctx,CX,CTOP,CW,CBOT-CTOP,8); ctx.fill();
+    ctx.fillStyle='rgba(8,6,4,.16)'; roundRect(ctx,CX,CTOP,CW,CBOT-CTOP,8); ctx.fill();
+    // dome
+    ctx.fillStyle=g;ctx.beginPath();ctx.moveTo(CX+6,CTOP);ctx.quadraticCurveTo(CX+CW/2,CTOP-16,CR-6,CTOP);ctx.lineTo(CX+6,CTOP);ctx.fill();
+    // trays
+    ctx.strokeStyle='rgba(30,20,12,.4)';ctx.lineWidth=0.8;
+    this.fracs.forEach(f=>{const y=f.oy+34; if(y<CBOT-6){ctx.beginPath();ctx.moveTo(CX+5,y);ctx.lineTo(CR-5,y);ctx.stroke();}});
+    ctx.strokeStyle='#2a2018';ctx.lineWidth=2.5;roundRect(ctx,CX,CTOP,CW,CBOT-CTOP,8);ctx.stroke();
+    ctx.textAlign='center';ctx.font="10px 'Jua'";ctx.fillStyle='#aeeaff';ctx.fillText('❄ 차가움',CX+CW/2,CTOP-20);
+    ctx.fillStyle='#ffb6a0';ctx.fillText('🔥 뜨거움',CX+CW/2,CBOT+14);
+    // temp scale left
+    ctx.textAlign='right';ctx.font="11px 'Jua'";
+    this.fracs.forEach(f=>{ctx.fillStyle='#cdb39c';ctx.fillText(f.temp,CX-14,f.oy+4);ctx.strokeStyle='#9a7a5c';ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(CX-10,f.oy);ctx.lineTo(CX-3,f.oy);ctx.stroke();});
+    // outlets + boxes
+    const boxX=CR+30, boxW=W-boxX-12;
+    this.fracs.forEach(f=>{
+      const oy=f.oy;
+      ctx.fillStyle='#7d8085';ctx.fillRect(CR,oy-3,boxX-CR,6);
+      ctx.fillStyle='rgba(16,11,6,.58)';roundRect(ctx,boxX,oy-24,boxW,50,8);ctx.fill();
+      ctx.strokeStyle=f.c;ctx.globalAlpha=.75;ctx.lineWidth=1.5;roundRect(ctx,boxX,oy-24,boxW,50,8);ctx.stroke();ctx.globalAlpha=1;
+      this.drawMol(ctx,boxX+24,oy-3,f.off,f.c,{gas:false,scale:0.92});
+      ctx.textAlign='left';ctx.fillStyle='#ffe9d6';ctx.font="bold 13px 'Jua'";ctx.fillText(f.nm,boxX+52,oy-4);
+      ctx.fillStyle='#cdb39c';ctx.font="11px 'Gowun Dodum'";ctx.fillText('끓는점 '+f.bp,boxX+52,oy+12);
+      const mw=Math.min(f.got*5,boxW-20);
+      ctx.fillStyle='rgba(255,255,255,.12)';roundRect(ctx,boxX+10,oy+17,boxW-20,5,2);ctx.fill();
+      if(mw>0){ctx.fillStyle=f.c;roundRect(ctx,boxX+10,oy+17,mw,5,2);ctx.fill();}
+    });
+    // pot + burner
+    const PX=this.POTX,PY=this.POTY,PW=this.POTW,PH=this.POTH;
+    ctx.fillStyle='#4a3829';ctx.fillRect(CX+CW/2-12,CBOT,24,PY-CBOT);
+    {const fy=PY+PH;for(let i=0;i<5;i++){const fx=PX+12+i*((PW-24)/4),fl=8+(Math.sin(now/110+i)+1)*5;ctx.fillStyle=i%2?'#ffd34d':'#ff7a3a';ctx.beginPath();ctx.moveTo(fx,fy+16);ctx.quadraticCurveTo(fx+5,fy+3,fx,fy+16-fl);ctx.quadraticCurveTo(fx-5,fy+3,fx,fy+16);ctx.fill();}}
+    ctx.fillStyle='#2a1c12';roundRect(ctx,PX,PY,PW,PH,6);ctx.fill();ctx.strokeStyle='#120c07';ctx.lineWidth=2.5;roundRect(ctx,PX,PY,PW,PH,6);ctx.stroke();
+    // reservoir mixture (clipped)
+    ctx.save();roundRect(ctx,PX+2,PY+2,PW-4,PH-4,5);ctx.clip();
+    this.res.forEach(d=>{const jx=Math.sin(d.ph)*2.3,jy=Math.cos(d.ph*1.2)*1.9;this.drawMol(ctx,d.x+jx,d.y+jy,d.off,d.c,{gas:false,scale:0.76});});
+    ctx.restore();
+    ctx.textAlign='center';ctx.fillStyle='#cdb39c';ctx.font="11px 'Jua'";ctx.fillText('↑ 가열 — 원유(모든 성분 섞인 혼합물)',PX+PW/2,PY+PH+22);
+    // flashes (응결)
+    this.flashes.forEach(fl=>{ctx.globalAlpha=Math.max(0,fl.life)*0.8;ctx.strokeStyle=fl.c||'#fff';ctx.lineWidth=2.5;ctx.beginPath();ctx.arc(fl.x,fl.y,fl.r,0,7);ctx.stroke();ctx.globalAlpha=1;
+      if(fl.life>0.55){ctx.globalAlpha=(fl.life-0.55)*2;ctx.fillStyle='#fff';ctx.font="bold 10px 'Jua'";ctx.textAlign='left';ctx.fillText('응결',fl.x+fl.r+2,fl.y+3);ctx.globalAlpha=1;}});
+    // particles
+    this.parts.forEach(p=>{
+      if(p.state==='gas') this.drawMol(ctx,p.x,p.y,p.f.off,p.f.c,{gas:true,cond:0,ph:p.ph});
+      else if(p.state==='cond') this.drawMol(ctx,p.x,p.y,p.f.off,p.f.c,{gas:true,cond:p.cond,ph:p.ph});
+      else this.drawMol(ctx,p.x,p.y,p.f.off,p.f.c,{gas:false,scale:1});
+    });
   }
 };
 
@@ -595,10 +1176,12 @@ function fitCanvas(cv){
   const scale=cv.width/LWd;cv.getContext('2d').setTransform(scale,0,0,scale,0,0);
   cv._lw=LWd;cv._lh=LHd;cv._cssScale=cssW/LWd;
 }
+function ptr(cv,e){const r=cv.getBoundingClientRect();return{x:(e.clientX-r.left)/cv._cssScale,y:(e.clientY-r.top)/cv._cssScale};}
 function LW(cv){return cv._lw;}function LH(cv){return cv._lh;}
 function roundRect(ctx,x,y,w,h,r){if(w<2*r)r=w/2;if(h<2*r)r=h/2;ctx.beginPath();ctx.moveTo(x+r,y);ctx.arcTo(x+w,y,x+w,y+h,r);ctx.arcTo(x+w,y+h,x,y+h,r);ctx.arcTo(x,y+h,x,y,r);ctx.arcTo(x,y,x+w,y,r);ctx.closePath();}
-(function(){const b=document.getElementById('bubbles');for(let i=0;i<14;i++){const e=document.createElement('i');const s=6+Math.random()*22;e.style.width=e.style.height=s+'px';e.style.left=Math.random()*100+'%';e.style.animationDuration=(8+Math.random()*10)+'s';e.style.animationDelay=(-Math.random()*12)+'s';b.appendChild(e);}})();
-let rt;window.addEventListener('resize',()=>{clearTimeout(rt);rt=setTimeout(()=>{if(document.querySelector('.screen.active').id==='screen-lab'){fitCanvas(LAB.cv);}},200);});
+(function(){const b=document.getElementById('bubbles');if(!b)return;const cols=['#ffd34d','#ffb15c','#ff8a4b','#ff6b4a'];for(let i=0;i<26;i++){const e=document.createElement('i');const s=2+2*Math.floor(Math.random()*3);e.style.width=e.style.height=s+'px';e.style.left=Math.random()*100+'%';e.style.background=cols[Math.floor(Math.random()*cols.length)];e.style.animationDuration=(7+Math.random()*9)+'s';e.style.animationDelay=(-Math.random()*14)+'s';b.appendChild(e);}})();
+let rt;window.addEventListener('resize',()=>{clearTimeout(rt);rt=setTimeout(()=>{const a=document.querySelector('.screen.active'); if(a&&a.id==='screen-lab'&&LAB.cv)fitCanvas(LAB.cv); if(a&&a.id==='screen-anim'&&ANIM.cv)fitCanvas(ANIM.cv);},200);});
+document.body.dataset.s='home';
 </script>
 </body>
 </html>
