@@ -1,0 +1,1129 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>⛏️ 마인크래프트 분리 실험실</title>
+<link rel="icon" type="image/png" id="favicon">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/quiple/galmuri/dist/galmuri.css">
+<style>
+/* ====================== 디자인 토큰 (마인크래프트 팔레트) ====================== */
+:root{
+  --bg:#15151c; --bg2:#0e0e14;
+  --panel:#c6c6c6; --panel-hi:#ffffff; --panel-lo:#8b8b8b; --panel-edge:#373737;
+  --slot:#8b8b8b; --slot-in:#373737;
+  --stone:#7a7a7a; --stone-hi:#a0a0a0; --stone-lo:#525252;
+  --grass:#6aa84f; --grass-hi:#8ec26f; --grass-lo:#3e6b2a;
+  --dirt:#8b5a2b; --water:#3b7fd6; --oil:#e6c34a; --murk:#7a6b3a; --salt:#9ec9e8;
+  --xp:#7fff2a; --gold:#ffd83d; --redstone:#d84444; --redstone-lo:#8f2a2a; --emerald:#2ecc71;
+  --txt:#ffffff; --txt-dark:#2a2a2a; --ink:#241c12;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+html,body{height:100%;}
+body{
+  font-family:'Galmuri11','DungGeunMo',monospace;
+  background:
+    repeating-linear-gradient(0deg, rgba(255,255,255,.018) 0 2px, transparent 2px 4px),
+    radial-gradient(circle at 50% -10%, #232333 0%, var(--bg) 55%, var(--bg2) 100%);
+  color:var(--txt); min-height:100%;
+  -webkit-font-smoothing:none; image-rendering:pixelated; line-height:1.6; padding:0 0 60px; overflow-x:hidden;
+}
+.bg-cubes{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden;}
+.bg-cubes i{position:absolute;width:14px;height:14px;background:#2c2c3a;box-shadow:inset -3px -3px 0 #1c1c28, inset 3px 3px 0 #3a3a4c;opacity:.5;animation:floaty linear infinite;}
+@keyframes floaty{0%{transform:translateY(110vh) rotate(0)}100%{transform:translateY(-20vh) rotate(90deg)}}
+
+/* ====================== 공통 픽셀 패널/버튼 ====================== */
+.pixel{background:var(--panel);border:4px solid var(--panel-edge);box-shadow:inset -4px -4px 0 var(--panel-lo), inset 4px 4px 0 var(--panel-hi);}
+.btn{font-family:inherit;font-size:15px;color:#fff;cursor:pointer;background:var(--stone);border:3px solid #2a2a2a;
+  box-shadow:inset -3px -3px 0 var(--stone-lo), inset 3px 3px 0 var(--stone-hi), 0 4px 0 #1c1c1c;
+  padding:11px 16px;text-shadow:2px 2px 0 #2a2a2a;transition:transform .05s, box-shadow .05s, filter .1s;user-select:none;}
+.btn:hover{filter:brightness(1.12);}
+.btn:active{transform:translateY(3px);box-shadow:inset -3px -3px 0 var(--stone-lo), inset 3px 3px 0 var(--stone-hi), 0 1px 0 #1c1c1c;}
+.btn.green{background:var(--grass);box-shadow:inset -3px -3px 0 var(--grass-lo), inset 3px 3px 0 var(--grass-hi), 0 4px 0 #234a16;}
+.btn.gold{background:#e0a82e;color:#3a2400;text-shadow:1px 1px 0 #ffe08a;box-shadow:inset -3px -3px 0 #a8761a, inset 3px 3px 0 #ffd166, 0 4px 0 #6b4a10;}
+.btn.red{background:var(--redstone);box-shadow:inset -3px -3px 0 var(--redstone-lo), inset 3px 3px 0 #ef7a7a, 0 4px 0 #5a1a1a;}
+.btn:disabled{cursor:default;filter:grayscale(.5) brightness(.8);}
+
+/* ====================== 헤더 ====================== */
+header{position:relative;z-index:2;max-width:1180px;margin:0 auto;padding:18px 16px 8px;display:flex;align-items:center;gap:14px;flex-wrap:wrap;}
+.logo-block{width:48px;height:48px;background:var(--grass);border:3px solid #2a2a2a;box-shadow:inset -4px -4px 0 var(--grass-lo), inset 4px 4px 0 var(--grass-hi);display:flex;align-items:center;justify-content:center;font-size:26px;position:relative;flex:none;}
+.logo-block::after{content:"";position:absolute;left:6px;right:6px;bottom:-3px;height:10px;background:var(--dirt);border:3px solid #2a2a2a;box-shadow:inset -3px -3px 0 #5c3a17, inset 3px 3px 0 #b07a45;}
+h1{font-family:'Galmuri14','Galmuri11',monospace;font-size:clamp(18px,3.4vw,30px);letter-spacing:1px;text-shadow:3px 3px 0 #000;color:#fff;line-height:1.1;}
+h1 small{display:block;font-family:'Galmuri11';font-size:12px;color:var(--gold);text-shadow:2px 2px 0 #4a3400;margin-top:4px;letter-spacing:0;}
+.header-spacer{flex:1;}
+.profile-chip{background:var(--ink);border:3px solid #000;box-shadow:inset 2px 2px 0 #3a2e18;color:#fff;font-size:12px;padding:8px 12px;display:flex;align-items:center;gap:6px;}
+.profile-chip b{color:var(--gold);}
+.toggles{display:flex;gap:8px;flex-wrap:wrap;}
+.tg{width:46px;height:46px;font-size:18px;display:flex;align-items:center;justify-content:center;padding:0;}
+.tg.off{filter:grayscale(1) brightness(.7);}
+
+/* XP 진행바 */
+.xp-wrap{position:relative;z-index:2;max-width:1180px;margin:6px auto 0;padding:0 16px;display:flex;align-items:center;gap:12px;}
+.xp-label{font-size:12px;color:var(--xp);text-shadow:2px 2px 0 #143b00;white-space:nowrap;}
+.xp-bar{flex:1;height:20px;background:#0c0c10;border:3px solid #000;box-shadow:inset 2px 2px 0 #2a2a2a;position:relative;overflow:hidden;}
+.xp-fill{height:100%;width:0;background:repeating-linear-gradient(45deg,var(--xp) 0 8px,#a6ff5e 8px 16px);transition:width .5s steps(8);box-shadow:inset 0 -4px 0 rgba(0,0,0,.25);}
+
+/* 탭 네비 */
+nav{position:relative;z-index:2;max-width:1180px;margin:16px auto 0;padding:0 16px;display:flex;gap:8px;flex-wrap:wrap;}
+.tab-btn{flex:1;min-width:150px;font-size:15px;padding:12px 10px;text-align:center;}
+.tab-btn.active{background:var(--grass);box-shadow:inset -3px -3px 0 var(--grass-lo), inset 3px 3px 0 var(--grass-hi), 0 4px 0 #234a16;transform:translateY(-2px);}
+.tab-btn .lock{font-size:12px;opacity:.85;}
+
+/* 메인 */
+main{position:relative;z-index:2;max-width:1180px;margin:18px auto 0;padding:0 16px;}
+.tab{display:none;animation:fadein .25s ease both;}
+.tab.active{display:block;}
+@keyframes fadein{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.card{padding:20px;color:var(--txt-dark);}
+.card h2{font-family:'Galmuri14','Galmuri11';color:var(--ink);font-size:clamp(16px,2.6vw,22px);margin-bottom:12px;text-shadow:1px 1px 0 #fff;}
+.card p{font-size:14px;color:#241c12;margin-bottom:10px;}
+.card .accent{color:#1c5a00;}
+
+/* 브리핑 */
+.brief-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;align-items:start;}
+@media(max-width:760px){.brief-grid{grid-template-columns:1fr;}}
+.mission-box{background:#2a2a36;border:4px solid #000;box-shadow:inset 3px 3px 0 #3c3c4c, inset -3px -3px 0 #15151c;padding:18px;color:#fff;}
+.mission-box h3{font-family:'Galmuri14';color:var(--gold);text-shadow:2px 2px 0 #000;margin-bottom:10px;font-size:16px;}
+.goal-list{list-style:none;display:flex;flex-direction:column;gap:8px;margin-top:6px;}
+.goal-list li{background:#1c1c26;border:3px solid #000;box-shadow:inset 2px 2px 0 #34343f;padding:9px 10px;font-size:13px;display:flex;gap:9px;align-items:flex-start;}
+.goal-num{background:var(--grass);color:#fff;border:2px solid #000;width:24px;height:24px;flex:none;display:flex;align-items:center;justify-content:center;font-size:12px;box-shadow:inset -2px -2px 0 var(--grass-lo);}
+.recipe{display:flex;gap:10px;flex-wrap:wrap;margin:12px 0;}
+.ingredient{background:#1c1c26;border:3px solid #000;box-shadow:inset 2px 2px 0 #34343f;padding:10px;text-align:center;width:96px;color:#fff;}
+.ingredient .ic{font-size:30px;display:block;}
+.ingredient .nm{font-size:12px;margin-top:4px;}
+.ingredient .dz{font-size:10px;color:#9bd3ff;margin-top:2px;}
+.creeper{width:96px;height:96px;margin:6px auto;display:grid;grid-template-columns:repeat(8,12px);grid-template-rows:repeat(8,12px);}
+.creeper span{width:12px;height:12px;}
+.stats-row{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px;}
+.stat-box{background:#1c1c26;border:3px solid #000;box-shadow:inset 2px 2px 0 #34343f;padding:10px;text-align:center;color:#fff;}
+.stat-box .sv{font-family:'Galmuri14';font-size:18px;color:var(--gold);text-shadow:2px 2px 0 #000;}
+.stat-box .sk{font-size:10px;color:#9bd3ff;margin-top:2px;}
+
+/* ====================== 실험 탭 ====================== */
+.exp-grid{display:grid;grid-template-columns:340px 1fr;gap:16px;align-items:start;}
+@media(max-width:860px){.exp-grid{grid-template-columns:1fr;}}
+.lab-left{padding:16px;}
+.craft-wrap{display:flex;flex-direction:column;align-items:center;gap:5px;margin:0 0 12px;}
+.crafting{width:54px;height:54px;display:grid;grid-template:repeat(3,1fr)/repeat(3,1fr);gap:2px;background:#3a2410;border:3px solid #1c1208;box-shadow:inset -3px -3px 0 #241608, inset 3px 3px 0 #5c3a17, 0 4px 0 #120c06;padding:3px;}
+.crafting span{background:repeating-linear-gradient(45deg,#9c6b34 0 4px,#8a5d2c 4px 8px);box-shadow:inset -1px -1px 0 #5c3a17, inset 1px 1px 0 #b88048;}
+.crafting span:nth-child(5){background:repeating-linear-gradient(45deg,#7a5226 0 4px,#6a481f 4px 8px);}
+.craft-label{font-size:11px;color:var(--ink);text-shadow:1px 1px 0 #fff;}
+.step-title{font-family:'Galmuri14';color:var(--ink);font-size:16px;text-align:center;margin-bottom:10px;text-shadow:1px 1px 0 #fff;}
+.step-num{display:inline-block;background:var(--grass);color:#fff;border:2px solid #000;padding:2px 8px;font-size:11px;box-shadow:inset -2px -2px 0 var(--grass-lo);margin-bottom:6px;}
+.beaker-stage{position:relative;width:200px;height:240px;margin:6px auto 12px;}
+.beaker{position:absolute;left:30px;top:20px;width:140px;height:200px;background:rgba(180,210,230,.18);border:6px solid #1c2a33;border-top:none;box-shadow:inset 6px 0 0 rgba(255,255,255,.18), inset -6px 0 0 rgba(0,0,0,.18);overflow:hidden;border-radius:0 0 10px 10px;}
+.beaker::before{content:"";position:absolute;left:-16px;right:-16px;top:-6px;height:6px;background:#1c2a33;}
+.beaker .lip{position:absolute;left:-16px;width:16px;height:18px;top:-6px;background:#1c2a33;}
+.beaker .lip.r{left:auto;right:-16px;}
+.layer{position:absolute;left:0;right:0;transition:height .7s steps(8), bottom .7s steps(8), opacity .5s, background .5s;}
+.l-oil{bottom:118px;height:34px;background:repeating-linear-gradient(0deg,var(--oil) 0 5px,#d4ab2e 5px 8px);box-shadow:inset 0 3px 0 #fff4c0;}
+.l-water{bottom:0;height:118px;background:repeating-linear-gradient(0deg,var(--murk) 0 5px,#6a5d30 5px 9px);}
+.spec{position:absolute;width:6px;height:6px;background:#efe6c8;box-shadow:0 0 0 1px #b8ad84;border-radius:1px;animation:drift 3s ease-in-out infinite;}
+.bubble{position:absolute;width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,.6);bottom:8px;animation:rise 2.4s linear infinite;}
+@keyframes drift{0%,100%{transform:translateY(0)}50%{transform:translateY(-7px)}}
+@keyframes rise{0%{transform:translateY(0);opacity:.7}100%{transform:translateY(-90px);opacity:0}}
+.inv-title{font-size:12px;color:var(--ink);text-align:center;margin:4px 0 8px;text-shadow:1px 1px 0 #fff;}
+.inv{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;}
+.slot{aspect-ratio:1/1;background:var(--slot);border:3px solid #2a2a2a;box-shadow:inset 3px 3px 0 var(--slot-in), inset -2px -2px 0 #b0b0b0;display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;}
+.slot .si{font-size:26px;filter:grayscale(1) opacity(.25);transition:.3s;}
+.slot .sl{font-size:9px;color:#3a3a3a;margin-top:2px;}
+.slot.got .si{filter:none;animation:pop .4s;}
+.slot.got{box-shadow:inset 3px 3px 0 var(--slot-in), inset -2px -2px 0 #b0b0b0, 0 0 0 3px var(--gold);}
+.slot.got::after{content:"✓";position:absolute;top:-8px;right:-8px;background:var(--emerald);color:#fff;border:2px solid #000;width:20px;height:20px;font-size:12px;display:flex;align-items:center;justify-content:center;}
+@keyframes pop{0%{transform:scale(0)}70%{transform:scale(1.3)}100%{transform:scale(1)}}
+.codex-btn{width:100%;margin-top:12px;font-size:13px;}
+
+.lab-right{padding:18px;min-height:420px;color:var(--txt-dark);}
+.dots{display:flex;gap:8px;justify-content:center;margin-bottom:16px;flex-wrap:wrap;}
+.dot{display:flex;align-items:center;gap:6px;font-size:11px;color:#555;background:#e2e2e2;border:2px solid #999;padding:4px 8px;box-shadow:inset 2px 2px 0 #fff;}
+.dot.done{background:var(--grass);color:#fff;border-color:#234a16;box-shadow:inset 2px 2px 0 var(--grass-hi);}
+.dot.cur{background:var(--gold);color:#3a2400;border-color:#6b4a10;box-shadow:inset 2px 2px 0 #ffe08a;animation:blink 1s steps(2) infinite;}
+@keyframes blink{50%{filter:brightness(1.25)}}
+.q-tag{display:inline-block;background:var(--ink);color:var(--gold);font-size:11px;padding:3px 9px;margin-bottom:8px;text-shadow:1px 1px 0 #000;}
+.q-text{font-family:'Galmuri11';font-size:16px;color:var(--ink);margin-bottom:16px;line-height:1.55;text-shadow:1px 1px 0 rgba(255,255,255,.6);}
+.opts{display:flex;flex-direction:column;gap:10px;}
+.opt{font-family:inherit;text-align:left;font-size:14px;color:var(--ink);background:#eaeaea;border:3px solid #2a2a2a;box-shadow:inset -3px -3px 0 #b8b8b8, inset 3px 3px 0 #fff;padding:12px 14px;cursor:pointer;display:flex;gap:10px;align-items:center;transition:transform .05s,filter .1s;}
+.opt:hover{filter:brightness(1.04);transform:translateX(3px);}
+.opt:active{transform:translateX(0) translateY(2px);}
+.opt .kbd{background:var(--stone);color:#fff;border:2px solid #000;width:26px;height:26px;flex:none;display:flex;align-items:center;justify-content:center;font-size:12px;box-shadow:inset -2px -2px 0 var(--stone-lo);}
+.opt.correct{background:#bff0c4;box-shadow:inset -3px -3px 0 #7fce8a, inset 3px 3px 0 #e6ffe9;border-color:#1c6b2a;}
+.opt.correct .kbd{background:var(--emerald);box-shadow:inset -2px -2px 0 #1c8a4a;}
+.opt.wrong{background:#f5c2c2;box-shadow:inset -3px -3px 0 #d88;border-color:#8f2a2a;animation:shake .3s;}
+.opt.wrong .kbd{background:var(--redstone);}
+.opt.dim{filter:grayscale(.6) opacity(.6);}
+.opt.sel{background:#cfe4ff;box-shadow:inset -3px -3px 0 #8fb8e8, inset 3px 3px 0 #eaf4ff;border-color:#234a8f;}
+.opt.sel .kbd{background:var(--water);}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+.cards{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;}
+@media(max-width:520px){.cards{grid-template-columns:1fr;}}
+.pcard{cursor:pointer;background:#2a2a36;border:3px solid #000;box-shadow:inset 2px 2px 0 #3c3c4c,inset -2px -2px 0 #15151c;color:#fff;padding:12px;text-align:center;transition:transform .06s,filter .1s;}
+.pcard:hover{filter:brightness(1.15);transform:translateY(-3px);}
+.pcard .pe{font-size:28px;}
+.pcard .pn{font-size:12px;margin-top:4px;color:var(--salt);}
+.pcard.used{filter:grayscale(.5) brightness(.85);}
+.pcard.hit{box-shadow:0 0 0 3px var(--gold),inset 2px 2px 0 #3c3c4c;}
+.why{margin-top:16px;background:#fffbe6;border:4px solid var(--ink);box-shadow:inset 3px 3px 0 #fff;padding:14px;color:#2a2200;animation:fadein .25s both;}
+.why .wt{font-family:'Galmuri14';color:#7a5a00;font-size:14px;margin-bottom:6px;display:flex;align-items:center;gap:8px;}
+.why p{font-size:13px;color:#3a2e00;}
+.next-row{margin-top:14px;display:flex;justify-content:flex-end;gap:8px;}
+.submit-row{margin-top:14px;display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;}
+.hint-inline{font-size:12px;color:#8f2a2a;}
+.done-screen{text-align:center;padding:30px 16px;color:var(--ink);}
+.done-screen h2{font-family:'Galmuri14';color:#1c6b2a;font-size:24px;text-shadow:2px 2px 0 #fff;}
+.trophy{font-size:64px;animation:bob 1.6s ease-in-out infinite;}
+@keyframes bob{50%{transform:translateY(-10px)}}
+
+/* 퀴즈 */
+.quiz-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:8px;}
+.q-progress{font-size:12px;color:var(--ink);text-shadow:1px 1px 0 #fff;}
+.cat-badge{display:inline-block;font-size:11px;padding:4px 10px;border:2px solid #000;color:#fff;text-shadow:1px 1px 0 #000;margin-bottom:10px;}
+.cat-density{background:var(--water);box-shadow:inset -2px -2px 0 #1c4a8a;}
+.cat-solub{background:var(--grass);box-shadow:inset -2px -2px 0 var(--grass-lo);}
+.cat-boil{background:var(--redstone);box-shadow:inset -2px -2px 0 var(--redstone-lo);}
+.score-pill{font-size:12px;color:var(--gold);background:var(--ink);border:2px solid #000;padding:4px 10px;text-shadow:1px 1px 0 #000;}
+.quiz-result{text-align:center;padding:24px 12px;color:var(--ink);}
+.quiz-result .big{font-family:'Galmuri14';font-size:40px;color:#1c6b2a;text-shadow:2px 2px 0 #fff;}
+
+/* 토스트 & 모달 */
+#toasts{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);z-index:90;display:flex;flex-direction:column;gap:8px;align-items:center;width:92%;max-width:480px;pointer-events:none;}
+.toast{pointer-events:none;font-size:14px;color:#fff;padding:11px 16px;border:3px solid #000;box-shadow:0 4px 0 rgba(0,0,0,.4),inset 2px 2px 0 rgba(255,255,255,.2);animation:toastin .3s both, toastout .4s 2.6s forwards;text-shadow:1px 1px 0 #000;}
+.toast.ok{background:var(--grass);} .toast.bad{background:var(--redstone);} .toast.info{background:var(--stone);}
+@keyframes toastin{from{transform:translateY(20px);opacity:0}to{transform:none;opacity:1}}
+@keyframes toastout{to{transform:translateY(20px);opacity:0}}
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.72);z-index:60;display:none;align-items:center;justify-content:center;padding:18px;}
+.overlay.show{display:flex;animation:fadein .2s;}
+.modal{max-width:460px;width:100%;background:var(--panel);border:5px solid #000;box-shadow:inset -5px -5px 0 var(--panel-lo),inset 5px 5px 0 var(--panel-hi),0 8px 0 rgba(0,0,0,.5);}
+.modal-head{background:var(--ink);color:var(--gold);padding:12px 16px;font-family:'Galmuri14';font-size:15px;display:flex;justify-content:space-between;align-items:center;text-shadow:1px 1px 0 #000;gap:8px;}
+.modal-body{padding:16px;color:var(--txt-dark);max-height:66vh;overflow:auto;}
+.modal-body h4{font-family:'Galmuri14';color:var(--ink);font-size:14px;margin:16px 0 8px;text-shadow:1px 1px 0 #fff;}
+.modal-body h4:first-child{margin-top:4px;}
+.x-btn{cursor:pointer;background:var(--redstone);color:#fff;border:2px solid #000;width:26px;height:26px;display:flex;align-items:center;justify-content:center;box-shadow:inset -2px -2px 0 var(--redstone-lo);flex:none;}
+.codex-list{display:flex;flex-direction:column;gap:10px;}
+.codex-item{display:flex;gap:12px;background:#ececec;border:3px solid #2a2a2a;box-shadow:inset 2px 2px 0 #fff;padding:10px;align-items:flex-start;}
+.codex-item .ce{font-size:26px;flex:none;}
+.codex-item .cn{font-size:13px;color:var(--ink);}
+.codex-item .cd{font-size:12px;color:#444;margin-top:2px;}
+.footer-note{max-width:1180px;margin:24px auto 0;padding:0 16px;font-size:11px;color:#6a6a7a;text-align:center;line-height:1.7;}
+.footer-note b{color:#9a9aae;}
+
+/* 도전과제(advancement) 스타일 팝업 베이스 */
+.adv{background:#2a2a36;border:5px solid #000;box-shadow:0 0 0 4px #4a4a5a,0 10px 0 rgba(0,0,0,.5);padding:18px 20px;max-width:420px;width:100%;color:#fff;display:flex;gap:14px;align-items:center;animation:advin .4s cubic-bezier(.2,1.4,.5,1) both;}
+@keyframes advin{from{transform:translateY(-40px) scale(.9);opacity:0}to{transform:none;opacity:1}}
+
+/* ====================== 로그인 ====================== */
+.login-card{max-width:380px;width:100%;padding:26px 22px;text-align:center;color:var(--ink);}
+.login-card .logo-block{margin:0 auto 12px;}
+.login-card h2{font-family:'Galmuri14';font-size:20px;text-shadow:1px 1px 0 #fff;margin-bottom:6px;}
+.login-card p{font-size:13px;color:#3a2e16;margin-bottom:14px;}
+.login-field{text-align:left;margin-bottom:12px;}
+.login-field label{display:block;font-size:12px;color:var(--ink);margin-bottom:5px;text-shadow:1px 1px 0 #fff;}
+.login-field input{width:100%;font-family:inherit;font-size:15px;color:var(--ink);background:#fff;border:3px solid #2a2a2a;box-shadow:inset 2px 2px 0 #cfcfcf;padding:11px 12px;outline:none;}
+.login-field input:focus{box-shadow:inset 2px 2px 0 #cfcfcf, 0 0 0 3px var(--grass);}
+.login-err{color:#b02a2a;font-size:12px;min-height:16px;margin-bottom:8px;text-align:left;}
+.login-note{font-size:11px;color:#6a5a3a;margin-top:14px;}
+
+/* ====================== 실험 장면 극장 ====================== */
+.theater{max-width:460px;width:100%;}
+.scene-stage{position:relative;width:100%;height:300px;background:linear-gradient(#202a38,#0d1520);border:4px solid #000;box-shadow:inset 0 0 0 3px #2a3848;overflow:hidden;}
+.scene-caption{padding:10px 14px;font-size:13px;color:#2a2200;min-height:48px;background:#fffbe6;border-top:4px solid #000;border-left:6px solid var(--gold);line-height:1.5;}
+.scene-caption b{color:#7a5a00;}
+.scene-controls{padding:12px;display:flex;justify-content:space-between;gap:8px;}
+@keyframes streamFlow{to{background-position:0 12px;}}
+@keyframes dripFall{0%{transform:translateY(0);opacity:1}85%{opacity:1}100%{transform:translateY(var(--fall,40px));opacity:0}}
+@keyframes flicker{50%{transform:scaleY(1.25) scaleX(.85);filter:brightness(1.25)}}
+@keyframes bubbleUp{0%{transform:translateY(0);opacity:.85}100%{transform:translateY(-38px);opacity:0}}
+@keyframes vaporTravel{0%{transform:translate(0,0);opacity:0}12%{opacity:.9}100%{transform:translate(var(--vx,150px),var(--vy,-58px));opacity:0}}
+
+/* ====================== 업적카드 / 갤러리 / 획득 팝업 ====================== */
+.ach-card{position:relative;background:#20202c;border:4px solid var(--rar,#9a9a9a);box-shadow:0 0 0 3px #000, 0 0 16px -2px var(--rar,#9a9a9a);padding:14px;text-align:center;color:#fff;}
+.ach-card .ai{width:56px;height:56px;margin:0 auto 8px;background:#2c2c3a;border:3px solid #000;box-shadow:inset 3px 3px 0 #3c3c4c, inset -3px -3px 0 #15151c;display:flex;align-items:center;justify-content:center;font-size:30px;}
+.ach-card .rar{display:inline-block;font-size:10px;padding:2px 8px;border:2px solid #000;color:#1a1a1a;background:var(--rar,#9a9a9a);margin-bottom:6px;text-shadow:none;}
+.ach-card .ti{font-family:'Galmuri14','Galmuri11';font-size:15px;margin-bottom:4px;text-shadow:2px 2px 0 #000;}
+.ach-card .pr{font-size:11px;color:var(--gold);margin-bottom:6px;text-shadow:1px 1px 0 #000;}
+.ach-card .de{font-size:12px;color:#cfd6e0;line-height:1.5;}
+.ach-card .replay{margin-top:10px;font-size:12px;padding:7px 12px;}
+.ach-card.locked{filter:grayscale(1) brightness(.45);}
+.ach-card .lockic{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:36px;}
+.ach-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;}
+@media(max-width:520px){.ach-grid{grid-template-columns:1fr;}}
+.ach-pop{position:relative;max-width:330px;width:100%;background:#1a1a24;border:5px solid #000;box-shadow:0 0 0 4px var(--gold),0 10px 0 rgba(0,0,0,.5);padding:16px;text-align:center;overflow:hidden;animation:advin .4s cubic-bezier(.2,1.4,.5,1) both;}
+.ach-pop-banner{font-family:'Galmuri14','Galmuri11';color:var(--gold);font-size:14px;text-shadow:2px 2px 0 #000;margin-bottom:12px;}
+.ach-pop-btns{display:flex;gap:8px;justify-content:center;margin-top:14px;flex-wrap:wrap;}
+.confetti{position:absolute;inset:0;pointer-events:none;}
+.confetti i{position:absolute;}
+@keyframes confFall{to{transform:translateY(380px) rotate(380deg);opacity:0;}}
+
+/* ====================== 단서 노트(특성표 등) ====================== */
+.note-intro{font-size:13px;color:var(--ink);background:#fffbe6;border:3px solid var(--ink);box-shadow:inset 2px 2px 0 #fff;padding:10px 12px;margin-bottom:6px;}
+.table-scroll{overflow-x:auto;border:3px solid #000;}
+.prop-table{width:100%;min-width:480px;border-collapse:collapse;font-size:12px;}
+.prop-table th,.prop-table td{border:2px solid #000;padding:8px 6px;text-align:center;}
+.prop-table thead th{background:var(--ink);color:var(--gold);text-shadow:1px 1px 0 #000;font-size:12px;}
+.prop-table thead .em{font-size:20px;display:block;margin-bottom:3px;}
+.prop-table tbody th{background:#3a2a16;color:#fff;white-space:nowrap;}
+.prop-table td{background:#f0ece2;color:#241c12;}
+.prop-table tr:nth-child(even) td{background:#e3dac7;}
+.prop-table .exbadge{display:inline-block;background:#7a4ea8;color:#fff;font-size:9px;padding:1px 5px;border:1px solid #000;margin-bottom:2px;}
+.tbl-note{font-size:11px;color:#6a5a3a;margin-top:6px;}
+.clue-card{background:#2a2a36;border:3px solid #000;box-shadow:inset 2px 2px 0 #3c3c4c;margin-bottom:8px;cursor:pointer;transition:filter .1s;}
+.clue-card:hover{filter:brightness(1.12);}
+.clue-card .ch{padding:11px 12px;color:#fff;font-size:13px;display:flex;justify-content:space-between;align-items:center;gap:8px;}
+.clue-card .ch .tg-ic{color:var(--gold);font-size:12px;}
+.clue-card .cb{max-height:0;overflow:hidden;transition:max-height .3s ease;color:#cfd6e0;font-size:12px;line-height:1.55;}
+.clue-card.open .cb{max-height:240px;}
+.clue-card .cb-in{padding:0 12px 12px;}
+.clue-card .cb-in b{color:#ffe08a;}
+
+/* ====== 업로드 아이콘(석재 절단기) / 크리퍼 이미지 ====== */
+.logo-block{background:transparent!important;border:none!important;box-shadow:none!important;font-size:0!important;}
+.logo-block::after{content:none!important;}
+.logo-block img{width:48px;height:48px;display:block;image-rendering:auto;filter:drop-shadow(2px 2px 0 #000);}
+.login-card .logo-block img{width:66px;height:66px;}
+.craft-wrap{gap:6px;}
+.craft-img{width:76px;height:76px;display:block;image-rendering:auto;filter:drop-shadow(2px 2px 0 rgba(0,0,0,.45));}
+.creeper-wrap{display:flex;justify-content:center;margin:10px 0 4px;}
+.creeper-img{height:152px;width:auto;display:block;image-rendering:auto;filter:drop-shadow(3px 3px 0 rgba(0,0,0,.35));animation:bob 2.4s ease-in-out infinite;}
+</style>
+</head>
+<body>
+<div class="bg-cubes" id="bgCubes"></div>
+
+<!-- ====================== 로그인 오버레이 ====================== -->
+<div class="overlay show" id="loginOverlay" style="z-index:200;">
+  <div class="login-card pixel">
+    <div class="logo-block"><img class="ico-stone" alt="아이콘"></div>
+    <h2>분리 실험실 입장</h2>
+    <p>견습 연금술사여, 출입증을 작성하라!</p>
+    <div class="login-field">
+      <label>🎫 학번</label>
+      <input id="inSid" type="text" inputmode="numeric" placeholder="예) 30112" maxlength="12" autocomplete="off">
+    </div>
+    <div class="login-field">
+      <label>🪪 이름</label>
+      <input id="inName" type="text" placeholder="예) 홍길동" maxlength="20" autocomplete="off">
+    </div>
+    <div class="login-err" id="loginErr"></div>
+    <button class="btn green" id="loginBtn" style="width:100%;font-size:16px;">⛏️ 입장하기</button>
+    <p class="login-note">진행 상황(완료한 미션·점수·획득한 배지)은 이 기기에 저장되어 다음에 이어서 할 수 있어요.</p>
+  </div>
+</div>
+
+<!-- ====================== 앱 본체 ====================== -->
+<div id="app" style="display:none;">
+  <header>
+    <div class="logo-block"><img class="ico-stone" alt="아이콘"></div>
+    <h1>마인크래프트 분리 실험실<small>MIXTURE SEPARATION LAB · 혼합물 분리 미션</small></h1>
+    <div class="header-spacer"></div>
+    <div class="profile-chip" id="profileChip">🎓 <b id="pSid"></b> <span id="pName"></span></div>
+    <div class="toggles">
+      <button class="btn tg" id="clueBtn" title="나의 단서 노트">🎒</button>
+      <button class="btn tg" id="achBtn" title="업적 모음">🏅</button>
+      <button class="btn tg" id="soundBtn" title="효과음">🔊</button>
+      <button class="btn tg" id="voiceBtn" title="음성 안내">🗣️</button>
+      <button class="btn tg" id="resetBtn" title="처음부터 다시">⟲</button>
+    </div>
+  </header>
+
+  <div class="xp-wrap">
+    <span class="xp-label" id="xpLabel">경험치 0 / 4</span>
+    <div class="xp-bar"><div class="xp-fill" id="xpFill"></div></div>
+  </div>
+
+  <nav>
+    <button class="btn tab-btn active" data-tab="brief">📜 미션 브리핑</button>
+    <button class="btn tab-btn" data-tab="exp">⛏️ 분리 작전</button>
+    <button class="btn tab-btn" data-tab="quiz">🏆 도전 문제 <span class="lock" id="quizLock">🔒</span></button>
+  </nav>
+
+  <main>
+    <!-- 브리핑 -->
+    <section class="tab active" id="tab-brief">
+      <div class="brief-grid">
+        <div class="pixel card">
+          <h2>🟩 어서 와, 견습 연금술사!</h2>
+          <p>여기는 블록 세계의 <span class="accent">분리 실험실</span>이야. 누군가 실수로 네 가지 물질을 한 비커에 몽땅 쏟아 버렸어!</p>
+          <div class="recipe">
+            <div class="ingredient"><span class="ic">🛢️</span><span class="nm">카놀라유</span><span class="dz">기름</span></div>
+            <div class="ingredient"><span class="ic">🥣</span><span class="nm">녹말</span><span class="dz">흰 가루</span></div>
+            <div class="ingredient"><span class="ic">🧂</span><span class="nm">소금</span><span class="dz">짠 결정</span></div>
+            <div class="ingredient"><span class="ic">💧</span><span class="nm">물</span><span class="dz">용매</span></div>
+          </div>
+          <p>네 임무는 이 혼합물을 <span class="accent">하나씩 순수하게 분리</span>해서 인벤토리 4칸을 모두 채우는 거야. 막막하면 오른쪽 위 <span class="accent">🎒 단서 노트</span>를 열어 단서를 찾아보자!</p>
+          <div class="creeper-wrap"><img class="creeper-img ico-creeper" alt="크리퍼"></div>
+          <div class="stats-row" id="statsRow"></div>
+        </div>
+
+        <div>
+          <div class="mission-box" style="margin-bottom:14px;">
+            <h3>🎯 작전 수칙 · 4가지 질문</h3>
+            <ul class="goal-list">
+              <li><span class="goal-num">1</span><span>혼합물을 분리하는 데 이용할 <b>물질의 특성</b>은 무엇인가?</span></li>
+              <li><span class="goal-num">2</span><span>그 특성을 이용할 <b>실험 도구·방법</b>은 무엇인가?</span></li>
+              <li><span class="goal-num">3</span><span>그 분리 방법은 <b>안전</b>한가?</span></li>
+              <li><span class="goal-num">4</span><span>분리가 잘 되었는지 <b>확인</b>할 방법은? (특성 카드 사용)</span></li>
+            </ul>
+          </div>
+          <div class="mission-box">
+            <h3>🧭 진행 방법</h3>
+            <p style="font-size:13px;color:#cfd6e0;">① 🎒 단서 노트에서 물질 특성을 살펴 단서를 찾는다.<br>② 비커에서 빛나는 물질을 골라 분리를 시도한다.<br>③ 4가지 질문에 답하고 <b style="color:#ffd83d">실험 장면</b>을 확인한다.<br>④ 성공하면 <b style="color:#ffd83d">업적카드</b>를 얻고, 세 단계를 끝내면 <b style="color:#ffd83d">도전 문제</b>가 열린다!</p>
+            <div style="margin-top:14px;display:flex;justify-content:flex-end;gap:8px;flex-wrap:wrap;">
+              <button class="btn gold" id="clueBtn3" style="font-size:14px;">🎒 단서 노트</button>
+              <button class="btn green" id="startBtn" style="font-size:16px;">⛏️ 미션 시작!</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 분리 작전 -->
+    <section class="tab" id="tab-exp">
+      <div class="exp-grid">
+        <div class="pixel lab-left">
+          <div class="craft-wrap">
+            <img class="craft-img ico-stone" alt="분리 작업대">
+            <span class="craft-label">🪚 분리 작업대</span>
+          </div>
+          <div class="step-title"><span class="step-num" id="stepNum">단계 1 / 3</span><br><span id="stepName">기름 분리</span></div>
+          <div class="beaker-stage">
+            <div class="beaker">
+              <span class="lip"></span><span class="lip r"></span>
+              <div class="layer l-water" id="layerWater"></div>
+              <div class="layer l-oil" id="layerOil"></div>
+              <div id="specs"></div>
+              <div id="bubbles"></div>
+            </div>
+          </div>
+          <div class="inv-title">📦 수집한 물질</div>
+          <div class="inv" id="inv"></div>
+          <button class="btn gold codex-btn" id="clueBtn2">🎒 단서 노트 열기</button>
+          <button class="btn green codex-btn" id="replayBtn" disabled>🎬 마지막 실험 장면 다시보기</button>
+        </div>
+        <div class="pixel lab-right">
+          <div class="dots" id="dots"></div>
+          <div id="qArea"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 도전 문제 -->
+    <section class="tab" id="tab-quiz">
+      <div class="pixel card" id="quizCard"></div>
+    </section>
+  </main>
+
+  <div class="footer-note">
+    <b>마인크래프트 분리 실험실</b> · 중학교 과학 「물질의 특성 — 혼합물의 분리」 학습용 가상 실험 웹앱<br>
+    분리 원리: 밀도 차 · 용해도 차 · 끓는점 차 / 확인: 전기전도도 · 냄새 · 아이오딘 반응 · 불꽃반응
+  </div>
+</div>
+
+<!-- 토스트 -->
+<div id="toasts"></div>
+
+<!-- 실험 장면 극장 -->
+<div class="overlay" id="sceneOverlay" style="z-index:70;">
+  <div class="theater pixel">
+    <div class="modal-head">🎬 실험 장면 — <span id="sceneTitle"></span><span class="x-btn" id="sceneSkip">✕</span></div>
+    <div class="scene-stage" id="sceneStage"></div>
+    <div class="scene-caption" id="sceneCaption"></div>
+    <div class="scene-controls">
+      <button class="btn" id="sceneReplay">🔁 다시보기</button>
+      <button class="btn green" id="sceneContinue">계속 ▶</button>
+    </div>
+  </div>
+</div>
+
+<!-- 업적 획득 팝업 -->
+<div class="overlay" id="achPopOverlay" style="z-index:74;">
+  <div class="ach-pop">
+    <div class="ach-pop-banner">✨ 새로운 업적 획득! ✨</div>
+    <div id="achPopBody"></div>
+    <div class="ach-pop-btns">
+      <button class="btn gold" id="achPopGallery">🏅 업적 모음</button>
+      <button class="btn green" id="achPopContinue">계속 ▶</button>
+    </div>
+    <div class="confetti" id="confetti"></div>
+  </div>
+</div>
+
+<!-- 업적 모음 갤러리 -->
+<div class="overlay" id="achGalleryOverlay" style="z-index:80;">
+  <div class="modal" style="max-width:560px;">
+    <div class="modal-head">🏅 업적 모음 <span id="achCount" style="font-size:11px;color:#fff;"></span><span class="x-btn" id="achGalleryClose">✕</span></div>
+    <div class="modal-body"><div class="ach-grid" id="achGrid"></div></div>
+  </div>
+</div>
+
+<!-- 나의 단서 노트 -->
+<div class="overlay" id="clueOverlay" style="z-index:82;">
+  <div class="modal" style="max-width:660px;">
+    <div class="modal-head">🎒 나의 단서 노트<span class="x-btn" id="clueClose">✕</span></div>
+    <div class="modal-body">
+      <div class="note-intro">🔎 클릭해서 각 물질을 분리할 <b>단서</b>를 찾아보자! 아래 표의 숫자를 비교하면 어떤 성질이 다른지 보여.</div>
+      <h4>📋 4가지 물질의 특성</h4>
+      <div class="table-scroll" id="propTable"></div>
+      <p class="tbl-note">※ 카놀라유의 밀도는 예시 답안(0.92 g/cm³)이야. 표시 「×」는 거의 녹지 않음, 「–」는 값이 정해지지 않음을 뜻해.</p>
+      <h4>🧩 단서 해석 — 어떻게 분리할까?</h4>
+      <div id="clueCards"></div>
+      <h4>🔬 분리 확인용 특성 카드</h4>
+      <div class="codex-list" id="codexList"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+const STONE_SRC="data:image/png;base64,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";
+const CREEPER_SRC="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGIAAADICAMAAAAk/MS0AAAAwFBMVEX///8AAADsAOxg0Ex8MXy7nbkAnQP/a/8zTTTA+7nGRMV6iHmQ0orwuO8ASwA6lTSja6BbYFr/Mv8bchff5dwfJxhfn1WYo5eyzbEfuiffatxYMlh5tXHTutCBWn/gk+FJvDH/lv++Hb553GlDcD8BJQC6drocTRcAeQAflx3nS+fR27+t6Z9jgGL/Ev+wTbD55O7t/+dIik3sJexIUUktei7Nj8tRtkyEoYJvam+awJ2ssKv7UPt6m2VouFssYCKVwz50AAAAL3RSTlP/////////////////////////////////////////////////////////////AFqlOPcAABdPSURBVHjarZwNY9q4sobJ6cnBKSSsAQu2dbbhRtTNgtnGazeOi/H//1d33pmRbAhJoa12N93mw49npPnQaJTe5oxx/Xg1NGZ4Nd2e81O9U75pO5aPj1VsnkajXfV43f/NCAZsryuTjYgwGpEgj19/L2I83oyvq7oo8PzR0y4eDqvV9fh3IvrTx6q2ADwQ4Z5GPKzm0+vfhtheP653rCARw8SEAGN12oz8CHG96D+u46enu7s7poCTmd2QVDWfr6a3/e2vIvo9rNMRCHdPTwKxNgNiXdGYT388J28jFo/r4W63e3d3p4wnVtRwSIoariFKVa0eP/08Ynw7r2ICYDw5QZ6e7gkAhAySZHV7/VOI/uLTVbwzDvAEBj5mmaHn06J6t7u/F8Z3Wlz98xHsK/jJjsEfRhmG2d3zZ+93BFnP5/PvNPOvzslxxNdPf9TGyKvj5d/tMBQAhDLe3StjXpXl/BV99V4aMlnCPM5gA3dPd26id0+GH47/4ntC3AvhniHDGF+Mq0/bkxDjxW1laWHClBVBni+mhxv+b4fH0ocd/w+beqzS2ep2Mf4RYrz4tJquqjiz5C9kkmkCdsP1el4aUZG+fAzVMWHnANlwvnqcbrdvIfqL6ePVHBZFkAzaf8K/AEDdsTG6hGVuMGKTuQkq8U0EebxebBfHEf3e9EoWPBku2VVMD2SvKoT5eg071AWGp9Ooriph1NVq5b5pffW42B5DjKdzek1+JoyWPpK638nSp5fTH8fnoD9C1DFZ3ZTUajIznF+tiLGiNwN8eNXbHkH8W+Gt8dPk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";
+function applyImages(){document.querySelectorAll(".ico-stone").forEach(function(i){i.src=STONE_SRC;});document.querySelectorAll(".ico-creeper").forEach(function(i){i.src=CREEPER_SRC;});var f=document.getElementById("favicon"); if(f) f.href=STONE_SRC;}
+
+/* ============================================================
+   0. 저장소 (localStorage, 안전 래퍼)
+   ============================================================ */
+const LS_KEY='mc_sep_lab_v2';
+let profile=null;            // {sid, name}
+let quizBest=0;
+function saveAll(){
+  try{ localStorage.setItem(LS_KEY, JSON.stringify({
+    profile, progress:{collected, achUnlocked, stepIdx, missionDone, quizBest}
+  })); }catch(e){}
+}
+function loadAll(){ try{ const r=localStorage.getItem(LS_KEY); return r?JSON.parse(r):null; }catch(e){ return null; } }
+function wipeAll(){ try{ localStorage.removeItem(LS_KEY); }catch(e){} }
+
+/* ============================================================
+   1. 사운드 엔진 (Web Audio API)
+   ============================================================ */
+let soundOn=true, voiceOn=true, audioCtx=null;
+function ac(){ if(!audioCtx){ try{ audioCtx=new (window.AudioContext||window.webkitAudioContext)(); }catch(e){} } if(audioCtx&&audioCtx.state==='suspended') audioCtx.resume(); return audioCtx; }
+function tone(freq,dur,type='square',vol=0.12,delay=0){
+  if(!soundOn) return; const c=ac(); if(!c) return; const t=c.currentTime+delay;
+  const o=c.createOscillator(), g=c.createGain(); o.type=type; o.frequency.setValueAtTime(freq,t);
+  g.gain.setValueAtTime(0.0001,t); g.gain.exponentialRampToValueAtTime(vol,t+0.01); g.gain.exponentialRampToValueAtTime(0.0001,t+dur);
+  o.connect(g).connect(c.destination); o.start(t); o.stop(t+dur+0.02);
+}
+function noise(dur=0.12,vol=0.15){
+  if(!soundOn) return; const c=ac(); if(!c) return;
+  const b=c.createBuffer(1,c.sampleRate*dur,c.sampleRate); const d=b.getChannelData(0);
+  for(let i=0;i<d.length;i++) d[i]=(Math.random()*2-1)*Math.pow(1-i/d.length,2);
+  const s=c.createBufferSource(); s.buffer=b; const g=c.createGain(); g.gain.value=vol;
+  const f=c.createBiquadFilter(); f.type='lowpass'; f.frequency.value=900;
+  s.connect(f).connect(g).connect(c.destination); s.start();
+}
+const SFX={
+  click(){tone(200,0.05,'square',0.1);},
+  select(){tone(620,0.07,'square',0.1);tone(820,0.06,'square',0.08,0.05);},
+  good(){[523,659,784,1047].forEach((f,i)=>tone(f,0.12,'square',0.12,i*0.07));},
+  bad(){tone(180,0.16,'sawtooth',0.16);tone(120,0.22,'sawtooth',0.14,0.1);},
+  pop(){tone(880,0.05,'sine',0.1);tone(1320,0.05,'sine',0.08,0.04);},
+  place(){noise(0.1,0.16);tone(150,0.07,'square',0.1);},
+  complete(){[523,659,784,1047,1319].forEach((f,i)=>tone(f,0.14,'square',0.13,i*0.1));noise(0.2,0.1);},
+  level(){[392,523,659,784,1047,1319].forEach((f,i)=>tone(f,0.16,'triangle',0.13,i*0.09));}
+};
+
+/* ============================================================
+   2. 음성 안내 (SpeechSynthesis)
+   ============================================================ */
+let koVoice=null;
+function loadVoices(){ try{ const vs=speechSynthesis.getVoices(); koVoice=vs.find(v=>v.lang&&v.lang.toLowerCase().startsWith('ko'))||null; }catch(e){} }
+if('speechSynthesis' in window){ loadVoices(); speechSynthesis.onvoiceschanged=loadVoices; }
+function speak(text){
+  if(!voiceOn||!('speechSynthesis' in window)) return;
+  try{ speechSynthesis.cancel(); const u=new SpeechSynthesisUtterance(text); u.lang='ko-KR'; if(koVoice)u.voice=koVoice; u.rate=1.02; u.pitch=1.05; speechSynthesis.speak(u); }catch(e){}
+}
+
+/* ============================================================
+   3. 토스트
+   ============================================================ */
+function toast(msg,type='ok'){
+  const box=document.getElementById('toasts'); const el=document.createElement('div');
+  el.className='toast '+type; el.textContent=msg; box.appendChild(el);
+  if(type==='ok') SFX.pop(); else if(type==='bad') SFX.bad();
+  setTimeout(()=>el.remove(),3100);
+}
+
+/* ============================================================
+   4. 실험 데이터 (3단계 × 4질문)
+   ============================================================ */
+const STEPS=[
+  { id:'oil', name:'기름(카놀라유) 분리', short:'기름 분리', icon:'🛢️', beaker:'mix',
+    intro:'비커 맨 위에 노란 기름 층이 둥둥 떠 있어. 가장 먼저 이 기름부터 분리해 보자!',
+    property:{ tag:'질문 1 · 물질의 특성', q:'기름(카놀라유)을 물에서 분리할 때 이용하는 물질의 특성은?',
+      opts:[{t:'물과 섞이지 않고, 밀도가 물보다 작아 위에 뜬다',ok:true},{t:'물에 잘 녹는다',ok:false},{t:'끓는점이 물보다 낮아 먼저 끓는다',ok:false},{t:'자석에 잘 붙는다',ok:false}],
+      why:'기름은 물과 <b>섞이지 않고(불용)</b>, <b>밀도가 물보다 작아</b>(0.92 < 0.998 g/cm³) 위층에 떠. 이렇게 층이 갈리는 성질을 이용하면 두 액체를 나눌 수 있어.',
+      voice:'기름은 물과 섞이지 않고, 밀도가 작아 위에 떠요. 이 성질을 이용합니다.' },
+    tool:{ tag:'질문 2 · 실험 도구', q:'이 성질을 이용해 기름과 물을 나누는 데 가장 알맞은 도구는?',
+      opts:[{t:'분별깔때기',ok:true},{t:'거름종이와 깔때기',ok:false},{t:'알코올램프와 증발접시',ok:false},{t:'자석',ok:false}],
+      why:'서로 섞이지 않는 두 액체는 <b>분별깔때기</b>에 넣고 잠시 두면 밀도 차로 층이 나뉘어. 아래 콕을 열어 아래층(물)을 먼저 빼내면 깔끔히 분리돼.',
+      voice:'분별깔때기를 사용합니다. 층이 나뉘면 아래 콕을 열어 분리해요.' },
+    safety:{ tag:'질문 3 · 안전 점검', q:'분별깔때기로 분리할 때 안전하고 올바른 행동을 모두 고르세요.',
+      opts:[{t:'분별깔때기를 링스탠드에 단단히 고정한다',ok:true},{t:'콕(마개)을 천천히 조심해서 연다',ok:true},{t:'층이 나뉘기 전에 마구 흔들어 바로 콕을 연다',ok:false},{t:'유리 기구이므로 깨지지 않게 조심히 다룬다',ok:true}],
+      why:'분별깔때기는 <b>유리 기구</b>라 스탠드에 고정하고 조심히 다뤄야 해. 층이 잘 나뉜 뒤 <b>콕을 천천히</b> 열어 아래층부터 빼내야 안전하고 깔끔해.',
+      voice:'유리 기구는 스탠드에 고정하고, 콕은 천천히 열어요.' },
+    verify:{ tag:'질문 4 · 분리 확인', q:'분리한 액체가 정말 기름인지 확인하려면 어떤 특성 카드를 사용할까? (결정적 카드를 골라 봐)',
+      cards:[
+        {k:'smell',e:'👃',n:'냄새',concl:true,read:'고소한 식용유 냄새가 나! 물 위에 떨어뜨리면 섞이지 않고 막처럼 퍼져. ➜ 기름이 맞아!'},
+        {k:'density',e:'⚖️',n:'밀도',concl:true,read:'물에 넣으니 위로 떠올라. 물보다 밀도가 작다는 증거야. ➜ 기름의 특징!'},
+        {k:'cond',e:'🔌',n:'전기전도도',concl:false,read:'전류가 흐르지 않아. 다만 순수한 물도 전기가 거의 안 통해서 이것만으론 부족해.'},
+        {k:'iodine',e:'🧫',n:'아이오딘 반응',concl:false,read:'색 변화가 없어. 녹말이 아니라는 건 알 수 있지만 기름이라 확정하긴 어려워.'} ] } },
+
+  { id:'starch', name:'녹말 분리', short:'녹말 분리', icon:'🥣', beaker:'murk',
+    intro:'기름을 걷어냈더니 뿌연 물이 남았어. 이 속엔 물에 녹지 않은 녹말과, 물에 녹아 있는 소금이 섞여 있어.',
+    property:{ tag:'질문 1 · 물질의 특성', q:'뿌연 물에서 녹말을 분리할 때 이용하는 물질의 특성은?',
+      opts:[{t:'녹말은 물에 녹지 않아 알갱이로 떠다닌다 (소금은 물에 녹아 있다)',ok:true},{t:'녹말이 자석에 붙는다',ok:false},{t:'녹말의 끓는점이 물보다 낮다',ok:false},{t:'녹말이 물에 완전히 녹는다',ok:false}],
+      why:'녹말은 <b>물에 녹지 않는 고체</b>(용해도 ×)라 알갱이로 남고, 소금은 <b>물에 완전히 녹아</b>(36 g/100 mL) 있어. ‘녹는 것’과 ‘녹지 않는 것’의 차이(용해성)를 이용하는 거야.',
+      voice:'녹말은 물에 녹지 않고, 소금은 녹아 있어요. 이 차이를 이용합니다.' },
+    tool:{ tag:'질문 2 · 실험 도구', q:'물에 녹지 않는 녹말을 분리하는 데 알맞은 방법은?',
+      opts:[{t:'거름(여과) — 깔때기와 거름종이를 사용',ok:true},{t:'분별깔때기로 층을 나눈다',ok:false},{t:'증류장치로 가열한다',ok:false},{t:'공기 중에서 체로 친다',ok:false}],
+      why:'거름종이를 끼운 깔때기에 부으면, 녹지 않은 <b>녹말은 거름종이 위에 남고</b> 소금이 녹은 물은 거름종이를 빠져나가(거른 액). 이걸 <b>거름(여과)</b>이라고 해.',
+      voice:'거름종이로 거릅니다. 녹말은 위에 남고, 소금물은 빠져나가요.' },
+    safety:{ tag:'질문 3 · 안전 점검', q:'거름 장치를 사용할 때 올바른 행동을 모두 고르세요.',
+      opts:[{t:'거름종이를 깔때기에 꼭 맞게 끼운다',ok:true},{t:'유리 막대를 타고 천천히 부어 튀지 않게 한다',ok:true},{t:'깔때기 끝을 비커 옆벽에 대어 안정시킨다',ok:true},{t:'한 번에 콸콸 부어 빨리 거른다',ok:false}],
+      why:'용액은 <b>유리 막대를 타고 천천히</b> 부어야 튀지 않아. 거름종이를 정확히 끼우고, 깔때기 끝을 비커 벽에 대면 안정적으로 거를 수 있어.',
+      voice:'유리 막대를 타고 천천히 부어요. 한 번에 콸콸 부으면 안 돼요.' },
+    verify:{ tag:'질문 4 · 분리 확인', q:'거름종이에 남은 흰 가루가 녹말인지 확인하려면 어떤 카드를 쓸까?',
+      cards:[
+        {k:'iodine',e:'🧫',n:'아이오딘 반응',concl:true,read:'아이오딘–아이오딘화 칼륨 용액을 떨어뜨리니 청람색(짙은 파란색)으로 변했어! ➜ 녹말이 맞아!'},
+        {k:'solub',e:'💧',n:'용해성',concl:true,read:'물에 넣어도 잘 녹지 않고 뿌옇게 떠다녀. ➜ 물에 안 녹는 녹말의 특징!'},
+        {k:'cond',e:'🔌',n:'전기전도도',concl:false,read:'녹말을 물에 넣어도 전류가 거의 흐르지 않아. 결정적 단서는 아니야.'},
+        {k:'flame',e:'🔥',n:'불꽃반응',concl:false,read:'특별한 불꽃색이 나타나지 않아. 금속 원소가 아니라는 정도만 알 수 있어.'} ] } },
+
+  { id:'saltwater', name:'소금과 물 분리', short:'소금·물 분리', icon:'🧂', beaker:'salt',
+    intro:'거른 액에는 소금이 물에 녹아 있어. 마지막으로 소금과 물을 분리해서 둘 다 순수하게 얻어 보자!',
+    property:{ tag:'질문 1 · 물질의 특성', q:'소금물에서 소금과 물을 분리할 때 이용하는 특성은?',
+      opts:[{t:'물과 소금의 끓는점 차이 (물은 끓어 날아가고, 소금은 남는다)',ok:true},{t:'소금이 자석에 붙는다',ok:false},{t:'소금이 물에 녹지 않는다',ok:false},{t:'소금이 물보다 밀도가 작아 뜬다',ok:false}],
+      why:'물의 끓는점은 <b>100℃</b>지만 소금(염화 나트륨)의 끓는점은 <b>1413℃</b>로 아주 높아. 가열하면 물만 끓어 기체로 날아가고 소금은 남아. 이 <b>끓는점 차이</b>를 이용해.',
+      voice:'물은 끓어 날아가고 소금은 남아요. 끓는점 차이를 이용합니다.' },
+    tool:{ tag:'질문 2 · 실험 도구', q:'물과 소금을 둘 다 순수하게 얻으려면 가장 좋은 방법은?',
+      opts:[{t:'증류 — 가열해 나온 수증기를 식혀 물을 모으고, 소금은 남긴다',ok:true},{t:'거름종이로 거른다',ok:false},{t:'분별깔때기로 층을 나눈다',ok:false},{t:'자석으로 소금을 끌어당긴다',ok:false}],
+      why:'그냥 증발만 하면 소금은 얻지만 물은 날아가 버려. <b>증류</b>는 수증기를 냉각·응축해 <b>순수한 물(증류수)</b>까지 얻고, 남은 것은 소금이야. (소금만 필요하면 증발접시로 증발시켜도 돼.)',
+      voice:'증류를 합니다. 수증기를 식혀 물을 모으고, 소금은 남겨요.' },
+    safety:{ tag:'질문 3 · 안전 점검', q:'가열·증류 실험에서 안전을 위해 해야 할 행동을 모두 고르세요.',
+      opts:[{t:'보안경을 착용한다',ok:true},{t:'끓임쪽(비등석)을 넣어 갑작스러운 끓어 넘침을 막는다',ok:true},{t:'가열하는 동안 자리를 비우지 않는다',ok:true},{t:'뜨거운 기구를 맨손으로 잡는다',ok:false}],
+      why:'불을 쓰는 실험은 <b>보안경</b>을 끼고, <b>비등석</b>을 넣어 폭발적인 끓음을 막고, <b>자리를 지켜야</b> 해. 뜨거운 기구는 집게나 장갑으로 다뤄.',
+      voice:'보안경을 끼고, 비등석을 넣고, 자리를 비우지 않아요.' },
+    verify:{ tag:'질문 4 · 분리 확인', q:'남은 흰 결정이 소금인지 확인하려면 어떤 카드를 쓸까? (힌트: 소금물은 전기가 통해)',
+      cards:[
+        {k:'cond',e:'🔌',n:'전기전도도',concl:true,read:'결정을 물에 녹여 재니 전류가 잘 흘러(전해질)! ➜ 소금이 맞아! 함께 얻은 물(증류수)은 전기가 거의 안 통해.'},
+        {k:'flame',e:'🔥',n:'불꽃반응',concl:true,read:'불꽃에 넣으니 노란색이 나타나(나트륨). ➜ 소금이 맞아!'},
+        {k:'iodine',e:'🧫',n:'아이오딘 반응',concl:false,read:'색 변화가 없어. 녹말이 아니라는 것만 알 수 있어.'},
+        {k:'density',e:'⚖️',n:'밀도',concl:false,read:'소금은 물에 녹아 있어서 밀도만으론 구분하기 어려워.'} ] } }
+];
+
+/* 확인용 특성 카드 도감 */
+const CODEX=[
+  {e:'🔌',n:'전기전도도',d:'물에 녹여 전류가 흐르는지 확인. 소금물 ➜ 잘 흐름(○) / 순수한 물·기름·녹말 ➜ 거의 안 흐름(×).'},
+  {e:'👃',n:'냄새',d:'코 가까이 손으로 부쳐 살짝 맡아 확인. 기름 ➜ 고소한 냄새 / 물 ➜ 무취.'},
+  {e:'🧫',n:'아이오딘 반응',d:'아이오딘–아이오딘화 칼륨 용액을 떨어뜨림. 녹말 ➜ 청람색(짙은 파란색)으로 변함.'},
+  {e:'🔥',n:'불꽃반응',d:'겉불꽃에 넣어 불꽃색 관찰. 나트륨(소금) ➜ 노란색.'},
+  {e:'⚖️',n:'밀도',d:'물에 넣어 뜨는지 가라앉는지 확인. 기름(0.92) ➜ 물보다 가벼워 뜸.'},
+  {e:'💧',n:'용해성',d:'물에 넣어 녹는지 확인. 소금 ➜ 녹음 / 녹말 ➜ 녹지 않음.'}
+];
+
+/* 교과서 특성 표 데이터 */
+const PROP_COLS=[
+  {key:'oil',name:'카놀라유',em:'🛢️'},
+  {key:'starch',name:'녹말',em:'🥣'},
+  {key:'salt',name:'소금<br>(염화 나트륨)',em:'🧂'},
+  {key:'water',name:'물',em:'💧'}
+];
+const PROP_ROWS=[
+  {label:'밀도', vals:['<span class="exbadge">예시 답안</span><br>0.92 g/cm³','1.5 g/cm³','2.16 g/cm³','0.998 g/cm³']},
+  {label:'물에 대한 용해도', vals:['×','×','36 g/100 mL<br>(20 °C)','–']},
+  {label:'끓는점', vals:['300 °C ~ 350 °C','–','1413 °C','100 °C']},
+  {label:'녹는점', vals:['-10 °C ~ -5 °C','–','801 °C','0 °C']}
+];
+
+/* 단서 해석 카드 */
+const CLUE_CARDS=[
+  {head:'💡 밀도가 다르면?', body:'서로 섞이지 않는 액체는 <b>분별깔때기</b>로, 고체는 적당한 액체(예: 소금물)에 넣어 <b>뜨고 가라앉음</b>으로 분리! <br>👉 표에서 카놀라유(0.92) < 물(0.998) → <b>기름이 물 위에 뜬다.</b>'},
+  {head:'💡 물에 대한 용해도가 다르면?', body:'<b>녹는 것</b>과 <b>안 녹는 것</b>은 <b>거름(여과)</b>으로 분리! 온도에 따라 용해도가 크게 다르면 <b>재결정</b>도 가능. <br>👉 표에서 소금은 잘 녹고(36 g/100 mL), 녹말은 안 녹음(×) → <b>거름종이로 녹말을 거른다.</b>'},
+  {head:'💡 끓는점이 다르면?', body:'<b>증류</b>로 분리! 가열하면 <b>끓는점이 낮은 물질이 먼저 끓어</b> 기체로 나오고, 식혀서 다시 모아. <br>👉 표에서 물(100 °C)은 끓어 날아가고 소금(1413 °C)은 남음 → <b>증류로 물과 소금을 얻는다.</b>'}
+];
+
+/* 인벤토리 */
+const ITEMS=[{id:'oil',e:'🛢️',n:'카놀라유'},{id:'starch',e:'🥣',n:'녹말'},{id:'salt',e:'🧂',n:'소금'},{id:'water',e:'💧',n:'물'}];
+
+/* ============================================================
+   5. 진행 상태
+   ============================================================ */
+let stepIdx=0, subIdx=0;
+let collected={oil:false,starch:false,salt:false,water:false};
+let missionDone=false;
+
+function renderInv(){
+  const inv=document.getElementById('inv'); inv.innerHTML='';
+  ITEMS.forEach(it=>{ const got=collected[it.id]; const d=document.createElement('div');
+    d.className='slot'+(got?' got':''); d.innerHTML='<span class="si">'+it.e+'</span><span class="sl">'+(got?it.n:'???')+'</span>'; inv.appendChild(d); });
+}
+function updateXP(){ const n=Object.values(collected).filter(Boolean).length;
+  document.getElementById('xpFill').style.width=(n/4*100)+'%'; document.getElementById('xpLabel').textContent='경험치 '+n+' / 4'; }
+function missionsDoneCount(){ return [collected.oil,collected.starch,collected.salt].filter(Boolean).length; }
+function badgesCount(){ return ['oil','starch','saltwater','all'].filter(k=>achUnlocked[k]).length; }
+function updateStats(){
+  const r=document.getElementById('statsRow'); if(!r) return;
+  r.innerHTML=
+    '<div class="stat-box"><div class="sv">'+missionsDoneCount()+' / 3</div><div class="sk">완료 미션</div></div>'+
+    '<div class="stat-box"><div class="sv">'+badgesCount()+' / 4</div><div class="sk">획득 배지</div></div>'+
+    '<div class="stat-box"><div class="sv">'+quizBest+' / 9</div><div class="sk">퀴즈 최고</div></div>';
+}
+function renderBeaker(state){
+  const oil=document.getElementById('layerOil'), water=document.getElementById('layerWater');
+  const specs=document.getElementById('specs'), bubbles=document.getElementById('bubbles');
+  specs.innerHTML=''; bubbles.innerHTML=''; oil.style.opacity='1'; water.style.opacity='1';
+  if(state==='mix'){ oil.style.display='block'; oil.style.height='34px'; oil.style.bottom='118px';
+    water.style.height='118px'; water.style.background='repeating-linear-gradient(0deg,var(--murk) 0 5px,#6a5d30 5px 9px)'; addSpecs(10); }
+  else if(state==='murk'){ oil.style.display='none'; water.style.height='150px';
+    water.style.background='repeating-linear-gradient(0deg,var(--murk) 0 5px,#6a5d30 5px 9px)'; addSpecs(14); }
+  else if(state==='salt'){ oil.style.display='none'; water.style.height='150px';
+    water.style.background='repeating-linear-gradient(0deg,#4f8fc4 0 5px,#3b7fd6 5px 9px)'; addBubbles(4); }
+  else if(state==='clean'){ oil.style.display='none'; water.style.height='14px'; water.style.background='rgba(150,200,230,.4)'; }
+}
+function addSpecs(n){ const specs=document.getElementById('specs'); for(let i=0;i<n;i++){ const s=document.createElement('div'); s.className='spec';
+  s.style.left=(14+Math.random()*108)+'px'; s.style.bottom=(10+Math.random()*120)+'px'; s.style.animationDelay=(Math.random()*3)+'s'; specs.appendChild(s);} }
+function addBubbles(n){ const b=document.getElementById('bubbles'); for(let i=0;i<n;i++){ const s=document.createElement('div'); s.className='bubble';
+  s.style.left=(20+Math.random()*100)+'px'; s.style.animationDelay=(Math.random()*2.4)+'s'; b.appendChild(s);} }
+
+const SUB_LABELS=['특성','도구','안전','확인'];
+function renderDots(){ const dots=document.getElementById('dots'); dots.innerHTML='';
+  SUB_LABELS.forEach((lb,i)=>{ const d=document.createElement('div'); d.className='dot'+(i<subIdx?' done':'')+(i===subIdx?' cur':'');
+    d.innerHTML=(i<subIdx?'✓ ':(i+1)+'. ')+lb; dots.appendChild(d); }); }
+
+/* ============================================================
+   6. 질문 렌더링
+   ============================================================ */
+const ABC=['A','B','C','D','E'];
+function renderStepHeader(){ const st=STEPS[stepIdx];
+  document.getElementById('stepNum').textContent='단계 '+(stepIdx+1)+' / 3';
+  document.getElementById('stepName').textContent=st.short; renderBeaker(st.beaker); renderDots(); }
+function startStep(silent){
+  renderStepHeader(); subIdx=0; const st=STEPS[stepIdx]; const area=document.getElementById('qArea'); area.innerHTML='';
+  const wrap=document.createElement('div');
+  wrap.innerHTML='<div class="q-tag">미션 '+(stepIdx+1)+' · 물질 고르기</div>'+
+    '<div class="q-text">'+st.intro+'</div>'+
+    '<div class="opts"><button class="opt" id="pickBtn"><span class="kbd">▶</span><b>'+st.icon+' '+st.short+' 시작하기</b></button></div>';
+  area.appendChild(wrap);
+  if(!silent) speak(st.intro);
+  document.getElementById('pickBtn').onclick=()=>{ SFX.select(); renderSub(); };
+}
+function renderSub(){ renderDots(); const st=STEPS[stepIdx];
+  if(subIdx===0) renderChoice(st.property,false);
+  else if(subIdx===1) renderChoice(st.tool,false);
+  else if(subIdx===2) renderChoice(st.safety,true);
+  else renderVerify(st.verify); }
+
+function renderChoice(data,multi){
+  const area=document.getElementById('qArea'); area.innerHTML='';
+  let html='<div class="q-tag">'+data.tag+'</div><div class="q-text">'+data.q+'</div><div class="opts">';
+  data.opts.forEach((o,i)=>{ html+='<button class="opt" data-i="'+i+'"><span class="kbd">'+ABC[i]+'</span><span>'+o.t+'</span></button>'; });
+  html+='</div>';
+  if(multi) html+='<div class="submit-row"><span class="hint-inline" id="hintLine">정답을 모두 골라 표시한 뒤 [확인]을 눌러.</span><button class="btn green" id="checkBtn">확인 ✓</button></div>';
+  html+='<div id="whyBox"></div>'; area.innerHTML=html;
+  const opts=[...area.querySelectorAll('.opt')];
+  if(!multi){
+    opts.forEach(btn=>{ btn.onclick=()=>{ if(btn.classList.contains('locked')) return; const i=+btn.dataset.i;
+      if(data.opts[i].ok){ SFX.good(); opts.forEach(b=>{b.classList.add('locked'); b.style.pointerEvents='none'; if(b!==btn)b.classList.add('dim');}); btn.classList.add('correct'); showWhy(data.why,data.voice); }
+      else { SFX.bad(); btn.classList.add('wrong'); toast('음… 다시 생각해 볼까? 🤔','bad'); speak('다시 생각해 볼까요?'); setTimeout(()=>btn.classList.remove('wrong'),350); btn.classList.add('dim'); btn.style.pointerEvents='none'; } }; });
+  } else {
+    opts.forEach(btn=>{ btn.onclick=()=>{ if(btn.classList.contains('locked'))return; SFX.click(); btn.classList.toggle('sel'); }; });
+    document.getElementById('checkBtn').onclick=()=>{
+      const chosen=opts.filter(b=>b.classList.contains('sel')).map(b=>+b.dataset.i);
+      const correctIdx=data.opts.map((o,i)=>o.ok?i:-1).filter(i=>i>=0);
+      const ok=chosen.length===correctIdx.length && chosen.every(i=>correctIdx.includes(i));
+      if(ok){ SFX.good(); opts.forEach((b,i)=>{ b.classList.add('locked'); b.style.pointerEvents='none'; if(data.opts[i].ok)b.classList.add('correct'); });
+        document.getElementById('checkBtn').disabled=true; document.getElementById('hintLine').textContent='완벽한 안전 점검이야! 👍'; showWhy(data.why,data.voice); }
+      else { SFX.bad(); opts.forEach((b,i)=>{ if(b.classList.contains('sel')&&!data.opts[i].ok){ b.classList.add('wrong'); setTimeout(()=>b.classList.remove('wrong'),350);} });
+        toast('안전 점검을 다시 확인해 봐! ⚠️','bad'); speak('안전 행동을 다시 확인해 볼까요?'); } };
+  }
+}
+function showWhy(text,voice){
+  const box=document.getElementById('whyBox');
+  box.innerHTML='<div class="why"><div class="wt">💡 왜 이렇게 분리할까?</div><p>'+text+'</p><div class="next-row"><button class="btn green" id="nextBtn">다음 ▶</button></div></div>';
+  if(voice) speak(voice);
+  document.getElementById('nextBtn').onclick=()=>{ SFX.select(); subIdx++; renderSub(); };
+}
+function renderVerify(data){
+  const area=document.getElementById('qArea'); area.innerHTML='';
+  let html='<div class="q-tag">'+data.tag+'</div><div class="q-text">'+data.q+'</div><div class="cards">';
+  data.cards.forEach((c,i)=>{ html+='<div class="pcard" data-i="'+i+'"><div class="pe">'+c.e+'</div><div class="pn">'+c.n+'</div></div>'; });
+  html+='</div><div id="whyBox"></div>'; area.innerHTML=html;
+  const cards=[...area.querySelectorAll('.pcard')]; let solved=false;
+  cards.forEach(card=>{ card.onclick=()=>{ if(solved) return; const i=+card.dataset.i, c=data.cards[i];
+    cards.forEach(x=>x.classList.remove('hit')); card.classList.add('hit'); card.classList.add('used');
+    if(c.concl){ solved=true; SFX.good(); cards.forEach(x=>{x.style.pointerEvents='none';});
+      document.getElementById('whyBox').innerHTML='<div class="why"><div class="wt">🔬 확인 결과</div><p>'+c.read+'</p><div class="next-row"><button class="btn green" id="collectBtn">분리 완료! 📦</button></div></div>';
+      speak(c.read.replace(/➜.*/,'')); document.getElementById('collectBtn').onclick=finishStep; }
+    else { SFX.click(); toast(c.read,'info'); speak(c.read);
+      document.getElementById('whyBox').innerHTML='<div class="why"><div class="wt">🔍 카드 결과</div><p>'+c.read+'</p><p style="margin-top:6px;color:#8f5a00;">➜ 더 <b>결정적인</b> 카드를 찾아봐!</p></div>';
+      setTimeout(()=>card.classList.remove('used'),50); } }; });
+}
+
+/* ============================================================
+   7. 실험 장면 애니메이션 + 업적 시스템
+   ============================================================ */
+const ACHIEVEMENTS={
+  oil:      {step:'oil',       icon:'🛢️', title:'기름 사냥꾼',     rar:'일반', rarColor:'#b6b6b6', principle:'밀도 차 · 분별깔때기',   desc:'물과 섞이지 않고 밀도가 작은 카놀라유를 분별깔때기로 분리했다.'},
+  starch:   {step:'starch',    icon:'🥣', title:'거름의 달인',     rar:'고급', rarColor:'#5bbd4e', principle:'용해성 차 · 거름(여과)', desc:'물에 녹지 않는 녹말을 거름종이로 깔끔하게 걸러냈다.'},
+  saltwater:{step:'saltwater', icon:'🧂', title:'증류 마스터',     rar:'희귀', rarColor:'#43b6d6', principle:'끓는점 차 · 증류',       desc:'끓는점 차를 이용한 증류로 소금과 순수한 물을 모두 얻었다.'},
+  all:      {step:'all',       icon:'🏆', title:'분리 실험 마스터', rar:'전설', rarColor:'#ffcf33', principle:'세 가지 원리 모두',     desc:'밀도 · 용해성 · 끓는점 차를 모두 사용해 혼합물을 완전히 분리했다!'}
+};
+const ACH_ORDER=['oil','starch','saltwater','all'];
+let achUnlocked={oil:false,starch:false,saltwater:false,all:false};
+let lastSceneStep=null;
+
+let sceneTimers=[], sceneContinueCb=null, sceneReview=false;
+function clearScene(){ sceneTimers.forEach(t=>clearTimeout(t)); sceneTimers=[]; }
+function later(fn,ms){ const id=setTimeout(fn,ms); sceneTimers.push(id); return id; }
+function setCap(html,voiceTxt){ document.getElementById('sceneCaption').innerHTML=html; if(voiceTxt) speak(voiceTxt); }
+
+function buildOilScene(stage){
+  stage.innerHTML=
+  '<div style="position:absolute;left:50%;bottom:6px;transform:translateX(-50%);width:160px;height:10px;background:#6a6a6a;border:2px solid #2a2a2a;"></div>'+
+  '<div style="position:absolute;left:236px;bottom:6px;width:10px;height:248px;background:#6a6a6a;border:2px solid #2a2a2a;"></div>'+
+  '<div style="position:absolute;left:160px;top:58px;width:84px;height:8px;background:#6a6a6a;border:2px solid #2a2a2a;"></div>'+
+  '<div style="position:absolute;left:120px;top:28px;width:84px;height:96px;background:rgba(150,200,230,.18);border:4px solid #1c2a33;border-radius:46% 46% 50% 50% / 38% 38% 62% 62%;overflow:hidden;box-shadow:inset 6px 0 0 rgba(255,255,255,.15);">'+
+     '<div id="osWater" style="position:absolute;left:0;right:0;bottom:0;height:54px;background:repeating-linear-gradient(0deg,#7a6b3a 0 5px,#6a5d30 5px 9px);transition:height 3s linear;"></div>'+
+     '<div id="osOil" style="position:absolute;left:0;right:0;bottom:54px;height:30px;background:repeating-linear-gradient(0deg,#e6c34a 0 5px,#d4ab2e 5px 8px);box-shadow:inset 0 3px 0 #fff4c0;transition:bottom 3s linear;"></div>'+
+  '</div>'+
+  '<div style="position:absolute;left:157px;top:122px;width:10px;height:24px;background:rgba(150,200,230,.25);border:3px solid #1c2a33;border-top:none;"></div>'+
+  '<div id="osCock" style="position:absolute;left:148px;top:126px;width:28px;height:8px;background:#c33;border:2px solid #000;transition:transform .4s;"></div>'+
+  '<div style="position:absolute;left:158px;top:144px;width:8px;height:8px;background:#1c2a33;"></div>'+
+  '<div id="osStream" style="position:absolute;left:158px;top:152px;width:6px;height:62px;color:#6a5d30;background:repeating-linear-gradient(0deg,currentColor 0 6px,transparent 6px 12px);animation:streamFlow .35s linear infinite;opacity:0;transition:opacity .2s;"></div>'+
+  '<div style="position:absolute;left:130px;bottom:8px;width:64px;height:62px;background:rgba(150,200,230,.12);border:3px solid #1c2a33;border-top:none;overflow:hidden;">'+
+     '<div id="osBeaker" style="position:absolute;left:0;right:0;bottom:0;height:0;background:repeating-linear-gradient(0deg,#7a6b3a 0 4px,#6a5d30 4px 8px);transition:height 3s linear;"></div>'+
+  '</div>';
+  setCap('🧪 분별깔때기에 혼합물을 넣고 가만히 둔다…','분별깔때기에 혼합물을 넣고 가만히 둡니다.');
+  later(()=>setCap('⚖️ 밀도 차로 <b>기름(위)</b>과 <b>물(아래)</b>이 두 층으로 갈라졌다!','밀도 차로 기름과 물이 두 층으로 갈라졌어요.'),1600);
+  later(()=>{ setCap('🔓 콕을 천천히 열어 아래층(물)을 흘려보낸다.','콕을 천천히 열어 아래층 물을 흘려보냅니다.');
+    document.getElementById('osCock').style.transform='rotate(90deg)'; document.getElementById('osStream').style.opacity='1';
+    document.getElementById('osWater').style.height='0px'; document.getElementById('osOil').style.bottom='0px'; document.getElementById('osBeaker').style.height='48px'; },3200);
+  later(()=>{ document.getElementById('osStream').style.opacity='0'; document.getElementById('osCock').style.transform='rotate(0deg)';
+    setCap('✅ 기름만 분별깔때기에 남았다! 아래 비커엔 물(소금·녹말 포함). 🛢️','기름만 남았어요. 분리 성공!'); SFX.good(); },6400);
+}
+function buildFilterScene(stage){
+  stage.innerHTML=
+  '<div style="position:absolute;left:50%;bottom:6px;transform:translateX(-50%);width:160px;height:10px;background:#6a6a6a;border:2px solid #2a2a2a;"></div>'+
+  '<div style="position:absolute;left:250px;bottom:6px;width:10px;height:248px;background:#6a6a6a;border:2px solid #2a2a2a;"></div>'+
+  '<div style="position:absolute;left:150px;top:104px;width:104px;height:8px;background:#6a6a6a;border:2px solid #2a2a2a;"></div>'+
+  '<div id="fsPour" style="position:absolute;left:66px;top:22px;width:60px;height:46px;background:rgba(150,200,230,.12);border:3px solid #1c2a33;transform-origin:bottom right;transition:transform .8s;">'+
+     '<div style="position:absolute;left:0;right:0;bottom:0;height:24px;background:repeating-linear-gradient(0deg,#7a6b3a 0 4px,#6a5d30 4px 8px);"></div>'+
+  '</div>'+
+  '<div id="fsStream" style="position:absolute;left:138px;top:60px;width:6px;height:40px;color:#6a5d30;background:repeating-linear-gradient(0deg,currentColor 0 6px,transparent 6px 12px);animation:streamFlow .35s linear infinite;opacity:0;transition:opacity .2s;"></div>'+
+  '<div style="position:absolute;left:116px;top:92px;width:96px;height:76px;background:rgba(150,200,230,.18);clip-path:polygon(0 0,100% 0,56% 70%,56% 100%,44% 100%,44% 70%);box-shadow:inset 0 0 0 3px #1c2a33;"></div>'+
+  '<div style="position:absolute;left:122px;top:96px;width:84px;height:62px;background:#eef3e9;opacity:.8;clip-path:polygon(0 0,100% 0,56% 80%,44% 80%);"></div>'+
+  '<div id="fsResidue" style="position:absolute;left:140px;top:138px;width:34px;height:0;background:#fff;border-radius:7px 7px 0 0;box-shadow:0 0 0 1px #cfcfcf;transition:height 2.5s linear;"></div>'+
+  '<div id="fsDrips" style="position:absolute;left:159px;top:164px;width:8px;height:52px;opacity:0;transition:opacity .3s;"></div>'+
+  '<div style="position:absolute;left:130px;bottom:8px;width:64px;height:58px;background:rgba(150,200,230,.12);border:3px solid #1c2a33;border-top:none;overflow:hidden;">'+
+     '<div id="fsBeaker" style="position:absolute;left:0;right:0;bottom:0;height:0;background:repeating-linear-gradient(0deg,#4f8fc4 0 4px,#3b7fd6 4px 8px);transition:height 2.5s linear;"></div>'+
+  '</div>';
+  const dz=document.getElementById('fsDrips');
+  for(let i=0;i<4;i++){ const d=document.createElement('div'); d.style.cssText='position:absolute;left:0;top:0;width:7px;height:9px;background:#3b7fd6;border-radius:50% 50% 50% 50%/60% 60% 40% 40%;--fall:48px;animation:dripFall 1s ease-in infinite;animation-delay:'+(i*0.25)+'s;'; dz.appendChild(d); }
+  setCap('🫗 거름종이를 끼운 깔때기에 뿌연 물을 붓는다.','거름종이를 끼운 깔때기에 뿌연 물을 붓습니다.');
+  later(()=>{ document.getElementById('fsPour').style.transform='rotate(-34deg)'; document.getElementById('fsStream').style.opacity='1'; },800);
+  later(()=>{ setCap('💧 물에 녹은 <b>소금물</b>은 거름종이를 빠져나가 아래로!','물에 녹은 소금물은 거름종이를 빠져나가 아래로 떨어집니다.'); dz.style.opacity='1'; document.getElementById('fsBeaker').style.height='46px'; },2000);
+  later(()=>{ setCap('🥣 물에 <b>녹지 않는 녹말</b>은 거름종이 위에 쌓인다.','물에 녹지 않는 녹말은 거름종이 위에 쌓입니다.'); document.getElementById('fsResidue').style.height='20px'; },3600);
+  later(()=>{ document.getElementById('fsPour').style.transform='rotate(0deg)'; document.getElementById('fsStream').style.opacity='0'; dz.style.opacity='0';
+    setCap('✅ 녹말은 거름종이 위, 소금물은 아래 비커에 모였다! 🥣','녹말은 거름종이 위에, 소금물은 아래 비커에 모였어요. 분리 성공!'); SFX.good(); },6200);
+}
+function buildDistillScene(stage){
+  stage.innerHTML=
+  '<div style="position:absolute;left:16px;bottom:6px;width:120px;height:10px;background:#6a6a6a;border:2px solid #2a2a2a;"></div>'+
+  '<div style="position:absolute;left:28px;bottom:6px;width:10px;height:226px;background:#6a6a6a;border:2px solid #2a2a2a;"></div>'+
+  '<div style="position:absolute;left:58px;bottom:58px;width:80px;height:80px;background:rgba(150,200,230,.16);border:4px solid #1c2a33;border-radius:50%;overflow:hidden;box-shadow:inset 8px 4px 0 rgba(255,255,255,.12);">'+
+     '<div id="dsLiquid" style="position:absolute;left:0;right:0;bottom:0;height:48px;background:repeating-linear-gradient(0deg,#4f8fc4 0 5px,#3b7fd6 5px 9px);transition:height 3s linear;"></div>'+
+     '<div id="dsSalt" style="position:absolute;left:50%;bottom:2px;transform:translateX(-50%);width:0;height:0;background:#fff;box-shadow:0 0 0 1px #cfcfcf;transition:all 2.5s linear;"></div>'+
+     '<div id="dsBubbles" style="position:absolute;inset:0;opacity:0;transition:opacity .3s;"></div>'+
+  '</div>'+
+  '<div style="position:absolute;left:90px;bottom:130px;width:14px;height:24px;background:rgba(150,200,230,.25);border:3px solid #1c2a33;border-bottom:none;"></div>'+
+  '<div style="position:absolute;left:76px;bottom:28px;width:44px;height:24px;background:#9a6b3a;border:3px solid #2a1a0a;box-shadow:inset 0 -4px 0 #6a4a22;"></div>'+
+  '<div id="dsFlame" style="position:absolute;left:92px;bottom:48px;width:14px;height:22px;background:radial-gradient(circle at 50% 80%,#ffe08a,#ff8c1a 55%,#e0440a 92%);border-radius:50% 50% 50% 50%/60% 60% 40% 40%;transform-origin:bottom center;animation:flicker .22s steps(2) infinite;opacity:0;"></div>'+
+  '<div style="position:absolute;left:102px;bottom:148px;width:158px;height:14px;background:rgba(150,200,230,.22);border:3px solid #1c2a33;transform:rotate(-22deg);transform-origin:left center;"></div>'+
+  '<div style="position:absolute;left:250px;bottom:92px;width:12px;height:32px;background:rgba(150,200,230,.22);border:3px solid #1c2a33;border-top:none;"></div>'+
+  '<div id="dsVapor" style="position:absolute;inset:0;opacity:0;transition:opacity .3s;"></div>'+
+  '<div id="dsDrips" style="position:absolute;left:252px;bottom:62px;width:8px;height:34px;opacity:0;transition:opacity .3s;"></div>'+
+  '<div style="position:absolute;left:228px;bottom:8px;width:60px;height:58px;background:rgba(150,200,230,.12);border:3px solid #1c2a33;border-top:none;overflow:hidden;">'+
+     '<div id="dsBeaker" style="position:absolute;left:0;right:0;bottom:0;height:0;background:repeating-linear-gradient(0deg,#cfe9ff 0 4px,#a9d6ff 4px 8px);transition:height 3s linear;"></div>'+
+  '</div>';
+  const bz=document.getElementById('dsBubbles');
+  for(let i=0;i<5;i++){ const b=document.createElement('div'); b.style.cssText='position:absolute;left:'+(20+i*10)+'px;bottom:6px;width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,.75);animation:bubbleUp 1.1s linear infinite;animation-delay:'+(i*0.18)+'s;'; bz.appendChild(b); }
+  const vz=document.getElementById('dsVapor');
+  for(let i=0;i<6;i++){ const v=document.createElement('div'); v.style.cssText='position:absolute;left:96px;bottom:150px;width:11px;height:11px;border-radius:50%;background:rgba(222,236,250,.85);--vx:152px;--vy:-58px;animation:vaporTravel 1.7s linear infinite;animation-delay:'+(i*0.26)+'s;'; vz.appendChild(v); }
+  const dz=document.getElementById('dsDrips');
+  for(let i=0;i<4;i++){ const d=document.createElement('div'); d.style.cssText='position:absolute;left:0;top:0;width:7px;height:9px;background:#a9d6ff;border-radius:50% 50% 50% 50%/60% 60% 40% 40%;--fall:34px;animation:dripFall 1s ease-in infinite;animation-delay:'+(i*0.25)+'s;'; dz.appendChild(d); }
+  setCap('🔥 소금물을 알코올램프로 가열한다. (보안경 착용!)','소금물을 알코올램프로 가열합니다. 보안경을 착용하세요.');
+  later(()=>{ document.getElementById('dsFlame').style.opacity='1'; bz.style.opacity='1'; },600);
+  later(()=>{ setCap('♨️ 끓는점이 낮은 <b>물이 먼저 끓어</b> 수증기로 날아간다.','끓는점이 낮은 물이 먼저 끓어 수증기로 날아갑니다.'); vz.style.opacity='1'; },1800);
+  later(()=>{ setCap('❄️ 수증기가 찬 관을 지나며 식어 <b>물방울</b>로 맺힌다.','수증기가 찬 관을 지나며 식어 물방울로 맺힙니다.'); dz.style.opacity='1';
+    document.getElementById('dsBeaker').style.height='46px'; document.getElementById('dsLiquid').style.height='14px';
+    const s=document.getElementById('dsSalt'); s.style.width='26px'; s.style.height='10px'; },3400);
+  later(()=>{ vz.style.opacity='0'; dz.style.opacity='0'; bz.style.opacity='0'; document.getElementById('dsFlame').style.opacity='0';
+    setCap('✅ <b>순수한 물</b>은 비커에, <b>소금</b>은 플라스크에 남았다! 🧂💧','순수한 물은 비커에, 소금은 플라스크에 남았어요. 분리 성공!'); SFX.good(); },6600);
+}
+
+function runScene(stepId){ clearScene(); const stage=document.getElementById('sceneStage'); setCap('',null);
+  if(stepId==='oil') buildOilScene(stage); else if(stepId==='starch') buildFilterScene(stage); else buildDistillScene(stage); }
+function playSeparationScene(stepId,opts){ opts=opts||{}; sceneContinueCb=opts.onContinue||null; sceneReview=!!opts.review; lastSceneStep=stepId;
+  const rb=document.getElementById('replayBtn'); if(rb) rb.disabled=false;
+  const t={oil:'기름 · 분별깔때기',starch:'녹말 · 거름(여과)',saltwater:'소금·물 · 증류'};
+  document.getElementById('sceneTitle').textContent=t[stepId]||'';
+  document.getElementById('sceneContinue').textContent= sceneReview?'닫기 ✕':'계속 ▶';
+  document.getElementById('sceneOverlay').classList.add('show'); runScene(stepId); }
+function closeScene(proceed){ clearScene(); document.getElementById('sceneOverlay').classList.remove('show');
+  if(proceed && !sceneReview && sceneContinueCb){ const cb=sceneContinueCb; sceneContinueCb=null; cb(); } }
+
+function achCardHTML(a,locked,withReplay){
+  if(locked) return '<div class="ach-card locked" style="--rar:#666"><div class="ai">❓</div><span class="rar">???</span><div class="ti">미획득 업적</div><div class="de">분리에 성공하면 카드가 공개됩니다.</div><div class="lockic">🔒</div></div>';
+  const rep=(withReplay && a.step!=='all')?'<button class="btn green replay" data-scene="'+a.step+'">🎬 장면 다시보기</button>':'';
+  return '<div class="ach-card" style="--rar:'+a.rarColor+'"><div class="ai">'+a.icon+'</div><span class="rar">'+a.rar+'</span><div class="ti">'+a.title+'</div><div class="pr">⚗️ '+a.principle+'</div><div class="de">'+a.desc+'</div>'+rep+'</div>';
+}
+function openGallery(){
+  const got=ACH_ORDER.filter(k=>achUnlocked[k]).length;
+  document.getElementById('achCount').textContent='획득 '+got+' / '+ACH_ORDER.length;
+  const grid=document.getElementById('achGrid');
+  grid.innerHTML=ACH_ORDER.map(k=> achUnlocked[k]?achCardHTML(ACHIEVEMENTS[k],false,true):achCardHTML(null,true,false)).join('');
+  grid.querySelectorAll('.replay').forEach(b=>{ b.onclick=()=>{ SFX.click(); playSeparationScene(b.dataset.scene,{review:true}); }; });
+  document.getElementById('achGalleryOverlay').classList.add('show');
+}
+function showAchievementCard(stepId,onContinue){
+  const a=ACHIEVEMENTS[stepId]; document.getElementById('achPopBody').innerHTML=achCardHTML(a,false,false);
+  const cf=document.getElementById('confetti'); cf.innerHTML=''; const cols=['#ffd83d','#6aa84f','#43b6d6','#d84444','#ffffff'];
+  for(let i=0;i<18;i++){ const p=document.createElement('i'); p.style.cssText='width:8px;height:8px;left:'+(Math.random()*100)+'%;top:-10px;background:'+cols[i%cols.length]+';animation:confFall '+(1+Math.random()*1.2).toFixed(2)+'s linear '+(Math.random()*0.5).toFixed(2)+'s forwards;'; cf.appendChild(p); }
+  document.getElementById('achPopOverlay').classList.add('show'); SFX.complete(); speak('새로운 업적 획득! '+a.title);
+  document.getElementById('achPopContinue').onclick=()=>{ SFX.click(); document.getElementById('achPopOverlay').classList.remove('show'); if(onContinue) onContinue(); };
+  document.getElementById('achPopGallery').onclick=()=>{ SFX.click(); openGallery(); };
+}
+
+/* ============================================================
+   8. 단계 완료 / 미션 완료
+   ============================================================ */
+function finishStep(){
+  const st=STEPS[stepIdx];
+  if(st.id==='oil') collected.oil=true;
+  else if(st.id==='starch') collected.starch=true;
+  else if(st.id==='saltwater'){ collected.salt=true; collected.water=true; }
+  renderInv(); updateXP(); updateStats(); SFX.place();
+  if(st.id==='oil') renderBeaker('murk'); else if(st.id==='starch') renderBeaker('salt'); else if(st.id==='saltwater') renderBeaker('clean');
+  saveAll();
+  playSeparationScene(st.id,{ onContinue:()=>{
+    achUnlocked[st.id]=true; updateStats(); saveAll();
+    showAchievementCard(st.id, ()=>{
+      if(stepIdx<STEPS.length-1){ stepIdx++; saveAll(); startStep(); }
+      else { completeMission(); }
+    });
+  }});
+}
+function completeMission(){
+  missionDone=true; achUnlocked.all=true; updateStats();
+  document.getElementById('quizLock').textContent='✅'; saveAll();
+  showAchievementCard('all', renderDoneScreen);
+}
+function renderDoneScreen(){
+  const area=document.getElementById('qArea');
+  area.innerHTML=
+    '<div class="done-screen"><div class="trophy">🏆</div><h2>미션 완료!</h2>'+
+    '<p style="font-size:14px;color:#2a2a2a;margin-top:8px;">카놀라유 · 녹말 · 소금 · 물을 모두 순수하게 분리했어!<br>너는 이제 진짜 <b>분리 실험 마스터</b>야. 🎉</p>'+
+    '<div style="margin-top:8px;font-size:13px;color:#1c5a00;">밀도 차 · 용해성 차 · 끓는점 차 — 세 가지 분리 원리를 모두 사용했지!</div>'+
+    '<div style="margin-top:18px;display:flex;gap:8px;justify-content:center;flex-wrap:wrap;">'+
+      '<button class="btn gold" id="goQuiz" style="font-size:16px;">🏆 도전 문제 풀러 가기</button>'+
+      '<button class="btn green" id="goGallery" style="font-size:14px;">🏅 업적 모음 보기</button>'+
+    '</div></div>';
+  document.getElementById('dots').innerHTML=''; SFX.level();
+  speak('미션 완료! 모든 물질을 분리했어요. 이제 도전 문제에 도전해 보세요.');
+  document.getElementById('goQuiz').onclick=()=>{ SFX.click(); switchTab('quiz'); };
+  document.getElementById('goGallery').onclick=()=>{ SFX.click(); openGallery(); };
+}
+
+/* ============================================================
+   9. 도전 문제(퀴즈)
+   ============================================================ */
+const QUIZ=[
+  {cat:'density',catName:'밀도 차를 이용한 분리',q:'물과 식용유가 섞인 혼합물을 분리하는 데 가장 알맞은 실험 도구는?',opts:['분별깔때기','거름종이와 깔때기','증류장치','자석'],ans:0,exp:'물과 식용유는 서로 섞이지 않고 밀도가 달라 층이 나뉘어. 분별깔때기에 넣어 두면 층이 갈리고, 아래 콕을 열어 분리할 수 있어.'},
+  {cat:'density',catName:'밀도 차를 이용한 분리',q:'좋은 볍씨를 고르려고 소금물에 담갔다. 이때 이용한 물질의 특성은?',opts:['끓는점 차','밀도 차','용해도 차','색깔 차'],ans:1,exp:'속이 꽉 찬 좋은 볍씨는 무거워 가라앉고, 쭉정이는 가벼워 떠올라. 소금물의 밀도를 이용해 무거운 것과 가벼운 것을 가르는 거야(밀도 차).'},
+  {cat:'density',catName:'밀도 차를 이용한 분리',q:'다음 중 밀도 차를 이용한 분리의 예가 <b>아닌</b> 것은?',opts:['키질로 곡식과 쭉정이 분리','강모래에서 사금(금가루) 채취','소금물을 끓여 소금 얻기','물에 톱밥과 모래를 넣어 분리'],ans:2,exp:'소금물을 끓여 소금을 얻는 것은 ‘끓는점 차’를 이용한 증발이야. 나머지는 모두 무게(밀도) 차이를 이용해 가벼운 것과 무거운 것을 나누는 예야.'},
+  {cat:'solub',catName:'용해도 차를 이용한 분리',q:'온도에 따른 용해도 차이를 이용해, 불순물이 섞인 고체에서 순수한 결정을 얻는 방법은?',opts:['거름(여과)','재결정','분별증류','크로마토그래피'],ans:1,exp:'온도가 높을 때 다 녹인 뒤 천천히 식히면, 용해도가 크게 줄어드는 물질이 먼저 순수한 결정으로 석출돼. 이를 재결정이라고 해.'},
+  {cat:'solub',catName:'용해도 차를 이용한 분리',q:'소금과 붕산이 섞인 혼합물에서 붕산만 결정으로 얻으려 한다. (붕산은 온도에 따른 용해도 변화가 크다) 알맞은 방법은?',opts:['뜨거운 물에 모두 녹인 뒤 천천히 식힌다','자석을 가까이 댄다','분별깔때기로 층을 나눈다','거름종이로 거른다'],ans:0,exp:'뜨거운 물에 둘 다 녹인 뒤 식히면, 용해도가 크게 떨어지는 붕산이 먼저 결정으로 나와. 용해도 변화가 작은 소금은 녹은 채 남아(재결정).'},
+  {cat:'solub',catName:'용해도 차를 이용한 분리',q:'천일염을 정제할 때 거른 소금물을 냉각·농축해 결정을 얻는다. 이때 이용한 물질의 특성은?',opts:['밀도 차','온도에 따른 용해도 차','자성','색깔 차'],ans:1,exp:'온도가 내려가면 녹을 수 있는 양(용해도)이 줄어 소금이 결정으로 석출돼. 용해도 차를 이용한 분리야.'},
+  {cat:'boil',catName:'끓는점 차를 이용한 분리',q:'바닷물에서 마실 수 있는 물을 얻는 방법으로 알맞은 것은?',opts:['거름종이로 거른다','증류한다','자석을 댄다','분별깔때기로 나눈다'],ans:1,exp:'바닷물을 가열하면 끓는점이 낮은 물이 먼저 수증기로 날아가. 이 수증기를 식혀 모으면 소금기 없는 깨끗한 물(증류수)을 얻을 수 있어(증류).'},
+  {cat:'boil',catName:'끓는점 차를 이용한 분리',q:'물(100℃)과 에탄올(78℃) 혼합물을 가열해 분리할 때, 먼저 기체로 빠져나오는 물질은?',opts:['물','에탄올','동시에 똑같이','둘 다 나오지 않음'],ans:1,exp:'끓는점이 낮은 에탄올(78℃)이 물(100℃)보다 먼저 끓어 기체로 나와. 이렇게 끓는점 차로 액체 혼합물을 분리하는 게 증류야.'},
+  {cat:'boil',catName:'끓는점 차를 이용한 분리',q:'원유를 끓는점 차이에 따라 휘발유·등유·경유 등 여러 성분으로 나누는 방법은?',opts:['재결정','거름','분별증류','크로마토그래피'],ans:2,exp:'끓는점이 서로 다른 여러 물질이 섞인 원유를 가열하면, 끓는점이 낮은 성분부터 차례로 기화돼 높이별로 모여. 이것이 분별증류야.'}
+];
+let qIdx=0, qScore=0, qAnswered=false;
+function renderQuiz(){ qIdx=0; qScore=0; qAnswered=false; showQuestion(); }
+function catClass(c){ return c==='density'?'cat-density':(c==='solub'?'cat-solub':'cat-boil'); }
+function showQuestion(){
+  const card=document.getElementById('quizCard');
+  if(qIdx>=QUIZ.length){ showQuizResult(); return; }
+  const q=QUIZ[qIdx]; qAnswered=false;
+  let html='<div class="quiz-head"><span class="q-progress">문제 '+(qIdx+1)+' / '+QUIZ.length+'</span><span class="score-pill">⭐ 점수 '+qScore+'</span></div>'+
+    '<span class="cat-badge '+catClass(q.cat)+'">'+q.catName+'</span><div class="q-text">'+(qIdx+1)+'. '+q.q+'</div><div class="opts">';
+  q.opts.forEach((o,i)=>{ html+='<button class="opt" data-i="'+i+'"><span class="kbd">'+ABC[i]+'</span><span>'+o+'</span></button>'; });
+  html+='</div><div id="qWhy"></div>'; card.innerHTML=html;
+  const opts=[...card.querySelectorAll('.opt')];
+  opts.forEach(btn=>{ btn.onclick=()=>{ if(qAnswered) return; qAnswered=true; const i=+btn.dataset.i, correct=(i===q.ans);
+    opts.forEach((b,j)=>{ b.style.pointerEvents='none'; if(j===q.ans)b.classList.add('correct'); });
+    if(correct){ SFX.good(); qScore++; } else { SFX.bad(); btn.classList.add('wrong'); }
+    document.getElementById('qWhy').innerHTML='<div class="why"><div class="wt">'+(correct?'✅ 정답!':'❌ 아쉬워!')+'</div><p>'+q.exp+'</p><div class="next-row"><button class="btn green" id="qNext">'+(qIdx<QUIZ.length-1?'다음 문제 ▶':'결과 보기 🏁')+'</button></div></div>';
+    speak(correct?'정답이에요!':'아쉬워요. 설명을 볼까요?');
+    document.getElementById('qNext').onclick=()=>{ SFX.select(); qIdx++; showQuestion(); }; }; });
+}
+function showQuizResult(){
+  const card=document.getElementById('quizCard'); const pct=Math.round(qScore/QUIZ.length*100);
+  if(qScore>quizBest){ quizBest=qScore; saveAll(); updateStats(); }
+  let msg,icon;
+  if(pct===100){ msg='완벽해! 너는 진정한 분리 실험 마스터야! 🏆'; icon='👑'; }
+  else if(pct>=70){ msg='훌륭해! 분리 원리를 잘 이해하고 있어. 💎'; icon='💎'; }
+  else if(pct>=40){ msg='좋아, 조금만 더! 틀린 문제의 설명을 다시 읽어보자. 📘'; icon='📘'; }
+  else { msg='괜찮아, 다시 도전하면 분명히 나아질 거야! 💪'; icon='🌱'; }
+  card.innerHTML='<div class="quiz-result"><div style="font-size:54px;">'+icon+'</div><div class="big">'+qScore+' / '+QUIZ.length+'</div>'+
+    '<p style="font-size:15px;color:#2a2a2a;margin:10px 0;">정답률 '+pct+'% · '+msg+'</p>'+
+    '<p style="font-size:12px;color:#1c5a00;">나의 최고 기록: '+quizBest+' / '+QUIZ.length+'</p>'+
+    '<div style="margin-top:14px;display:flex;gap:8px;justify-content:center;flex-wrap:wrap;"><button class="btn green" id="retryQuiz">🔄 다시 도전</button><button class="btn" id="backExp">⛏️ 실험실로</button></div></div>';
+  SFX.complete(); speak('도전 문제 완료! '+QUIZ.length+'문제 중 '+qScore+'문제를 맞혔어요.');
+  document.getElementById('retryQuiz').onclick=()=>{ SFX.click(); renderQuiz(); };
+  document.getElementById('backExp').onclick=()=>{ SFX.click(); switchTab('exp'); };
+}
+
+/* ============================================================
+   10. 탭 전환
+   ============================================================ */
+function switchTab(name){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('tab-'+name).classList.add('active');
+  document.querySelector('.tab-btn[data-tab="'+name+'"]').classList.add('active');
+  if(name==='quiz') renderQuiz();
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+function enterExperiment(){ switchTab('exp'); if(missionDone) renderDoneScreen(); else startStep(); }
+
+/* ============================================================
+   11. 단서 노트 / 도감 빌더
+   ============================================================ */
+function buildPropTable(){
+  let h='<table class="prop-table"><thead><tr><th>구분</th>';
+  PROP_COLS.forEach(c=>{ h+='<th><span class="em">'+c.em+'</span>'+c.name+'</th>'; });
+  h+='</tr></thead><tbody>';
+  PROP_ROWS.forEach(r=>{ h+='<tr><th>'+r.label+'</th>'; r.vals.forEach(v=>{ h+='<td>'+v+'</td>'; }); h+='</tr>'; });
+  h+='</tbody></table>';
+  document.getElementById('propTable').innerHTML=h;
+}
+function buildClueCards(){
+  const wrap=document.getElementById('clueCards'); wrap.innerHTML='';
+  CLUE_CARDS.forEach(c=>{ const d=document.createElement('div'); d.className='clue-card';
+    d.innerHTML='<div class="ch"><span>'+c.head+'</span><span class="tg-ic">단서 보기 ▾</span></div><div class="cb"><div class="cb-in">'+c.body+'</div></div>';
+    d.onclick=()=>{ SFX.click(); d.classList.toggle('open'); d.querySelector('.tg-ic').textContent=d.classList.contains('open')?'접기 ▴':'단서 보기 ▾'; };
+    wrap.appendChild(d); });
+}
+function buildCodex(){
+  const list=document.getElementById('codexList'); list.innerHTML='';
+  CODEX.forEach(c=>{ const d=document.createElement('div'); d.className='codex-item';
+    d.innerHTML='<div class="ce">'+c.e+'</div><div><div class="cn"><b>'+c.n+'</b></div><div class="cd">'+c.d+'</div></div>'; list.appendChild(d); });
+}
+function openClue(){ SFX.click(); document.getElementById('clueOverlay').classList.add('show'); }
+function closeClue(){ SFX.click(); document.getElementById('clueOverlay').classList.remove('show'); }
+
+/* ============================================================
+   12. 크리퍼 / 배경
+   ============================================================ */
+function buildCreeper(){
+  const d='#234a16', l='#6aa84f', f='#142a0a';
+  const map=[1,0,0,1,1,0,0,1, 0,1,0,0,0,0,1,0, 0,0,2,2,2,2,0,0, 0,0,2,2,2,2,0,0, 0,2,2,0,0,2,2,0, 0,2,2,0,0,2,2,0, 0,2,2,2,2,2,2,0, 1,0,2,0,0,2,0,1];
+  const cr=document.getElementById('creeper'); cr.innerHTML='';
+  map.forEach(v=>{ const s=document.createElement('span'); s.style.background=v===2?f:(v===1?d:l); cr.appendChild(s); });
+}
+function buildBg(){ const c=document.getElementById('bgCubes'); for(let i=0;i<14;i++){ const it=document.createElement('i');
+  it.style.left=(Math.random()*100)+'%'; it.style.animationDuration=(14+Math.random()*18)+'s'; it.style.animationDelay=(-Math.random()*20)+'s';
+  it.style.transform='scale('+(0.7+Math.random()*1.6)+')'; c.appendChild(it); } }
+
+/* ============================================================
+   13. 로그인 / 복원 / 초기화
+   ============================================================ */
+function showApp(){ document.getElementById('loginOverlay').classList.remove('show'); document.getElementById('app').style.display='block'; }
+function setProfileChip(){ document.getElementById('pSid').textContent=profile.sid; document.getElementById('pName').textContent=profile.name+' 님'; }
+
+function applyProgress(p){
+  collected=Object.assign({oil:false,starch:false,salt:false,water:false}, p.collected||{});
+  achUnlocked=Object.assign({oil:false,starch:false,saltwater:false,all:false}, p.achUnlocked||{});
+  stepIdx=p.stepIdx||0; missionDone=!!p.missionDone; quizBest=p.quizBest||0;
+  if(stepIdx>STEPS.length-1) stepIdx=STEPS.length-1;
+  renderInv(); updateXP(); updateStats();
+  if(missionDone) document.getElementById('quizLock').textContent='✅';
+  // 실험 화면 미리 구성 (음성 없이)
+  if(missionDone) renderDoneScreen(); else startStep(true);
+}
+function freshStart(){
+  collected={oil:false,starch:false,salt:false,water:false};
+  achUnlocked={oil:false,starch:false,saltwater:false,all:false};
+  stepIdx=0; subIdx=0; missionDone=false; quizBest=0; lastSceneStep=null;
+  document.getElementById('quizLock').textContent='🔒';
+  document.getElementById('replayBtn').disabled=true;
+  renderInv(); updateXP(); updateStats(); startStep(true); saveAll();
+}
+
+function doLogin(){
+  const sid=document.getElementById('inSid').value.trim();
+  const name=document.getElementById('inName').value.trim();
+  const err=document.getElementById('loginErr');
+  if(!sid){ err.textContent='학번을 입력해 주세요.'; return; }
+  if(!name){ err.textContent='이름을 입력해 주세요.'; return; }
+  err.textContent='';
+  profile={sid,name};
+  freshStart();              // 새 진행 + 저장
+  saveAll();
+  setProfileChip(); showApp();
+  SFX.level(); toast('환영합니다, '+name+' 님! 🟩','ok'); speak(name+'님, 분리 실험실에 오신 것을 환영해요!');
+}
+
+/* 버튼 연결 */
+function wireButtons(){
+  // 로그인
+  document.getElementById('loginBtn').onclick=()=>{ ac(); doLogin(); };
+  ['inSid','inName'].forEach(id=>document.getElementById(id).addEventListener('keydown',e=>{ if(e.key==='Enter'){ ac(); doLogin(); } }));
+  // 탭
+  document.querySelectorAll('.tab-btn').forEach(b=>{ b.onclick=()=>{ SFX.click(); ac(); const n=b.dataset.tab; if(n==='exp') enterExperiment(); else switchTab(n); }; });
+  document.getElementById('startBtn').onclick=()=>{ ac(); SFX.level(); enterExperiment(); };
+  // 토글
+  document.getElementById('soundBtn').onclick=function(){ soundOn=!soundOn; this.classList.toggle('off',!soundOn); this.textContent=soundOn?'🔊':'🔇'; if(soundOn)SFX.pop(); };
+  document.getElementById('voiceBtn').onclick=function(){ voiceOn=!voiceOn; this.classList.toggle('off',!voiceOn); this.textContent=voiceOn?'🗣️':'🤐'; if(!voiceOn&&'speechSynthesis' in window) speechSynthesis.cancel(); else speak('음성 안내를 켰어요.'); };
+  // 단서 노트
+  document.getElementById('clueBtn').onclick=openClue;
+  document.getElementById('clueBtn2').onclick=openClue;
+  document.getElementById('clueBtn3').onclick=openClue;
+  document.getElementById('clueClose').onclick=closeClue;
+  document.getElementById('clueOverlay').onclick=(e)=>{ if(e.target.id==='clueOverlay') closeClue(); };
+  // 업적
+  document.getElementById('achBtn').onclick=()=>{ SFX.click(); openGallery(); };
+  document.getElementById('achGalleryClose').onclick=()=>{ SFX.click(); document.getElementById('achGalleryOverlay').classList.remove('show'); };
+  document.getElementById('achGalleryOverlay').onclick=(e)=>{ if(e.target.id==='achGalleryOverlay') document.getElementById('achGalleryOverlay').classList.remove('show'); };
+  // 장면
+  document.getElementById('sceneReplay').onclick=()=>{ SFX.click(); runScene(lastSceneStep); };
+  document.getElementById('sceneContinue').onclick=()=>{ SFX.click(); closeScene(true); };
+  document.getElementById('sceneSkip').onclick=()=>{ SFX.click(); closeScene(true); };
+  document.getElementById('replayBtn').onclick=()=>{ if(lastSceneStep){ SFX.click(); playSeparationScene(lastSceneStep,{review:true}); } };
+  // 처음부터 다시
+  document.getElementById('resetBtn').onclick=()=>{ SFX.click();
+    if(confirm('처음부터 다시 시작할까요?\n(완료한 미션·점수·배지가 모두 초기화됩니다. 학번/이름은 유지돼요.)')){
+      freshStart(); switchTab('brief'); toast('진행 상황을 초기화했어요. 처음부터 다시! 🔄','info'); }
+  };
+}
+
+window.addEventListener('pointerdown',()=>ac(),{once:true});
+
+/* ============================================================
+   14. 부팅
+   ============================================================ */
+buildBg(); buildPropTable(); buildClueCards(); buildCodex(); wireButtons(); applyImages();
+renderInv(); updateXP(); renderBeaker('mix'); renderStepHeader();
+
+const saved=loadAll();
+if(saved && saved.profile && saved.profile.name){
+  profile=saved.profile; setProfileChip(); showApp();
+  applyProgress(saved.progress||{});
+  updateStats();
+  toast('다시 오신 것을 환영합니다, '+profile.name+' 님! 이어서 진행할게요.','ok');
+} else {
+  // 로그인 대기
+  setTimeout(()=>{ try{ document.getElementById('inSid').focus(); }catch(e){} }, 200);
+}
+</script>
+</body>
+</html>
