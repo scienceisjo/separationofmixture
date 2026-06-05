@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>혼합물의 분리 | 과학이조선생 실험실</title>
+<title>혼합물의 분리 | 과학이조 실험실</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Jua&family=Gowun+Dodum&display=swap" rel="stylesheet">
@@ -20,7 +20,8 @@ body{font-family:'Gowun Dodum',sans-serif;color:var(--text);min-height:100vh;
     radial-gradient(55% 45% at 18% -5%, rgba(56,189,248,.12), transparent 60%),
     radial-gradient(60% 55% at 88% 12%, rgba(168,85,247,.13), transparent 62%),
     radial-gradient(70% 60% at 50% 112%, rgba(255,170,100,.07), transparent 60%),
-    linear-gradient(180deg,#0c1322 0%,#13112a 48%,#1b1330 100%);
+    linear-gradient(180deg, rgba(12,19,34,.82) 0%, rgba(19,17,42,.86) 48%, rgba(27,19,48,.90) 100%),
+    url("images/witch-lab-bg.png") center/cover no-repeat;
   background-attachment:fixed;background-color:#241d33;
   display:flex;flex-direction:column;align-items:center;padding:34px 20px 60px}
 .bubbles{position:fixed;inset:0;overflow:hidden;pointer-events:none;z-index:0;display:none}
@@ -52,6 +53,11 @@ h1{font-family:'Jua';font-size:clamp(42px,9.5vw,80px);text-align:center;margin:8
 .method .glow{position:absolute;inset:-30%;opacity:0;transition:.3s}
 .method:hover .glow{opacity:1}
 
+.m0{border-color:rgba(251,191,36,.5)}
+.m0 .ic{filter:drop-shadow(0 0 14px rgba(251,191,36,.6))}
+.m0 .go{background:linear-gradient(135deg,#f59e0b,#fbbf24);color:#3a2505}
+.m0 .glow{background:radial-gradient(circle,rgba(251,191,36,.22),transparent 60%)}
+
 .m1{border-color:rgba(126,224,255,.4)}
 .m1 .ic{filter:drop-shadow(0 0 14px rgba(126,224,255,.6))}
 .m1 .go{background:linear-gradient(135deg,#38bdf8,#7ee0ff);color:#06212f}
@@ -80,6 +86,9 @@ h1{font-family:'Jua';font-size:clamp(42px,9.5vw,80px);text-align:center;margin:8
 .cap-badge{display:inline-block;font-family:'Jua';font-size:12px;letter-spacing:1.5px;
   color:#e9d5ff;background:rgba(168,85,247,.16);border:1px solid rgba(192,132,252,.5);
   padding:4px 12px;border-radius:999px;margin:0 0 10px}
+.base-badge{display:inline-block;font-family:'Jua';font-size:12px;letter-spacing:1.5px;
+  color:#fde68a;background:rgba(251,191,36,.16);border:1px solid rgba(251,191,36,.5);
+  padding:4px 12px;border-radius:999px;margin:0 0 10px}
 
 .footer{text-align:center;color:var(--muted);font-size:13px;margin-top:40px;line-height:1.7}
 .footer b{color:var(--accent)}
@@ -94,6 +103,16 @@ h1{font-family:'Jua';font-size:clamp(42px,9.5vw,80px);text-align:center;margin:8
   <p class="sub">물질마다 다른 <b>성질의 차이</b>를 이용하면 섞인 물질을 다시 갈라낼 수 있어요.<br>오늘은 <b>밀도·용해도·끓는점·녹는점</b> 네 가지 무기를 배우고, 직접 실험까지 설계해 봅시다.</p>
 
   <div class="grid">
+    <div class="method m0">
+      <div class="glow"></div>
+      <span class="num">00</span>
+      <span class="ic">🧪</span>
+      <span class="base-badge">START · 기초 개념</span>
+      <h2>순물질과 혼합물</h2>
+      <p>한 종류로 이루어진 순물질과 여러 물질이 섞인 혼합물! 입자 쟁탈전 게임, 떠오르는 달걀, 혼합물 가열 실험으로 둘의 차이를 알아봅시다.</p>
+      <div class="gorow"><a class="go" href="https://scienceisjo.github.io/propertiesofmatter/puremixture.html">탐구 시작 →</a></div>
+    </div>
+
     <div class="method m1">
       <div class="glow"></div>
       <span class="num">01</span>
@@ -142,7 +161,7 @@ h1{font-family:'Jua';font-size:clamp(42px,9.5vw,80px);text-align:center;margin:8
   </div>
 
   <div class="footer">
-    🧪 <b>과학이조선생 실험실</b> <br>
+    🧪 <b>과학이조 실험실</b> · 해누리중학교 과학<br>
     각 단원은 따로 배포된 페이지로 연결됩니다.
   </div>
 </div>
