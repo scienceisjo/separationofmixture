@@ -1,0 +1,692 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>녹는점을 이용한 분리 · 마인크래프트 제련소</title>
+<style>
+  @import url('https://cdn.jsdelivr.net/gh/quiple/galmuri/dist/galmuri.css');
+  @font-face{
+    font-family:'DungGeunMo';
+    src:url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2001@1.1/DungGeunMo.woff') format('woff');
+    font-display:swap;
+  }
+
+  :root{
+    --pix:'DungGeunMo','Galmuri11',monospace,sans-serif;
+    --bg0:#07070b;
+    --bg1:#101019;
+    --stone-d:#26262e;
+    --stone:#3a3a45;
+    --stone-l:#4f4f5c;
+    --stone-edge:#15151b;
+    --slot:#181820;
+    --slot-edge:#0c0c11;
+    --txt:#e9e9f2;
+    --txt-dim:#9a9aac;
+    --gold:#ffcf3f;
+    --fire1:#ff5a1a;
+    --fire2:#ffb02e;
+    --fire3:#ffe27a;
+    --iron:#c9cad6;
+    --ok:#7ee081;
+  }
+
+  *{box-sizing:border-box;margin:0;padding:0;}
+  html,body{height:100%;}
+  body{
+    font-family:var(--pix);
+    color:var(--txt);
+    background:
+      radial-gradient(120% 80% at 50% -10%, #1a1a28 0%, var(--bg1) 40%, var(--bg0) 100%);
+    image-rendering:pixelated;
+    min-height:100vh;
+    overflow-x:hidden;
+    position:relative;
+    letter-spacing:.3px;
+  }
+
+  /* cave depth + vignette */
+  body::after{
+    content:"";position:fixed;inset:0;pointer-events:none;z-index:50;
+    background:radial-gradient(120% 110% at 50% 35%, transparent 45%, rgba(0,0,0,.55) 85%, rgba(0,0,0,.85) 100%);
+  }
+  /* subtle stone speckle */
+  body::before{
+    content:"";position:fixed;inset:0;pointer-events:none;z-index:0;opacity:.5;
+    background-image:
+      radial-gradient(1px 1px at 20% 30%, rgba(255,255,255,.05) 50%, transparent 51%),
+      radial-gradient(1px 1px at 70% 60%, rgba(255,255,255,.04) 50%, transparent 51%),
+      radial-gradient(1px 1px at 40% 80%, rgba(255,255,255,.04) 50%, transparent 51%),
+      radial-gradient(1px 1px at 85% 20%, rgba(255,255,255,.05) 50%, transparent 51%);
+    background-size:160px 160px,200px 200px,140px 140px,180px 180px;
+  }
+
+  .pix{display:block;image-rendering:pixelated;}
+
+  .wrap{position:relative;z-index:10;max-width:1080px;margin:0 auto;padding:18px 16px 40px;}
+
+  /* ===== header ===== */
+  header{text-align:center;margin-bottom:14px;}
+  .title{
+    font-size:clamp(20px,4.6vw,34px);
+    color:var(--gold);
+    text-shadow:0 2px 0 #6b4e00, 3px 3px 0 rgba(0,0,0,.6);
+    line-height:1.25;
+  }
+  .subtitle{margin-top:8px;font-size:clamp(11px,2.6vw,14px);color:var(--txt-dim);}
+
+  /* torches */
+  .torch{position:fixed;top:64px;z-index:5;width:14px;}
+  .torch.left{left:14px;} .torch.right{right:14px;}
+  .torch .stick{width:6px;height:26px;margin:0 auto;background:linear-gradient(#7a4a1e,#4f2f12);box-shadow:2px 0 0 #3a230d inset;}
+  .torch .flame{
+    width:14px;height:18px;margin:0 auto;border-radius:50% 50% 45% 45%;
+    background:radial-gradient(circle at 50% 70%,var(--fire3),var(--fire2) 55%,var(--fire1) 100%);
+    box-shadow:0 0 14px 6px rgba(255,140,40,.45),0 0 30px 14px rgba(255,90,20,.22);
+    animation:flick 1.1s infinite steps(3);
+    transform-origin:bottom center;
+  }
+  @keyframes flick{
+    0%{transform:scaleY(1) translateX(0);opacity:1;}
+    33%{transform:scaleY(1.12) translateX(-1px);opacity:.92;}
+    66%{transform:scaleY(.92) translateX(1px);opacity:1;}
+    100%{transform:scaleY(1.05) translateX(0);opacity:.95;}
+  }
+
+  /* embers */
+  .ember{position:fixed;bottom:-10px;width:3px;height:3px;background:var(--fire2);border-radius:50%;
+    box-shadow:0 0 6px 2px rgba(255,150,50,.6);z-index:4;opacity:0;animation:rise linear infinite;}
+  @keyframes rise{
+    0%{transform:translateY(0) translateX(0);opacity:0;}
+    10%{opacity:.9;}
+    90%{opacity:.5;}
+    100%{transform:translateY(-100vh) translateX(20px);opacity:0;}
+  }
+
+  /* ===== top status bar ===== */
+  .statusbar{
+    display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;
+    background:linear-gradient(var(--stone),var(--stone-d));
+    border:3px solid var(--stone-edge);
+    box-shadow:0 0 0 2px var(--stone-l) inset, 0 6px 0 rgba(0,0,0,.4);
+    padding:10px 12px;margin-bottom:16px;
+  }
+  .step{font-size:clamp(12px,2.8vw,15px);color:var(--gold);}
+  .step b{color:var(--txt);}
+  .counter{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--txt-dim);}
+  .counter .num{color:var(--iron);font-size:18px;}
+  .btns{display:flex;gap:8px;}
+  .mc-btn{
+    font-family:var(--pix);cursor:pointer;color:var(--txt);font-size:12px;
+    background:linear-gradient(#6a6a78,#4a4a56);
+    border:none;padding:8px 11px;
+    box-shadow:0 0 0 2px #2c2c34, inset 2px 2px 0 rgba(255,255,255,.18), inset -2px -2px 0 rgba(0,0,0,.4),0 4px 0 #23232a;
+    transition:transform .05s, box-shadow .05s;
+  }
+  .mc-btn:hover{filter:brightness(1.08);}
+  .mc-btn:active{transform:translateY(3px);box-shadow:0 0 0 2px #2c2c34, inset 2px 2px 0 rgba(255,255,255,.12), inset -2px -2px 0 rgba(0,0,0,.4),0 1px 0 #23232a;}
+
+  /* ===== main grid ===== */
+  .stage{display:grid;grid-template-columns:1.15fr .85fr;gap:16px;}
+  @media(max-width:760px){.stage{grid-template-columns:1fr;}}
+
+  .panel{
+    background:
+      linear-gradient(rgba(0,0,0,.15),rgba(0,0,0,.15)),
+      repeating-linear-gradient(0deg,var(--stone) 0 13px,var(--stone-d) 13px 14px),
+      repeating-linear-gradient(90deg,transparent 0 13px,rgba(0,0,0,.12) 13px 14px);
+    border:4px solid var(--stone-edge);
+    box-shadow:0 0 0 2px var(--stone-l) inset,0 8px 0 rgba(0,0,0,.4);
+    padding:16px;
+    position:relative;
+  }
+  .panel-title{
+    font-size:clamp(13px,3vw,16px);color:var(--gold);text-align:center;
+    margin-bottom:14px;text-shadow:2px 2px 0 rgba(0,0,0,.6);
+  }
+
+  /* ===== furnace ===== */
+  .furnace-block{
+    width:86px;height:86px;margin:0 auto 14px;position:relative;
+    background:
+      repeating-linear-gradient(0deg,#5a5a66 0 5px,#4a4a56 5px 6px),
+      repeating-linear-gradient(90deg,transparent 0 5px,rgba(0,0,0,.18) 5px 6px);
+    border:4px solid #1c1c22;
+    box-shadow:inset 3px 3px 0 rgba(255,255,255,.12), inset -4px -4px 0 rgba(0,0,0,.45);
+  }
+  .fire-window{
+    position:absolute;left:50%;bottom:14px;transform:translateX(-50%);
+    width:42px;height:34px;background:#0a0a0d;border:3px solid #000;
+    overflow:hidden;
+  }
+  .fire-window .glow{position:absolute;inset:0;opacity:0;transition:opacity .3s;
+    background:radial-gradient(circle at 50% 95%,var(--fire3),var(--fire2) 45%,var(--fire1) 80%,#7a1d05 100%);}
+  .flame-shape{position:absolute;bottom:-4px;left:50%;transform:translateX(-50%);
+    width:22px;height:26px;border-radius:50% 50% 45% 45%;
+    background:radial-gradient(circle at 50% 80%,var(--fire3),var(--fire2) 55%,var(--fire1));
+    opacity:0;}
+  .furnace-block.lit .glow{opacity:1;}
+  .furnace-block.lit .flame-shape{opacity:1;animation:flick .5s infinite steps(3);}
+
+  /* furnace GUI */
+  .gui{display:flex;align-items:center;justify-content:center;gap:14px;flex-wrap:wrap;}
+  .gui-left{display:flex;flex-direction:column;align-items:center;gap:8px;}
+
+  .slot{
+    width:64px;height:64px;background:var(--slot);
+    border:3px solid var(--slot-edge);
+    box-shadow:inset 3px 3px 0 rgba(0,0,0,.6), inset -2px -2px 0 rgba(255,255,255,.06);
+    display:flex;align-items:center;justify-content:center;position:relative;
+    transition:box-shadow .12s,transform .12s;
+  }
+  .slot .hint{position:absolute;font-size:10px;color:#5a5a68;pointer-events:none;text-align:center;line-height:1.2;}
+  .slot.target{box-shadow:inset 0 0 0 3px var(--gold), inset 3px 3px 0 rgba(0,0,0,.4);}
+  .slot.flash{animation:noflash .35s;}
+  @keyframes noflash{0%,100%{box-shadow:inset 3px 3px 0 rgba(0,0,0,.6);}50%{box-shadow:inset 0 0 0 3px #ff5a5a;}}
+  .slot-label{font-size:10px;color:var(--txt-dim);margin-top:5px;text-align:center;}
+  .slot-wrap{display:flex;flex-direction:column;align-items:center;}
+
+  .flame-ind{width:24px;height:30px;position:relative;}
+  .flame-ind .empty{position:absolute;inset:0;background:#16161b;
+    clip-path:polygon(50% 0,100% 55%,85% 100%,15% 100%,0 55%);}
+  .flame-ind .fill{position:absolute;left:0;right:0;bottom:0;height:0%;
+    background:linear-gradient(var(--fire2),var(--fire1));
+    clip-path:polygon(50% 0,100% 55%,85% 100%,15% 100%,0 55%);transition:height .15s;}
+
+  .arrow{width:84px;height:30px;position:relative;}
+  .arrow .base{position:absolute;inset:0;background:#16161b;
+    clip-path:polygon(0 35%,72% 35%,72% 12%,100% 50%,72% 88%,72% 65%,0 65%);}
+  .arrow .fill{position:absolute;top:0;left:0;height:100%;width:0%;
+    background:linear-gradient(90deg,var(--gold),#fff0a8);
+    clip-path:polygon(0 35%,72% 35%,72% 12%,100% 50%,72% 88%,72% 65%,0 65%);
+    transition:width .08s linear;}
+
+  .output-slot{box-shadow:inset 3px 3px 0 rgba(0,0,0,.6), inset -2px -2px 0 rgba(255,255,255,.06),0 0 0 0 var(--gold);}
+  .output-slot.ready{cursor:pointer;animation:outpulse 1s infinite;}
+  @keyframes outpulse{0%,100%{box-shadow:inset 3px 3px 0 rgba(0,0,0,.4),0 0 0 2px var(--gold);}50%{box-shadow:inset 3px 3px 0 rgba(0,0,0,.4),0 0 14px 3px var(--gold);}}
+
+  .ingot-pop{animation:pop .4s;}
+  @keyframes pop{0%{transform:scale(0) rotate(-20deg);}60%{transform:scale(1.25) rotate(8deg);}100%{transform:scale(1) rotate(0);}}
+
+  /* ===== science panel: thermometer + cross section ===== */
+  .sci-row{display:flex;gap:16px;align-items:stretch;justify-content:center;}
+
+  .thermo{width:66px;display:flex;flex-direction:column;align-items:center;position:relative;flex-shrink:0;}
+  .thermo-temp{font-size:13px;color:var(--gold);margin-bottom:6px;min-height:16px;}
+  .thermo-body{position:relative;width:24px;flex:1;min-height:220px;
+    background:#101016;border:3px solid #000;box-shadow:inset 2px 2px 0 rgba(255,255,255,.05);}
+  .thermo-fill{position:absolute;left:0;right:0;bottom:0;height:2%;
+    background:linear-gradient(#ff3b1a,#ffb02e 60%,#ffe27a);transition:height .1s linear;}
+  .thermo-bulb{width:34px;height:34px;border-radius:50%;background:#ff3b1a;border:3px solid #000;margin-top:-3px;
+    box-shadow:0 0 10px 3px rgba(255,90,30,.4) inset;}
+  .zone{position:absolute;left:-3px;right:-3px;border-top:2px dashed rgba(255,255,255,.25);
+    border-bottom:2px dashed rgba(255,255,255,.25);background:rgba(255,200,60,.10);pointer-events:none;}
+  .marker{position:absolute;left:30px;font-size:10px;white-space:nowrap;color:var(--txt-dim);}
+  .marker::before{content:"";position:absolute;left:-30px;top:50%;width:28px;height:2px;background:currentColor;}
+  .marker.metal{color:#ffd76a;} .marker.rock{color:#9fb6ff;}
+  .marker small{color:var(--txt-dim);}
+
+  .cross-col{flex:1;display:flex;flex-direction:column;align-items:center;min-width:0;}
+  .cross{
+    position:relative;width:100%;max-width:200px;height:220px;
+    background:radial-gradient(120% 90% at 50% 10%,#1d1d27,#0c0c12);
+    border:3px solid #000;box-shadow:inset 0 0 24px rgba(0,0,0,.7);overflow:hidden;
+  }
+  .rock-body{
+    position:absolute;left:50%;top:22px;transform:translateX(-50%);
+    width:130px;height:96px;
+    background:repeating-linear-gradient(125deg,#54545e 0 8px,#45454f 8px 16px);
+    border:3px solid #26262e;
+    box-shadow:inset 3px 3px 0 rgba(255,255,255,.08), inset -3px -3px 0 rgba(0,0,0,.5);
+    clip-path:polygon(12% 0,88% 6%,100% 60%,84% 100%,18% 96%,0 50%);
+    transition:filter .4s;
+  }
+  .rock-label{position:absolute;left:50%;top:42%;transform:translate(-50%,-50%);font-size:11px;color:#cfcfe0;
+    text-shadow:1px 1px 0 #000;pointer-events:none;}
+  .bit{position:absolute;width:14px;height:14px;border-radius:3px;
+    background:radial-gradient(circle at 35% 30%,#e8c79c,#b07a45 70%,#7d5126);
+    box-shadow:0 0 0 2px rgba(0,0,0,.4);
+    transition:transform 1.1s ease-in, background 1.1s, opacity 1.1s;}
+  /* bit start positions inside rock */
+  .b1{left:46px;top:44px;} .b2{left:78px;top:38px;} .b3{left:62px;top:64px;}
+  .b4{left:40px;top:70px;} .b5{left:92px;top:62px;} .b6{left:74px;top:84px;}
+
+  .cross.melting .bit{
+    background:radial-gradient(circle at 40% 30%,#fff0a0,#ff9a2e 55%,#ff4d12);
+    box-shadow:0 0 8px 3px rgba(255,120,30,.6);
+    transform:translateY(150px) scale(.8);
+  }
+  .cross.melting .b1{transition-delay:.05s;} .cross.melting .b2{transition-delay:.25s;}
+  .cross.melting .b3{transition-delay:.15s;} .cross.melting .b4{transition-delay:.4s;}
+  .cross.melting .b5{transition-delay:.3s;} .cross.melting .b6{transition-delay:.5s;}
+  .cross.melting .rock-body{filter:brightness(.9);}
+  .cross.done .bit{opacity:0;}
+
+  .pool{position:absolute;left:50%;bottom:8px;transform:translateX(-50%);
+    width:120px;height:2px;border-radius:4px;
+    background:linear-gradient(#ffd76a,#ff7a1e);box-shadow:0 0 14px 4px rgba(255,130,30,.5);
+    transition:height .15s linear;}
+  .formed{position:absolute;left:50%;bottom:8px;transform:translate(-50%,0) scale(0);
+    transition:transform .4s;}
+  .cross.done .formed{transform:translate(-50%,0) scale(1);}
+  .cross.done .pool{opacity:0;}
+
+  .sci-caption{margin-top:12px;font-size:12px;color:var(--txt);text-align:center;line-height:1.6;min-height:42px;
+    background:rgba(0,0,0,.25);padding:8px 10px;border-left:3px solid var(--gold);}
+
+  /* ===== hotbar ===== */
+  .hotbar{display:flex;justify-content:center;gap:14px;margin:18px 0 6px;flex-wrap:wrap;}
+  .hb{
+    background:linear-gradient(var(--stone),var(--stone-d));
+    border:3px solid var(--stone-edge);
+    box-shadow:0 0 0 2px var(--stone-l) inset,0 5px 0 rgba(0,0,0,.4);
+    padding:8px 12px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:4px;
+    transition:transform .06s,filter .1s;position:relative;min-width:96px;
+  }
+  .hb:hover{filter:brightness(1.1);}
+  .hb:active{transform:translateY(3px);}
+  .hb .name{font-size:12px;color:var(--txt);}
+  .hb .cnt{font-size:12px;color:var(--gold);}
+  .hb.disabled{opacity:.4;cursor:not-allowed;filter:grayscale(.6);}
+  .hb.pulse{animation:hbp 1s infinite;}
+  @keyframes hbp{0%,100%{box-shadow:0 0 0 2px var(--stone-l) inset,0 5px 0 rgba(0,0,0,.4);}
+    50%{box-shadow:0 0 0 2px var(--gold) inset,0 0 16px 2px rgba(255,207,63,.5),0 5px 0 rgba(0,0,0,.4);}}
+
+  /* ===== concept + advanced ===== */
+  .concept{
+    margin-top:22px;
+    background:linear-gradient(#1a2a1c,#121d14);
+    border:3px solid #0c160d;box-shadow:0 0 0 2px #2f5a34 inset,0 6px 0 rgba(0,0,0,.4);
+    padding:18px;
+  }
+  .concept h3{color:var(--ok);font-size:15px;margin-bottom:12px;text-shadow:2px 2px 0 rgba(0,0,0,.5);}
+  .concept p{font-size:13px;line-height:1.85;color:var(--txt);margin-bottom:10px;}
+  .concept .key{color:var(--gold);}
+  .modelnote{font-size:11px;color:var(--txt-dim);margin-top:6px;}
+
+  .recap{display:none;margin-top:14px;padding:14px;background:rgba(255,207,63,.08);
+    border:2px dashed var(--gold);font-size:13px;line-height:1.8;}
+  .recap.show{display:block;animation:fadein .5s;}
+  @keyframes fadein{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:none;}}
+  .recap b{color:var(--gold);}
+
+  details.adv{margin-top:16px;background:rgba(0,0,0,.3);border:2px solid var(--stone-edge);padding:0 14px;}
+  details.adv summary{cursor:pointer;padding:12px 0;font-size:13px;color:var(--txt-dim);list-style:none;}
+  details.adv summary::-webkit-details-marker{display:none;}
+  details.adv summary::before{content:"▸ ";color:var(--gold);}
+  details.adv[open] summary::before{content:"▾ ";}
+  details.adv .body{padding:4px 0 16px;font-size:12px;line-height:1.85;color:var(--txt);}
+  details.adv .body .hl{color:#ffd76a;}
+
+  footer{text-align:center;margin-top:26px;font-size:10px;color:#55556a;}
+</style>
+</head>
+<body>
+  <div class="torch left"><div class="flame"></div><div class="stick"></div></div>
+  <div class="torch right"><div class="flame"></div><div class="stick"></div></div>
+
+  <div class="wrap">
+    <header>
+      <div class="title">광산의 제련소</div>
+      <div class="subtitle">철 원석을 구워 철 주괴를 얻어 보자 · 녹는점 차이를 이용한 분리</div>
+    </header>
+
+    <div class="statusbar">
+      <div class="step" id="step">화로에 <b>철 원석</b>을 넣어 보세요</div>
+      <div class="counter">획득한 철 주괴 <span class="num" id="ingotCount">0</span></div>
+      <div class="btns">
+        <button class="mc-btn" id="refillBtn">원석·석탄 보충</button>
+        <button class="mc-btn" id="soundBtn">소리: 켬</button>
+      </div>
+    </div>
+
+    <div class="stage">
+      <!-- 화로 -->
+      <section class="panel">
+        <div class="panel-title">화 로 (FURNACE)</div>
+        <div class="furnace-block" id="furnaceBlock">
+          <div class="fire-window">
+            <div class="glow"></div>
+            <div class="flame-shape"></div>
+          </div>
+        </div>
+        <div class="gui">
+          <div class="gui-left">
+            <div class="slot-wrap">
+              <div class="slot" id="oreSlot"><span class="hint">철<br>원석</span></div>
+              <div class="slot-label">원석</div>
+            </div>
+            <div class="flame-ind"><div class="empty"></div><div class="fill" id="flameFill"></div></div>
+            <div class="slot-wrap">
+              <div class="slot" id="fuelSlot"><span class="hint">연료<br>(석탄)</span></div>
+              <div class="slot-label">연료</div>
+            </div>
+          </div>
+          <div class="arrow"><div class="base"></div><div class="fill" id="arrowFill"></div></div>
+          <div class="slot-wrap">
+            <div class="slot output-slot" id="outputSlot"><span class="hint">결과물</span></div>
+            <div class="slot-label">철 주괴</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 과학 원리 -->
+      <section class="panel">
+        <div class="panel-title">화로 속 들여다보기 (과학 원리)</div>
+        <div class="sci-row">
+          <div class="thermo">
+            <div class="thermo-temp" id="thermoTemp">20℃</div>
+            <div class="thermo-body" id="thermoBody">
+              <div class="zone" id="zone"></div>
+              <div class="marker rock" id="markRock">암석 녹는점<br><small>높음 · 모형</small></div>
+              <div class="marker metal" id="markMetal">철 녹는점<br><small>낮음</small></div>
+              <div class="thermo-fill" id="thermoFill"></div>
+            </div>
+            <div class="thermo-bulb"></div>
+          </div>
+
+          <div class="cross-col">
+            <div class="cross" id="cross">
+              <div class="rock-body">
+                <span class="rock-label">암석 + 철</span>
+              </div>
+              <div class="bit b1"></div><div class="bit b2"></div><div class="bit b3"></div>
+              <div class="bit b4"></div><div class="bit b5"></div><div class="bit b6"></div>
+              <div class="pool" id="pool"></div>
+              <div class="formed" id="formed"></div>
+            </div>
+          </div>
+        </div>
+        <div class="sci-caption" id="sciCaption">철 원석은 <b style="color:#ffd76a">철</b>과 <b style="color:#9fb6ff">암석(돌)</b>이 섞인 혼합물이에요.</div>
+      </section>
+    </div>
+
+    <!-- 인벤토리 -->
+    <div class="hotbar">
+      <div class="hb" id="hbOre"><span id="oreArt"></span><span class="name">철 원석</span><span class="cnt" id="oreCnt">x8</span></div>
+      <div class="hb" id="hbCoal"><span id="coalArt"></span><span class="name">석탄</span><span class="cnt" id="coalCnt">x8</span></div>
+    </div>
+
+    <!-- 개념 -->
+    <div class="concept">
+      <h3>오늘 배운 것 · 녹는점 차이를 이용한 분리</h3>
+      <p><span class="key">녹는점이 다른 고체 혼합물</span>을 가열하면, <span class="key">녹는점이 더 낮은 물질</span>이 먼저 액체로 나와 분리됩니다.</p>
+      <p><span class="key">암석</span>을 가열해 <span class="key">녹는점이 낮은 금속</span>을 먼저 녹여 분리합니다.</p>
+      <p class="modelnote">※ 이 화로는 학습용 모형이에요. 실제 철 제련 이야기가 궁금하면 아래 '심화'를 펼쳐 보세요.</p>
+
+      <div class="recap" id="recap">
+        <b>제련 완료!</b> 마인크래프트에서 철 원석을 구워 철 주괴를 만드는 것은,
+        사실 <b>녹는점이 낮은 철을 먼저 녹여 암석과 분리</b>하는 과정이에요.
+        화로 온도가 철의 녹는점은 넘었지만 암석의 녹는점에는 못 미쳐서,
+        <b>철만 액체로 흘러나와</b> 분리된 거랍니다.
+      </div>
+
+      <details class="adv">
+        <summary>심화 — 진짜 철은 어떻게 만들까? (더 궁금한 친구들에게)</summary>
+        <div class="body">
+          실제 제철소의 <span class="hl">용광로</span>에서는 단순히 녹이기만 하는 게 아니라,
+          석탄(탄소)이 철광석(산화 철)에서 산소를 떼어 내는 <span class="hl">화학 반응(환원)</span>도 함께 일어나요.
+          마인크래프트에서 연료로 석탄을 넣는 것이, 실제로 철을 얻을 때 탄소가 꼭 필요한 것과 묘하게 닮아 있죠.<br><br>
+          순수하게 <span class="hl">녹는점 차이만으로 분리</span>하는 가장 깔끔한 예시는 녹는점이 아주 낮은 금속이에요.
+          예를 들어 <span class="hl">주석(약 232℃)</span>이나 <span class="hl">납(약 327℃)</span>은
+          암석을 적당히 가열하면 먼저 녹아 흘러나와 분리됩니다.
+          이번 활동의 '철'은 친숙한 마인크래프트 예시로 개념을 익히기 위한 모형이라고 보면 돼요.
+        </div>
+      </details>
+    </div>
+
+    <footer>광산 제련소 · 중학교 과학 학습용 · 화로 → 철 원석 → 석탄 → 철 주괴</footer>
+  </div>
+
+<script>
+/* ---------- pixel art ---------- */
+function buildPixel(grid, pal, px){
+  const w=grid[0].length, h=grid.length; let rects='';
+  for(let y=0;y<h;y++){let x=0;while(x<w){const c=grid[y][x];if(c==='.'){x++;continue;}
+    let run=1;while(x+run<w&&grid[y][x+run]===c)run++;
+    rects+='<rect x="'+x+'" y="'+y+'" width="'+run+'" height="1" fill="'+pal[c]+'"/>';x+=run;}}
+  return '<svg class="pix" viewBox="0 0 '+w+' '+h+'" width="'+(w*px)+'" height="'+(h*px)+'" xmlns="http://www.w3.org/2000/svg" shape-rendering="crispEdges">'+rects+'</svg>';
+}
+
+const ORE=[
+"bbbcbbbbbbcbbbbb","bcbbbbcbbbbbbcbb","bbbbqobbbbbbbbcb","cbbboopbbbcbbbbb",
+"bbbqoopobbqobbbb","bbbboooqbbqopbbb","cbbbqobbbboopbbb","bbbbbbbbbqoopbbc",
+"bbcbbbbbbbooobbb","bbbbbbqobbqobbbc","bcbbboopbbbbbbbb","bbbbqooobbbbbcbb",
+"bbbbboopbbcbbbbb","cbbbbbbbbbbbbbcb","bbbbbcbbbbbcbbbb","bbcbbbbbbbbbbbbb"];
+const ORE_PAL={b:'#4b4b56',c:'#5f5f6b',q:'#9a7350',o:'#c39368',p:'#e2bd95'};
+
+const COAL=[
+"................","......kkkk......",".....kkdkkk.....","....khkkdkkk....",
+"...kkkkkkkdkk...","..kkdkhkkkkkk...","..kkkkkkkdkkk..",".kkdkkkkkkkkkk.",
+".kkkkkhkkkdkkk.",".kkkdkkkkkkkkk.","..kkkkkkkdkkk..","..kkdkkhkkkkk..",
+"...kkkkkkkkk...","....kkkdkkk....","......kkk.......","................"];
+const COAL_PAL={k:'#15151a',d:'#2b2b32',h:'#47474f'};
+
+const INGOT=[
+"................","................",".....llllll.....","....llllllll....",
+"...lwwwwwwwml...","..lwllllllmml...",".lwlllllllmml...",".lmlllllllmml...",
+".nmmmmmmmmmmn...",".nnmmmmmmmmnn...","..nnnnnnnnnn....","................",
+"................","................","................","................"];
+const INGOT_PAL={l:'#cdced9',m:'#a9abb8',n:'#838595',w:'#eef0f8'};
+
+const oreSVG=buildPixel(ORE,ORE_PAL,2.6);
+const coalSVG=buildPixel(COAL,COAL_PAL,2.6);
+const ingotSVG=buildPixel(INGOT,INGOT_PAL,2.6);
+const oreSVGsm=buildPixel(ORE,ORE_PAL,3.0);
+const coalSVGsm=buildPixel(COAL,COAL_PAL,3.0);
+const ingotSVGsm=buildPixel(INGOT,INGOT_PAL,3.0);
+
+document.getElementById('oreArt').innerHTML=oreSVG;
+document.getElementById('coalArt').innerHTML=coalSVG;
+document.getElementById('formed').innerHTML=buildPixel(INGOT,INGOT_PAL,2.2);
+
+/* ---------- embers ---------- */
+(function(){const n=14;for(let i=0;i<n;i++){const e=document.createElement('div');e.className='ember';
+  e.style.left=(Math.random()*100)+'vw';e.style.animationDuration=(6+Math.random()*7)+'s';
+  e.style.animationDelay=(Math.random()*8)+'s';e.style.opacity=0;document.body.appendChild(e);}})();
+
+/* ---------- audio ---------- */
+let actx=null, soundOn=true;
+function ac(){if(!actx){try{actx=new (window.AudioContext||window.webkitAudioContext)();}catch(e){}}return actx;}
+function tone(freq,dur,type,vol){if(!soundOn)return;const c=ac();if(!c)return;
+  const o=c.createOscillator(),g=c.createGain();o.type=type||'square';o.frequency.value=freq;
+  g.gain.value=0;o.connect(g);g.connect(c.destination);const t=c.currentTime;
+  g.gain.linearRampToValueAtTime(vol||.12,t+.01);g.gain.exponentialRampToValueAtTime(.0001,t+dur);
+  o.start(t);o.stop(t+dur+.02);}
+function blip(){tone(640,.07,'square',.10);}
+function whoosh(){if(!soundOn)return;const c=ac();if(!c)return;
+  const buf=c.createBuffer(1,c.sampleRate*0.5,c.sampleRate);const d=buf.getChannelData(0);
+  for(let i=0;i<d.length;i++)d[i]=(Math.random()*2-1)*Math.pow(1-i/d.length,2);
+  const s=c.createBufferSource();s.buffer=buf;const f=c.createBiquadFilter();f.type='lowpass';f.frequency.value=900;
+  const g=c.createGain();g.gain.value=.18;s.connect(f);f.connect(g);g.connect(c.destination);s.start();
+  tone(120,.5,'sawtooth',.05);}
+function ding(){tone(880,.12,'sine',.13);setTimeout(()=>tone(1175,.16,'sine',.13),110);}
+
+/* ---------- state ---------- */
+const MAX=8;
+const state={inv:{ore:MAX,coal:MAX}, ore:false, fuel:false, output:0, smelting:false, firstDone:false};
+let raf=null;
+
+const el={
+  step:document.getElementById('step'),
+  ingotCount:document.getElementById('ingotCount'),
+  oreSlot:document.getElementById('oreSlot'),
+  fuelSlot:document.getElementById('fuelSlot'),
+  outputSlot:document.getElementById('outputSlot'),
+  arrowFill:document.getElementById('arrowFill'),
+  flameFill:document.getElementById('flameFill'),
+  furnaceBlock:document.getElementById('furnaceBlock'),
+  thermoFill:document.getElementById('thermoFill'),
+  thermoTemp:document.getElementById('thermoTemp'),
+  cross:document.getElementById('cross'),
+  pool:document.getElementById('pool'),
+  sciCaption:document.getElementById('sciCaption'),
+  hbOre:document.getElementById('hbOre'),
+  hbCoal:document.getElementById('hbCoal'),
+  oreCnt:document.getElementById('oreCnt'),
+  coalCnt:document.getElementById('coalCnt'),
+  recap:document.getElementById('recap')
+};
+
+/* thermometer markers (scale 0-2000C) */
+const T_MAX=2000, T_METAL=1538, T_ROCK=1750, T_PEAK=1600;
+function pct(t){return (t/T_MAX*100);}
+function placeMarkers(){
+  document.getElementById('markMetal').style.bottom=pct(T_METAL)+'%';
+  document.getElementById('markRock').style.bottom=pct(T_ROCK)+'%';
+  const z=document.getElementById('zone');
+  z.style.bottom=pct(T_METAL)+'%';
+  z.style.height=(pct(T_ROCK)-pct(T_METAL))+'%';
+}
+placeMarkers();
+
+function setHint(slotEl, show){const h=slotEl.querySelector('.hint'); if(h) h.style.display=show?'block':'none';}
+
+function render(){
+  el.ingotCount.textContent=state.output>0?(getCollected()):getCollected();
+  el.oreCnt.textContent='x'+state.inv.ore;
+  el.coalCnt.textContent='x'+state.inv.coal;
+  el.hbOre.classList.toggle('disabled', state.inv.ore<=0);
+  el.hbCoal.classList.toggle('disabled', state.inv.coal<=0);
+
+  // slot contents
+  el.oreSlot.innerHTML = state.ore? oreSVGsm : '<span class="hint">철<br>원석</span>';
+  el.fuelSlot.innerHTML = state.fuel? coalSVGsm : '<span class="hint">연료<br>(석탄)</span>';
+  if(state.output>0){
+    if(!el.outputSlot.dataset.has){ el.outputSlot.innerHTML='<span class="ingot-pop">'+ingotSVGsm+'</span>'; el.outputSlot.dataset.has='1'; }
+    el.outputSlot.classList.add('ready');
+  } else {
+    el.outputSlot.innerHTML='<span class="hint">결과물</span>';
+    el.outputSlot.classList.remove('ready');
+    el.outputSlot.dataset.has='';
+  }
+
+  // step guide + pulses
+  el.hbOre.classList.remove('pulse'); el.hbCoal.classList.remove('pulse');
+  el.oreSlot.classList.remove('target'); el.fuelSlot.classList.remove('target');
+  let s='';
+  if(state.smelting){ s='가열 중… <b>녹는점이 낮은 철</b>이 녹아 분리되고 있어요'; }
+  else if(state.output>0){ s='완성된 <b>철 주괴</b>를 클릭해 수집하세요!'; el.outputSlot.classList.add('target'); }
+  else if(!state.ore && !state.fuel){ s='1. 화로에 <b>철 원석</b>을 넣으세요'; el.hbOre.classList.add('pulse'); el.oreSlot.classList.add('target'); }
+  else if(state.ore && !state.fuel){ s='2. <b>석탄(연료)</b>을 넣으세요'; el.hbCoal.classList.add('pulse'); el.fuelSlot.classList.add('target'); }
+  else if(!state.ore && state.fuel){ s='<b>철 원석</b>을 넣으세요'; el.hbOre.classList.add('pulse'); el.oreSlot.classList.add('target'); }
+  el.step.innerHTML=s;
+}
+
+let collected=0;
+function getCollected(){return collected;}
+
+function flashSlot(slotEl){slotEl.classList.add('flash');setTimeout(()=>slotEl.classList.remove('flash'),360);}
+
+function placeOre(){
+  if(state.smelting) return;
+  if(state.output>0){ el.sciCaption.innerHTML='먼저 <b>철 주괴</b>를 수집하세요.'; return; }
+  if(state.ore){ flashSlot(el.oreSlot); return; }
+  if(state.inv.ore<=0){ flashSlot(el.oreSlot); el.sciCaption.innerHTML='철 원석이 없어요. <b>보충하기</b>를 눌러 더 캐오세요.'; return; }
+  state.inv.ore--; state.ore=true; blip();
+  el.sciCaption.innerHTML='철 원석을 넣었어요. <b style="color:#ffd76a">철</b> 입자가 <b style="color:#9fb6ff">암석</b> 속에 섞여 있죠?';
+  render(); maybeStart();
+}
+function placeFuel(){
+  if(state.smelting) return;
+  if(state.output>0){ el.sciCaption.innerHTML='먼저 <b>철 주괴</b>를 수집하세요.'; return; }
+  if(state.fuel){ flashSlot(el.fuelSlot); return; }
+  if(state.inv.coal<=0){ flashSlot(el.fuelSlot); el.sciCaption.innerHTML='석탄이 없어요. <b>보충하기</b>를 눌러 주세요.'; return; }
+  state.inv.coal--; state.fuel=true; blip();
+  render(); maybeStart();
+}
+
+function maybeStart(){
+  if(state.ore && state.fuel && !state.smelting && state.output===0) startSmelt();
+}
+
+function temperature(p){
+  // heat up fast to metal mp, then drift to peak
+  if(p<0.3) return 20 + (T_METAL-20)*(p/0.3);
+  return T_METAL + (T_PEAK-T_METAL)*((p-0.3)/0.7);
+}
+
+function startSmelt(){
+  state.smelting=true; whoosh();
+  el.furnaceBlock.classList.add('lit');
+  el.cross.classList.remove('done');
+  el.pool.style.height='2px';
+  // reset bits to embedded
+  el.cross.classList.remove('melting');
+  render();
+  const dur=5200, t0=performance.now();
+  let crossedMetal=false;
+  function frame(now){
+    let p=Math.min(1,(now-t0)/dur);
+    const t=temperature(p);
+    // arrow
+    el.arrowFill.style.width=(p*100)+'%';
+    // fuel flame burns down
+    el.flameFill.style.height=((1-p)*100)+'%';
+    // thermometer
+    el.thermoFill.style.height=pct(t)+'%';
+    el.thermoTemp.textContent=Math.round(t)+'℃';
+    // metal melts when temp passes metal mp
+    if(!crossedMetal && t>=T_METAL){
+      crossedMetal=true;
+      el.cross.classList.add('melting');
+      el.sciCaption.innerHTML='온도가 <b style="color:#ffd76a">철의 녹는점</b>을 넘었어요! 철이 녹아 흘러나옵니다. (암석은 그대로!)';
+    }
+    // molten pool grows
+    if(crossedMetal){
+      const g=Math.max(0,Math.min(1,(t-T_METAL)/(T_PEAK-T_METAL)));
+      el.pool.style.height=(2+g*26)+'px';
+    }
+    if(p<1){ raf=requestAnimationFrame(frame); }
+    else finishSmelt();
+  }
+  raf=requestAnimationFrame(frame);
+}
+
+function finishSmelt(){
+  state.smelting=false;
+  state.ore=false; state.fuel=false; // consumed
+  state.output=1;
+  el.furnaceBlock.classList.remove('lit');
+  el.flameFill.style.height='0%';
+  el.arrowFill.style.width='0%';
+  el.cross.classList.add('done');
+  el.sciCaption.innerHTML='분리 완료! <b style="color:#ffd76a">녹은 철</b>이 모여 <b>철 주괴</b>가 되고, <b style="color:#9fb6ff">암석</b>은 그대로 남았어요.';
+  ding();
+  if(!state.firstDone){ state.firstDone=true; el.recap.classList.add('show'); }
+  render();
+}
+
+function collect(){
+  if(state.output<=0) return;
+  collected += state.output; state.output=0;
+  blip();
+  // reset science view to idle for next round
+  el.cross.classList.remove('done','melting');
+  el.pool.style.height='2px';
+  el.thermoFill.style.height='2%';
+  el.thermoTemp.textContent='20℃';
+  el.sciCaption.innerHTML='철 주괴 <b>'+collected+'개</b> 획득! 다시 철 원석을 넣어 보세요.';
+  render();
+}
+
+/* ---------- events ---------- */
+el.hbOre.addEventListener('click',()=>{ac();placeOre();});
+el.hbCoal.addEventListener('click',()=>{ac();placeFuel();});
+el.oreSlot.addEventListener('click',()=>{ac();placeOre();});
+el.fuelSlot.addEventListener('click',()=>{ac();placeFuel();});
+el.outputSlot.addEventListener('click',()=>{ac();collect();});
+
+document.getElementById('refillBtn').addEventListener('click',()=>{
+  state.inv.ore=MAX; state.inv.coal=MAX; blip(); render();
+  el.sciCaption.innerHTML='철 원석과 석탄을 보충했어요.';
+});
+document.getElementById('soundBtn').addEventListener('click',function(){
+  soundOn=!soundOn; this.textContent='소리: '+(soundOn?'켬':'끔'); if(soundOn){ac();blip();}
+});
+
+render();
+</script>
+</body>
+</html>
