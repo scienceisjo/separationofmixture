@@ -968,5 +968,6 @@ function roundRect(ctx,x,y,w,h,r){if(w<2*r)r=w/2;if(h<2*r)r=h/2;ctx.beginPath();
 let rt;window.addEventListener('resize',()=>{clearTimeout(rt);rt=setTimeout(()=>{const a=document.querySelector('.screen.active');if(a&&a.id==='screen-lab'&&DLAB.cv){const app=document.getElementById('paneApp'),gp=document.getElementById('paneGraph');if(!app||app.style.display!=='none')fitCanvas(DLAB.cv);if(!gp||gp.style.display!=='none')fitCanvas(DLAB.gc);DLAB.layout();}else if(a&&a.id==='screen-concept'){drawConceptGraph();}else if(a&&a.id==='screen-intro'&&typeof SOLAR!=='undefined'&&SOLAR.cv){fitCanvas(SOLAR.cv);}},200);});renderQuiz();
 SOLAR.start(document.getElementById('solarCanvas'));
 </script>
+<footer id="app-credit" style="width:100%;box-sizing:border-box;margin:2.5rem 0 0;padding:14px 12px;text-align:center;font-size:12.5px;line-height:1.6;color:#8a8f98;font-family:system-ui,-apple-system,'Segoe UI','Malgun Gothic',sans-serif;border-top:1px solid rgba(128,128,128,.25);">© 2026 조승재(과학이조선생) · 해누리중학교 · All rights reserved<br><span style="font-size:11px;opacity:.85;">최종 업데이트: 2026-06-05</span></footer>
 </body>
 </html>
